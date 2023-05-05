@@ -25,9 +25,6 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
 	        super();
 	    }
 
-	 
-	 	
-	 
 	 // Error Code 500
 
 	    @ExceptionHandler({ NullPointerException.class, IllegalArgumentException.class, IllegalStateException.class })
