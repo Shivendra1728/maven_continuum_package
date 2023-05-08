@@ -1,35 +1,43 @@
 package com.di.commons.mapper;
 
-import com.continuum.repos.entity.ReturnOrder;
-import com.di.commons.dto.ReturnOrderDTO;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.continuum.repos.entity.ReturnOrder;
+import com.continuum.repos.entity.ReturnOrderItem;
+import com.di.commons.dto.ReturnOrderDTO;
+@Component
 public class ReturnOrderMapper {
 	
-	
+	@Autowired
+    private ModelMapper modelMapper;
 
-	public static ReturnOrderDTO ReturnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
+	
+	public  ReturnOrderDTO ReturnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
 		
-		ReturnOrderDTO poDTO= new ReturnOrderDTO();
-		poDTO.setPONumber(returnOrder.getPONumber());
-		poDTO.setId(returnOrder.getId());
-		//poDTO.setBillTo(OrderAddressToOrderAddressDTO(returnOrder.getBillTo()));
-		//poDTO.setShipTo(OrderAddressToOrderAddressDTO(returnOrder.getShipTo()));
+		ReturnOrderDTO poDTO=  modelMapper.map(returnOrder, ReturnOrderDTO.class);
 		returnOrder.getId();
 	
 	return poDTO;
 	}
 
 
-	public static ReturnOrder ReturnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
-		
-		ReturnOrder returnOrder= new ReturnOrder();
-		returnOrder.setPONumber(returnOrderDTO.getPONumber());
-		returnOrder.setId(returnOrderDTO.getId());
-		//poDTO.setBillTo(OrderAddressToOrderAddressDTO(returnOrder.getBillTo()));
-		//poDTO.setShipTo(OrderAddressToOrderAddressDTO(returnOrder.getShipTo()));
-		returnOrder.getId();
-	
-	return returnOrder;
+	public  ReturnOrder ReturnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
+		ReturnOrder returOrder;
+		returOrder = modelMapper.map(returnOrderDTO, ReturnOrder.class);
+		returOrder.setReturnOrderItem(mapList(returnOrderDTO.getReturnOrderItemDTOList(), ReturnOrderItem.class));
+	return returOrder;
 	}
 
+	
+	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
+	    return source
+	      .stream()
+	      .map(element -> modelMapper.map(element, targetClass))
+	      .collect(Collectors.toList());
+	}
 }

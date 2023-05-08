@@ -21,7 +21,7 @@ import lombok.Setter;
 public abstract class BaseEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
 	@Temporal(TemporalType.TIMESTAMP)

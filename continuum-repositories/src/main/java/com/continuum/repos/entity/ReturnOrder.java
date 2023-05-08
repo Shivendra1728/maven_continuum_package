@@ -3,10 +3,13 @@ package com.continuum.repos.entity;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,8 +40,6 @@ public class ReturnOrder  extends BaseEntity{
 	  
 	    private Long ORMOrder;
 	    private Long salesLocationId;
-	    private Long shipTo;
-	    private Long billto;
 	    private Long contactId;
 	    private String PONumber;
 	    private Date orderDate;
@@ -54,11 +55,17 @@ public class ReturnOrder  extends BaseEntity{
 	    @JoinColumn(name="customerId")
 	    private Customer customer;
 	    
-	    @OneToMany(mappedBy = "returnOrder")
+	    @OneToMany( cascade = CascadeType.ALL)
+	    @JoinColumn(name="returnOrderId")
 	    private List<ReturnOrderItem> returnOrderItem;
 	    
-	    @OneToMany(mappedBy = "returnOrder")
-	    private List<OrderAddress> orderAddresses;
+	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
+	    @JoinColumn(name ="shipTo")
+	    private OrderAddress shipTo;
+	    
+	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	    @JoinColumn(name ="billto")
+	    private OrderAddress billTo;
 		
 	    
 }
