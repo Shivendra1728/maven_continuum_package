@@ -4,10 +4,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import com.continuum.repos.entity.OrderAddress;
-import com.continuum.repos.entity.OrderItemDocuments;
-import com.continuum.repos.entity.ReasonCode;
-import com.continuum.repos.entity.ReturnOrder;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;

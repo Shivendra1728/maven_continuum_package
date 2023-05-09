@@ -1,7 +1,9 @@
 package com.di.commons.dto;
 
 import java.util.Date;
+import java.util.List;
 
+import com.continuum.repos.entity.PurchaseOrderItem;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -37,5 +39,7 @@ public class PurchaseOrderDTO {
 	    private String currency;
 		private Date createdDate;
 		private Date updatedDate;
+		private String invoiceNo;
+		private List<PurchaseOrderItemDTO> purchaseOrderItemsDtos;
 
 }
