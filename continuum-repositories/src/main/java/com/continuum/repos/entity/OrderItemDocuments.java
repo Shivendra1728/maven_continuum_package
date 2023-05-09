@@ -1,5 +1,6 @@
 package com.continuum.repos.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -22,7 +23,7 @@ public class OrderItemDocuments extends BaseEntity{
 	private String type;
 	private String status;
 	
-	@ManyToOne
-	@JoinColumn(name="orderItemDocuments")
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name="returnOrderItemId")
 	private ReturnOrderItem returnOrderItem;
 }

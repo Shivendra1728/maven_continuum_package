@@ -28,21 +28,21 @@ public class OrderAddress extends BaseEntity {
 	private String zipcode;
 	private String addressType;
 
-	 
-	/*
-	 * @JoinColumn(name = "purchaseOrderId") private PurchaseOrder purchaseOrder;
-	 */
 	
-	@ManyToOne
-	@JoinColumn(name = "purchaseOrderItemId")
-	private PurchaseOrderItem purchaseOrderItem;
-
-	@ManyToOne
-	@JoinColumn(name = "returnOrderId")
-	private ReturnOrder returnOrder;
-
-	@ManyToOne
-	@JoinColumn(name = "returnOrderItemId")
-	private ReturnOrderItem returnOrderItem;
+	/*
+	 * @ManyToOne
+	 * 
+	 * @JoinColumn(name = "purchaseOrderItemId") private PurchaseOrderItem
+	 * purchaseOrderItem;
+	 * 
+	 * @ManyToOne
+	 * 
+	 * @JoinColumn(name = "returnOrderId") private ReturnOrder returnOrder;
+	 * 
+	 * @ManyToOne
+	 * 
+	 * @JoinColumn(name = "returnOrderItemId") private ReturnOrderItem
+	 * returnOrderItem;
+	 */
 
 }

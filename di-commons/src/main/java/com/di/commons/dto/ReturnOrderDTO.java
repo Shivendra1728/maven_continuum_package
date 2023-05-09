@@ -1,6 +1,7 @@
 package com.di.commons.dto;
 
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -36,6 +37,6 @@ public class ReturnOrderDTO {
 	    private String currency;
 		private Date createdDate;
 		private Date updatedDate;
-		private ReturnOrderItemDTO returnOrderItemDTO;
+		private List<ReturnOrderItemDTO> returnOrderItemDTOList;
 
 }
