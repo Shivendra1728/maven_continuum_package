@@ -23,7 +23,6 @@
 		<module>continuum-integration</module>
 		<module>di-commons</module>
 	</modules>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
