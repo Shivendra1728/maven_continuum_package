@@ -1,14 +1,9 @@
 package com.di.commons.dto;
 
-import java.util.Date;
-
-import com.continuum.repos.entity.ReturnOrderItem;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.Accessors;
 
 @Getter
 @Setter

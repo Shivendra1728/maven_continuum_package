@@ -3,6 +3,7 @@ package com.continuum.repos.entity;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -56,14 +57,15 @@ public class PurchaseOrder  extends BaseEntity{
 	    @JoinColumn(name="customerId")
 	    private Customer customer;
 	    
-	    @OneToMany(mappedBy = "purchaseOrder",fetch = FetchType.EAGER)
+	    @OneToMany( cascade = CascadeType.ALL)
+	    @JoinColumn(name="purchaseOrder")
 	    private List<PurchaseOrderItem> purchaseOrderItems;
 	    
-	    @OneToOne(fetch = FetchType.EAGER)
+	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
 	    @JoinColumn(name ="shipTo")
 	    private OrderAddress shipTo;
 	    
-	    @OneToOne(fetch = FetchType.EAGER)
+	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	    @JoinColumn(name ="billto")
 	    private OrderAddress billTo;
 }

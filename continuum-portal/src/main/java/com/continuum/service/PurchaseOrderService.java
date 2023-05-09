@@ -1,6 +1,7 @@
 package com.continuum.service;
 
 import com.di.commons.dto.PurchaseOrderDTO;
+import com.di.commons.dto.ReturnOrderDTO;
 
 public interface PurchaseOrderService {
 	
@@ -10,5 +11,7 @@ public interface PurchaseOrderService {
 
 
 	public PurchaseOrderDTO getOrdersByZipcodeAndPONumber(String zipcode, String poNo);
+
+	public String createPurchaseOrder(PurchaseOrderDTO purchaseOrderDTO);
 
 }

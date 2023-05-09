@@ -1,41 +1,61 @@
 package com.di.commons.mapper;
 
-import com.continuum.repos.entity.OrderAddress;
-import com.continuum.repos.entity.PurchaseOrder;
-import com.di.commons.dto.OrderAddressDTO;
-import com.di.commons.dto.PurchaseOrderDTO;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.continuum.repos.entity.PurchaseOrder;
+import com.continuum.repos.entity.PurchaseOrderItem;
+import com.continuum.repos.entity.ReturnOrder;
+import com.continuum.repos.entity.ReturnOrderItem;
+import com.di.commons.dto.PurchaseOrderDTO;
+import com.di.commons.dto.ReturnOrderDTO;
+
+@Component
 public class PurchaseOrderMapper {
 	
+	@Autowired
+    private ModelMapper modelMapper;
 	
 	
-	public static PurchaseOrderDTO PurchaseOrderToPurchaseOrderDTO(PurchaseOrder purchaseOrder) {
+	public PurchaseOrderDTO PurchaseOrderToPurchaseOrderDTO(PurchaseOrder purchaseOrder) {
 		
-		PurchaseOrderDTO poDTO= new PurchaseOrderDTO();
-		poDTO.setPONumber(purchaseOrder.getPONumber());
-		poDTO.setId(purchaseOrder.getId());
-		poDTO.setBillTo(OrderAddressToOrderAddressDTO(purchaseOrder.getBillTo()));
-		poDTO.setShipTo(OrderAddressToOrderAddressDTO(purchaseOrder.getShipTo()));
-		purchaseOrder.getId();
+		PurchaseOrderDTO poDTO= modelMapper.map(purchaseOrder, PurchaseOrderDTO.class);
+	return poDTO;
+	}
+
+	public PurchaseOrder PurchaseOrderDTOToPurchaseOrder(PurchaseOrderDTO purchaseOrderDTO) {
+		
+		PurchaseOrder po= modelMapper.map(purchaseOrderDTO, PurchaseOrder.class);
+		po.setPurchaseOrderItems(mapList(purchaseOrderDTO.getPurchaseOrderItemsDtos(), PurchaseOrderItem.class));
+	return po;
+	}
+	
+	
+	public  ReturnOrderDTO ReturnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
+		
+		ReturnOrderDTO poDTO=  modelMapper.map(returnOrder, ReturnOrderDTO.class);
+		returnOrder.getId();
 	
 	return poDTO;
 	}
 
-	
 
-	public static OrderAddressDTO OrderAddressToOrderAddressDTO(OrderAddress orderAddress) {
-		
-		OrderAddressDTO orderAddressDTO= new OrderAddressDTO();
-		orderAddressDTO.setId(orderAddress.getId());
-		orderAddressDTO.setCountry(orderAddress.getCountry());
-		orderAddressDTO.setProvince(orderAddress.getProvince());
-		orderAddressDTO.setAddressType(orderAddress.getAddressType());
-		orderAddressDTO.setPhoneNumber(orderAddress.getPhoneNumber());
-		orderAddressDTO.setStreet1(orderAddress.getStreet1());
-		orderAddressDTO.setStreet2(orderAddress.getStreet2());
-		orderAddressDTO.setZipcode(orderAddress.getZipcode());
-		orderAddressDTO.setFax(orderAddress.getFax());
+	public  ReturnOrder ReturnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
+		ReturnOrder returOrder;
+		returOrder = modelMapper.map(returnOrderDTO, ReturnOrder.class);
+		returOrder.setReturnOrderItem(mapList(returnOrderDTO.getReturnOrderItemDTOList(), ReturnOrderItem.class));
+	return returOrder;
+	}
+
 	
-		return orderAddressDTO;
+	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
+	    return source
+	      .stream()
+	      .map(element -> modelMapper.map(element, targetClass))
+	      .collect(Collectors.toList());
 	}
 }
