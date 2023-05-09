@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @EntityScan(basePackages = {"com.continuum.repos.entity"}) 
-@ComponentScan(basePackages = {"com.continuum"})
+@ComponentScan(basePackages = {"com.continuum","com.di.commons"})
 @EnableJpaRepositories(basePackages = {"com.continuum.repos.repositories"})
 public class ContinuumMain {
 
