@@ -23,5 +23,6 @@ public class PurchaseOrderItemDTO {
 		private Date purchaseDate;
 		private String status;
 		private String itemName;
+		private String partNo;
 		private String description;
 }
