@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.PurchaseOrderService;
 import com.di.commons.dto.PurchaseOrderDTO;
-import com.di.commons.dto.ReturnOrderDTO;
 
 @RestController
 public class PurchaseOrderController {
@@ -32,13 +31,13 @@ public class PurchaseOrderController {
 	}
 	
 	@GetMapping("/order/customerIdAndInvoice/{customerId}/{invoiceNo}")
-	public PurchaseOrderDTO getOrdersByCustomerIdAndInvoiceNo(@PathVariable Long CustomerId,@PathVariable String invoiceNo) {
-	return poService.getOrdersByCustomerIdAndInvoiceNo(CustomerId,invoiceNo);
+	public PurchaseOrderDTO getOrdersByCustomerIdAndInvoiceNo(@PathVariable Long customerId,@PathVariable String invoiceNo) {
+	return poService.getOrdersByCustomerIdAndInvoiceNo(customerId,invoiceNo);
 	}
 	
 	@GetMapping("/order/customerIdAndPO/{customerId}/{poNo}")
-	public PurchaseOrderDTO getOrdersByCustomerIdAndPONumber(@PathVariable Long CustomerId ,@PathVariable String poNo) {
-	return poService.getOrdersByCustomerIdAndPONumber(CustomerId,poNo);
+	public PurchaseOrderDTO getOrdersByCustomerIdAndPONumber(@PathVariable Long customerId ,@PathVariable String poNo) {
+	return poService.getOrdersByCustomerIdAndPONumber(customerId,poNo);
 	}
 	@PostMapping("/createPurchaseOrder/v1")
 	public String createPurchaseOrder(@RequestBody PurchaseOrderDTO purchaseOrderDTO) {
