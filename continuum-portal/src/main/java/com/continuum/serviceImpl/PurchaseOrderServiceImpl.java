@@ -50,6 +50,18 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 		orderRepository.save(purchaseOrder);
 		return "PO created succssfully";
 	}
+
+	@Override
+	public PurchaseOrderDTO getOrdersByCustomerIdAndInvoiceNo(Long customerId, String invoiceNo) {
+		PurchaseOrder po= orderRepository.getOrdersByCustomerIdAndInvoiceNo(customerId,invoiceNo).orElseThrow(() -> new EntityNotFoundException());
+		return purchaseOrderMapper.PurchaseOrderToPurchaseOrderDTO(po);
+	}
+
+	@Override
+	public PurchaseOrderDTO getOrdersByCustomerIdAndPONumber(Long customerId, String poNo) {
+		PurchaseOrder po= orderRepository.getOrdersByCustomerIdAndPONumber(customerId,poNo).orElseThrow(() -> new EntityNotFoundException());
+		return purchaseOrderMapper.PurchaseOrderToPurchaseOrderDTO(po);
+	}
 	
 	
 }

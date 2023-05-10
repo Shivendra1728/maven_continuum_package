@@ -14,4 +14,8 @@ public interface PurchaseOrderService {
 
 	public String createPurchaseOrder(PurchaseOrderDTO purchaseOrderDTO);
 
+	public PurchaseOrderDTO getOrdersByCustomerIdAndInvoiceNo(Long customerId, String invoiceNo);
+
+	public PurchaseOrderDTO getOrdersByCustomerIdAndPONumber(Long customerId, String poNo);
+
 }

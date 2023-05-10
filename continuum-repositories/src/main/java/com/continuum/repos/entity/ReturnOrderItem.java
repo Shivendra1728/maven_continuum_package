@@ -31,8 +31,8 @@ public class ReturnOrderItem extends BaseEntity {
 	private ReturnOrder returnOrder;
 	
 	 @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-	@JoinColumn(name="shippTo")
-    private OrderAddress shippTo;
+	@JoinColumn(name="shipTo")
+    private OrderAddress shipTo;
 	
 	 @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
 	@JoinColumn(name="billTo")
@@ -44,8 +44,12 @@ public class ReturnOrderItem extends BaseEntity {
 	@OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL})
     private ReasonCode reasonCode;
 	
+	 @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	    @JoinColumn(name ="purchaseOrderItemId")
+	 private PurchaseOrderItem purchaseOrderItem;
 	private String returnComments;
 	private int quanity;
+	private String itemName;
 	private BigDecimal returnAmount;
 	private BigDecimal reStockingAmount;
 	private BigDecimal shippingCost;

@@ -22,6 +22,6 @@ public class PurchaseOrderItemDTO {
 		private int quanity;
 		private Date purchaseDate;
 		private String status;
-		private String partNo;
+		private String itemName;
 		private String description;
 }

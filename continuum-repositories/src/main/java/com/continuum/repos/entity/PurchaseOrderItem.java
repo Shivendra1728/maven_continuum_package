@@ -30,8 +30,8 @@ public class PurchaseOrderItem extends BaseEntity {
 	private PurchaseOrder purchaseOrder;
 
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinColumn(name = "shippTo")
-	private OrderAddress shippTo;
+	@JoinColumn(name = "shipTo")
+	private OrderAddress shipTo;
 
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinColumn(name = "billTo")
@@ -40,7 +40,7 @@ public class PurchaseOrderItem extends BaseEntity {
 	private int quanity;
 	private Date purchaseDate;
 	private String status;
-	private String partNo;
+	private String itemName;
 	private String description;
 
 }

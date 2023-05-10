@@ -28,6 +28,7 @@ public class ReturnOrderItemDTO {
     private ReasonCodeDTO reasonCode;
 	private String returnComments;
 	private int quanity;
+	private String itemName;
 	private BigDecimal returnAmount;
 	private BigDecimal reStockingAmount;
 	private BigDecimal shippingCost;
@@ -38,5 +39,6 @@ public class ReturnOrderItemDTO {
 	private int receivedQuantity;
 	private String receivedState;
 	private String status;
+	private PurchaseOrderItemDTO purchaseOrderItemDTO;
 
 }

@@ -13,4 +13,8 @@ public interface PurchaseOrderRepository  extends JpaRepository<PurchaseOrder, L
 
 	Optional<PurchaseOrder> getOrdersByPONumberAndBillTo_Zipcode(String PONumber,String zipcode);
 
+	Optional<PurchaseOrder> getOrdersByCustomerIdAndPONumber(Long customerId, String poNo);
+
+	Optional<PurchaseOrder> getOrdersByCustomerIdAndInvoiceNo(Long customerId, String invoiceNo);
+
 }

@@ -66,6 +66,10 @@ public class ReturnOrder  extends BaseEntity{
 	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	    @JoinColumn(name ="billto")
 	    private OrderAddress billTo;
+	    
+	    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	    @JoinColumn(name ="purchaseOrderId")
+	    private PurchaseOrder purchaseOrder;
 		
 	    
 }

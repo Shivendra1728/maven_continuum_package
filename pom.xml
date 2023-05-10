@@ -22,6 +22,7 @@
 		<module>continuum-repositories</module>
 		<module>continuum-integration</module>
 		<module>di-commons</module>
+		<module>di-security</module>
 	</modules>
 	<dependencies>
 		<dependency>

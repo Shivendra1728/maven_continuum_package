@@ -12,7 +12,7 @@ import com.di.commons.dto.PurchaseOrderDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 
 @RestController
-public class PurchaseOrdercontroller {
+public class PurchaseOrderController {
 	@Autowired
 	PurchaseOrderService poService;
 	
@@ -31,6 +31,15 @@ public class PurchaseOrdercontroller {
 	return poService.getOrdersByZipcodeAndPONumber(zipcode,poNo);
 	}
 	
+	@GetMapping("/order/customerIdAndInvoice/{customerId}/{invoiceNo}")
+	public PurchaseOrderDTO getOrdersByCustomerIdAndInvoiceNo(@PathVariable Long CustomerId,@PathVariable String invoiceNo) {
+	return poService.getOrdersByCustomerIdAndInvoiceNo(CustomerId,invoiceNo);
+	}
+	
+	@GetMapping("/order/customerIdAndPO/{customerId}/{poNo}")
+	public PurchaseOrderDTO getOrdersByCustomerIdAndPONumber(@PathVariable Long CustomerId ,@PathVariable String poNo) {
+	return poService.getOrdersByCustomerIdAndPONumber(CustomerId,poNo);
+	}
 	@PostMapping("/createPurchaseOrder/v1")
 	public String createPurchaseOrder(@RequestBody PurchaseOrderDTO purchaseOrderDTO) {
 		return poService.createPurchaseOrder(purchaseOrderDTO);

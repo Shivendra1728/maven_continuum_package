@@ -58,7 +58,7 @@ public class PurchaseOrder  extends BaseEntity{
 	    private Customer customer;
 	    
 	    @OneToMany( cascade = CascadeType.ALL)
-	    @JoinColumn(name="purchaseOrder")
+	    @JoinColumn(name="purchaseOrderId")
 	    private List<PurchaseOrderItem> purchaseOrderItems;
 	    
 	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
