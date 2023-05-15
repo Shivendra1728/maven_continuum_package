@@ -2,9 +2,6 @@ package com.di.commons.dto;
 
 import java.util.Date;
 
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +17,7 @@ public class OrderAddressDTO {
 
 	
 	private Long id;
+	
 	private Date createdDate;
 	private Date updatedDate;
 	private String phoneNumber;

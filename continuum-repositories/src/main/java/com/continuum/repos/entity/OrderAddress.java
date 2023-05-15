@@ -27,22 +27,4 @@ public class OrderAddress extends BaseEntity {
 	private String city;
 	private String zipcode;
 	private String addressType;
-
-	
-	/*
-	 * @ManyToOne
-	 * 
-	 * @JoinColumn(name = "purchaseOrderItemId") private PurchaseOrderItem
-	 * purchaseOrderItem;
-	 * 
-	 * @ManyToOne
-	 * 
-	 * @JoinColumn(name = "returnOrderId") private ReturnOrder returnOrder;
-	 * 
-	 * @ManyToOne
-	 * 
-	 * @JoinColumn(name = "returnOrderItemId") private ReturnOrderItem
-	 * returnOrderItem;
-	 */
-
 }

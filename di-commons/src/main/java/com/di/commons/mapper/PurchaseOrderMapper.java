@@ -30,7 +30,6 @@ public class PurchaseOrderMapper {
 	public PurchaseOrder PurchaseOrderDTOToPurchaseOrder(PurchaseOrderDTO purchaseOrderDTO) {
 		
 		PurchaseOrder po= modelMapper.map(purchaseOrderDTO, PurchaseOrder.class);
-		po.setPurchaseOrderItems(mapList(purchaseOrderDTO.getPurchaseOrderItemsDtos(), PurchaseOrderItem.class));
 	return po;
 	}
 	

@@ -53,11 +53,11 @@ public class PurchaseOrder  extends BaseEntity{
 	    @JoinColumn(name="userId")
 	    private User user;
 	    
-	    @ManyToOne
+	    @ManyToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
 	    @JoinColumn(name="customerId")
 	    private Customer customer;
 	    
-	    @OneToMany( cascade = CascadeType.ALL)
+	    @OneToMany( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
 	    @JoinColumn(name="purchaseOrderId")
 	    private List<PurchaseOrderItem> purchaseOrderItems;
 	    

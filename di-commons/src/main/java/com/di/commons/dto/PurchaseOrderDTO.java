@@ -3,9 +3,7 @@ package com.di.commons.dto;
 import java.util.Date;
 import java.util.List;
 
-import com.continuum.repos.entity.PurchaseOrderItem;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +25,7 @@ public class PurchaseOrderDTO {
 		private Long id;
 	    private Long ORMOrder;
 	    private Long userId;
-	    private Long customerId;
+	    private CustomerDTO customer;
 	    private Long salesLocationId;
 	    private OrderAddressDTO shipTo;
 	    private OrderAddressDTO billTo;
@@ -40,6 +38,6 @@ public class PurchaseOrderDTO {
 		private Date createdDate;
 		private Date updatedDate;
 		private String invoiceNo;
-		private List<PurchaseOrderItemDTO> purchaseOrderItemsDtos;
+		private List<PurchaseOrderItemDTO> purchaseOrderItems;
 
 }

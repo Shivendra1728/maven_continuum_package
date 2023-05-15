@@ -28,6 +28,8 @@ public class Customer extends BaseEntity{
 	private String customerType;
 	private boolean status;
 	private String firstName;
+	private String customerId;
+	private String email;
 	private String lastname;
 	private String displayName;
 	
