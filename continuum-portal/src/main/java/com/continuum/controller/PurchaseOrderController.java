@@ -31,11 +31,11 @@ public class PurchaseOrderController {
 		orderSearchParameters.setInvoiceNo(invoiceNo);
 		return poService.getOrdersBySearchCriteria(orderSearchParameters);
 	}
-	
-	  @PostMapping("/create/v1") public String
-	  createPurchaseOrder(@RequestBody PurchaseOrderDTO purchaseOrderDTO) { return
-	  poService.createPurchaseOrder(purchaseOrderDTO);
-	  
-	  }
-	 
+
+	@PostMapping("/create/v1")
+	public String createPurchaseOrder(@RequestBody PurchaseOrderDTO purchaseOrderDTO) {
+		return poService.createPurchaseOrder(purchaseOrderDTO);
+
+	}
+
 }

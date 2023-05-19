@@ -12,7 +12,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 
-
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -21,23 +20,31 @@ import lombok.experimental.Accessors;
 //@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ReturnOrderDTO {
-	
-	
-		private Long id;
-	    private Long ORMOrder;
-	    private Long userId;
-	    private Long customerId;
-	    private Long salesLocationId;
-	    private OrderAddressDTO shipTo;
-	    private OrderAddressDTO billTo;
-	    private Long contactId;
-	    private String PONumber;
-	    private Date orderDate;
-	    private Date requestedDate;
-	    private String status;
-	    private String currency;
-		private Date createdDate;
-		private Date updatedDate;
-		private List<ReturnOrderItemDTO> returnOrderItemDTOList;
-		private PurchaseOrderDTO purchaseOrderDTO;
+
+	private Long id;
+	private Long ORMOrder;
+	private Long userId;
+	private Long customerId;
+	private Long salesLocationId;
+	private OrderAddressDTO shipTo;
+	private OrderAddressDTO billTo;
+	private Long contactId;
+	private String PONumber;
+	private Date orderDate;
+	private Date requestedDate;
+	private String status;
+	private String currency;
+	private Date createdDate;
+	private Date updatedDate;
+	private List<ReturnOrderItemDTO> returnOrderItemDTOList;
+	private PurchaseOrderDTO purchaseOrderDTO;
+
+	public List<ReturnOrderItemDTO> getReturnOrderItemDTOList() {
+		return returnOrderItemDTOList;
+	}
+
+	public void setReturnOrderItemDTOList(List<ReturnOrderItemDTO> returnOrderItemDTOList) {
+		this.returnOrderItemDTOList = returnOrderItemDTOList;
+	}
+
 }

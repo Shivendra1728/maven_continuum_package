@@ -10,5 +10,4 @@ public class ContinuumMain {
 		// TODO Auto-generated method stub
 		SpringApplication.run(ContinuumMain.class, args);
 	}
-
 }

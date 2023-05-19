@@ -16,45 +16,38 @@ import com.di.commons.dto.ReturnOrderDTO;
 
 @Component
 public class PurchaseOrderMapper {
-	
+
 	@Autowired
-    private ModelMapper modelMapper;
-	
-	
+	private ModelMapper modelMapper;
+
 	public PurchaseOrderDTO PurchaseOrderToPurchaseOrderDTO(PurchaseOrder purchaseOrder) {
-		
-		PurchaseOrderDTO poDTO= modelMapper.map(purchaseOrder, PurchaseOrderDTO.class);
-	return poDTO;
+
+		PurchaseOrderDTO poDTO = modelMapper.map(purchaseOrder, PurchaseOrderDTO.class);
+		return poDTO;
 	}
 
 	public PurchaseOrder PurchaseOrderDTOToPurchaseOrder(PurchaseOrderDTO purchaseOrderDTO) {
-		
-		PurchaseOrder po= modelMapper.map(purchaseOrderDTO, PurchaseOrder.class);
-	return po;
+
+		PurchaseOrder po = modelMapper.map(purchaseOrderDTO, PurchaseOrder.class);
+		return po;
 	}
-	
-	
-	public  ReturnOrderDTO ReturnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
-		
-		ReturnOrderDTO poDTO=  modelMapper.map(returnOrder, ReturnOrderDTO.class);
+
+	public ReturnOrderDTO ReturnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
+
+		ReturnOrderDTO poDTO = modelMapper.map(returnOrder, ReturnOrderDTO.class);
 		returnOrder.getId();
-	
-	return poDTO;
+
+		return poDTO;
 	}
 
-
-	public  ReturnOrder ReturnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
+	public ReturnOrder ReturnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
 		ReturnOrder returOrder;
 		returOrder = modelMapper.map(returnOrderDTO, ReturnOrder.class);
 		returOrder.setReturnOrderItem(mapList(returnOrderDTO.getReturnOrderItemDTOList(), ReturnOrderItem.class));
-	return returOrder;
+		return returOrder;
 	}
 
-	
 	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
-	    return source
-	      .stream()
-	      .map(element -> modelMapper.map(element, targetClass))
-	      .collect(Collectors.toList());
+		return source.stream().map(element -> modelMapper.map(element, targetClass)).collect(Collectors.toList());
 	}
 }

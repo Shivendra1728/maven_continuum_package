@@ -35,40 +35,47 @@ import lombok.Setter;
  * 
  * @Document(collection = "trip")
  */
-public class ReturnOrder  extends BaseEntity{
-	
-	  
-	    private Long ORMOrder;
-	    private Long salesLocationId;
-	    private Long contactId;
-	    private String PONumber;
-	    private Date orderDate;
-	    private Date requestedDate;
-	    private String status;
-	    private String currency;
-	    
-	    @ManyToOne
-	    @JoinColumn(name="userId")
-	    private User user;
-	    
-	    @ManyToOne
-	    @JoinColumn(name="customerId")
-	    private Customer customer;
-	    
-	    @OneToMany( cascade = CascadeType.ALL)
-	    @JoinColumn(name="returnOrderId")
-	    private List<ReturnOrderItem> returnOrderItem;
-	    
-	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-	    @JoinColumn(name ="shipTo")
-	    private OrderAddress shipTo;
-	    
-	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	    @JoinColumn(name ="billto")
-	    private OrderAddress billTo;
-	    
-	    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	    @JoinColumn(name ="purchaseOrderId")
-	    private PurchaseOrder purchaseOrder;
-	    
+public class ReturnOrder extends BaseEntity {
+
+	private Long ORMOrder;
+	private Long salesLocationId;
+	private Long contactId;
+	private String PONumber;
+	private Date orderDate;
+	private Date requestedDate;
+	private String status;
+	private String currency;
+
+	@ManyToOne
+	@JoinColumn(name = "userId")
+	private User user;
+
+	@ManyToOne
+	@JoinColumn(name = "customerId")
+	private Customer customer;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name = "returnOrderId")
+	private List<ReturnOrderItem> returnOrderItem;
+
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "shipTo")
+	private OrderAddress shipTo;
+
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "billto")
+	private OrderAddress billTo;
+
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name = "purchaseOrderId")
+	private PurchaseOrder purchaseOrder;
+
+	public List<ReturnOrderItem> getReturnOrderItem() {
+		return returnOrderItem;
+	}
+
+	public void setReturnOrderItem(List<ReturnOrderItem> returnOrderItem) {
+		this.returnOrderItem = returnOrderItem;
+	}
+
 }
