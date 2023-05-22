@@ -10,18 +10,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.continuum.service.PurchaseOrderService;
-import com.di.commons.dto.PurchaseOrderDTO;
+import com.continuum.service.OrderService;
+import com.di.commons.dto.OrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
 
 @RestController
 @RequestMapping("/PO")
-public class PurchaseOrderController {
+public class OrderController {
 	@Autowired
-	PurchaseOrderService poService;
+	OrderService poService;
 
 	@GetMapping("/search")
-	public List<PurchaseOrderDTO> getOrdersBySearchCriteria(@RequestParam(required = false) String zipcode,
+	public List<OrderDTO> getOrdersBySearchCriteria(@RequestParam(required = false) String zipcode,
 			@RequestParam(required = false) String poNo, @RequestParam(required = false) String customerId,
 			@RequestParam(required = false) String invoiceNo) {
 		OrderSearchParameters orderSearchParameters = new OrderSearchParameters();
@@ -33,8 +33,8 @@ public class PurchaseOrderController {
 	}
 
 	@PostMapping("/create/v1")
-	public String createPurchaseOrder(@RequestBody PurchaseOrderDTO purchaseOrderDTO) {
-		return poService.createPurchaseOrder(purchaseOrderDTO);
+	public String createOrder(@RequestBody OrderDTO orderDTO) {
+		return poService.createOrder(orderDTO);
 
 	}
 

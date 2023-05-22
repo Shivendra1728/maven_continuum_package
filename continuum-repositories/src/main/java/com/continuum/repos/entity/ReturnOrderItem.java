@@ -46,7 +46,7 @@ public class ReturnOrderItem extends BaseEntity {
 	
 	 @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	    @JoinColumn(name ="purchaseOrderItemId")
-	 private PurchaseOrderItem purchaseOrderItem;
+	 private OrderItem orderItem;
 	private String returnComments;
 	private int quanity;
 	private String itemName;

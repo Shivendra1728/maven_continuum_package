@@ -7,28 +7,28 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.continuum.repos.entity.PurchaseOrder;
-import com.continuum.repos.entity.PurchaseOrderItem;
+import com.continuum.repos.entity.Orders;
+import com.continuum.repos.entity.OrderItem;
 import com.continuum.repos.entity.ReturnOrder;
 import com.continuum.repos.entity.ReturnOrderItem;
-import com.di.commons.dto.PurchaseOrderDTO;
+import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 
 @Component
-public class PurchaseOrderMapper {
+public class OrderMapper {
 
 	@Autowired
 	private ModelMapper modelMapper;
 
-	public PurchaseOrderDTO PurchaseOrderToPurchaseOrderDTO(PurchaseOrder purchaseOrder) {
+	public OrderDTO PurchaseOrderToPurchaseOrderDTO(Orders orders) {
 
-		PurchaseOrderDTO poDTO = modelMapper.map(purchaseOrder, PurchaseOrderDTO.class);
+		OrderDTO poDTO = modelMapper.map(orders, OrderDTO.class);
 		return poDTO;
 	}
 
-	public PurchaseOrder PurchaseOrderDTOToPurchaseOrder(PurchaseOrderDTO purchaseOrderDTO) {
+	public Orders OrderDTOToOrder(OrderDTO orderDTO) {
 
-		PurchaseOrder po = modelMapper.map(purchaseOrderDTO, PurchaseOrder.class);
+		Orders po = modelMapper.map(orderDTO, Orders.class);
 		return po;
 	}
 

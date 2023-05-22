@@ -19,7 +19,7 @@ import lombok.experimental.Accessors;
 @ToString
 //@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PurchaseOrderDTO {
+public class OrderDTO {
 	
 	
 		private Long id;
@@ -38,6 +38,6 @@ public class PurchaseOrderDTO {
 		private Date createdDate;
 		private Date updatedDate;
 		private String invoiceNo;
-		private List<PurchaseOrderItemDTO> purchaseOrderItems;
+		private List<OrderItemDTO> orderItems;
 
 }

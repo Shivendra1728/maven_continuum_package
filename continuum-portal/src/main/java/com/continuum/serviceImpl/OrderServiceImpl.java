@@ -11,46 +11,46 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.continuum.repos.entity.OrderAddress;
-import com.continuum.repos.entity.PurchaseOrder;
+import com.continuum.repos.entity.Orders;
 import com.continuum.repos.repositories.PurchaseOrderRepository;
-import com.continuum.service.PurchaseOrderService;
-import com.di.commons.dto.PurchaseOrderDTO;
+import com.continuum.service.OrderService;
+import com.di.commons.dto.OrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
-import com.di.commons.mapper.PurchaseOrderMapper;
+import com.di.commons.mapper.OrderMapper;
 
 @Service
-public class PurchaseOrderServiceImpl implements PurchaseOrderService {
+public class OrderServiceImpl implements OrderService {
 	
 	@Autowired
 	PurchaseOrderRepository orderRepository;
 	
 	@Autowired
-	PurchaseOrderMapper purchaseOrderMapper;
+	OrderMapper orderMapper;
 	
 
 	@Override
-	public String createPurchaseOrder(PurchaseOrderDTO purchaseOrderDTO) {
-		PurchaseOrder purchaseOrder= purchaseOrderMapper.PurchaseOrderDTOToPurchaseOrder(purchaseOrderDTO);
-		orderRepository.save(purchaseOrder);
+	public String createOrder(OrderDTO orderDTO) {
+		Orders orders= orderMapper.OrderDTOToOrder(orderDTO);
+		orderRepository.save(orders);
 		return "PO created succssfully";
 	}
 	
 	@Override
-	public List<PurchaseOrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) {
+	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) {
 		
-		Specification<PurchaseOrder> spec = Specification.where(null);
+		Specification<Orders> spec = Specification.where(null);
 
 		if (orderSearchParameters.getZipcode() != null) {
-		    Specification<PurchaseOrder> zipcodeSpec = (root, query, builder) -> {
-		        Join<PurchaseOrder, OrderAddress> addressJoin = root.join("billTo");
+		    Specification<Orders> zipcodeSpec = (root, query, builder) -> {
+		        Join<Orders, OrderAddress> addressJoin = root.join("billTo");
 		        Predicate zipcodePredicate = builder.equal(addressJoin.get("zipcode"), orderSearchParameters.getZipcode());
 		        return builder.and(zipcodePredicate);
 		    };
 		    spec = spec.and(zipcodeSpec);
 		}
 		if (orderSearchParameters.getCustomerId() != null) {
-		    Specification<PurchaseOrder> customerIdSpec = (root, query, builder) -> {
-		        Join<PurchaseOrder, OrderAddress> addressJoin = root.join("customer");
+		    Specification<Orders> customerIdSpec = (root, query, builder) -> {
+		        Join<Orders, OrderAddress> addressJoin = root.join("customer");
 		        Predicate customerIdPredicate = builder.equal(addressJoin.get("customerId"), orderSearchParameters.getCustomerId());
 		        return builder.and(customerIdPredicate);
 		    };
@@ -58,21 +58,21 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 		}
 
 		if (orderSearchParameters.getPoNo() != null) {
-		    Specification<PurchaseOrder> poNoSpec = (root, query, builder) ->
+		    Specification<Orders> poNoSpec = (root, query, builder) ->
 		        builder.equal(root.get("PONumber"), orderSearchParameters.getPoNo());
 		    spec = spec.and(poNoSpec);
 		}
 		
 		if (orderSearchParameters.getInvoiceNo() != null) {
-		    Specification<PurchaseOrder> poNoSpec = (root, query, builder) ->
+		    Specification<Orders> poNoSpec = (root, query, builder) ->
 		        builder.equal(root.get("invoiceNo"), orderSearchParameters.getInvoiceNo());
 		    spec = spec.and(poNoSpec);
 		}
 
-		List<PurchaseOrder> poList= orderRepository.findAll(spec);
-		List<PurchaseOrderDTO> poDTOList= new ArrayList<>();
+		List<Orders> poList= orderRepository.findAll(spec);
+		List<OrderDTO> poDTOList= new ArrayList<>();
 		poList.forEach(purchaseOrder-> {
-			poDTOList.add(purchaseOrderMapper.PurchaseOrderToPurchaseOrderDTO(purchaseOrder));
+			poDTOList.add(orderMapper.PurchaseOrderToPurchaseOrderDTO(purchaseOrder));
 		});
 		return poDTOList;
 	}

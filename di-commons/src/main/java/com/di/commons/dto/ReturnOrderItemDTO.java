@@ -39,5 +39,5 @@ public class ReturnOrderItemDTO {
 	private int receivedQuantity;
 	private String receivedState;
 	private String status;
-	private PurchaseOrderItemDTO purchaseOrderItemDTO;
+	private OrderItemDTO orderItemDTO;
 	}

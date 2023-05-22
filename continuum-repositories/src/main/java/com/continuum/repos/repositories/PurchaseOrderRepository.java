@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import com.continuum.repos.entity.PurchaseOrder;
+import com.continuum.repos.entity.Orders;
 
 @Repository
-public interface PurchaseOrderRepository  extends JpaRepository<PurchaseOrder, Long>, JpaSpecificationExecutor<PurchaseOrder>{
+public interface PurchaseOrderRepository  extends JpaRepository<Orders, Long>, JpaSpecificationExecutor<Orders>{
 
 
 }

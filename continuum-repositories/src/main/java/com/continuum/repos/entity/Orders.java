@@ -17,7 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -35,7 +34,9 @@ import lombok.Setter;
  * 
  * @Document(collection = "trip")
  */
-public class PurchaseOrder  extends BaseEntity{
+
+@Entity
+public class Orders  extends BaseEntity{
 	
 	  
 	    private Long ORMOrder;
@@ -59,7 +60,7 @@ public class PurchaseOrder  extends BaseEntity{
 	    
 	    @OneToMany( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
 	    @JoinColumn(name="purchaseOrderId")
-	    private List<PurchaseOrderItem> purchaseOrderItems;
+	    private List<OrderItem> orderItems;
 	    
 	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
 	    @JoinColumn(name ="shipTo")

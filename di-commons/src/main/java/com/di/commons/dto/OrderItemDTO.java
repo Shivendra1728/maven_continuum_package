@@ -16,7 +16,7 @@ import lombok.ToString;
 @ToString
 //@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PurchaseOrderItemDTO {
+public class OrderItemDTO {
 	    private Long id;
 	 	private OrderAddressDTO shipTo;
 	    private OrderAddressDTO billTo;

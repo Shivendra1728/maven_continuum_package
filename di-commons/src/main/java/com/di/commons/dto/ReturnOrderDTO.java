@@ -3,7 +3,7 @@ package com.di.commons.dto;
 import java.util.Date;
 import java.util.List;
 
-import com.continuum.repos.entity.PurchaseOrder;
+import com.continuum.repos.entity.Orders;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
@@ -37,7 +37,7 @@ public class ReturnOrderDTO {
 	private Date createdDate;
 	private Date updatedDate;
 	private List<ReturnOrderItemDTO> returnOrderItemDTOList;
-	private PurchaseOrderDTO purchaseOrderDTO;
+	private OrderDTO orderDTO;
 
 	public List<ReturnOrderItemDTO> getReturnOrderItemDTOList() {
 		return returnOrderItemDTOList;

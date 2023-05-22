@@ -68,7 +68,7 @@ public class ReturnOrder extends BaseEntity {
 
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "purchaseOrderId")
-	private PurchaseOrder purchaseOrder;
+	private Orders orders;
 
 	public List<ReturnOrderItem> getReturnOrderItem() {
 		return returnOrderItem;

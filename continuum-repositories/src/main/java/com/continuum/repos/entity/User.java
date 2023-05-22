@@ -31,7 +31,7 @@ public class User extends BaseEntity{
 	private Customer customer;
 	
 	@OneToMany(mappedBy = "user")
-	private List<PurchaseOrder> purchaseOrders;
+	private List<Orders> orders;
 	
 	@OneToMany(mappedBy = "user")
 	private List<UserRole> userRoles;
