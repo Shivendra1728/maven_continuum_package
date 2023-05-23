@@ -2,7 +2,9 @@ package com.continuum.repos.entity;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -41,4 +43,8 @@ public class Store extends BaseEntity{
 	
 	@OneToMany(mappedBy = "store")
 	private List<Customer> customers;
+	
+	  @OneToMany( fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	    @JoinColumn(name="store")
+	    private List<ReasonCode> reasonCodes;
 }

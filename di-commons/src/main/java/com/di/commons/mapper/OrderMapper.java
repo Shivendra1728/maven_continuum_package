@@ -20,19 +20,19 @@ public class OrderMapper {
 	@Autowired
 	private ModelMapper modelMapper;
 
-	public OrderDTO PurchaseOrderToPurchaseOrderDTO(Orders orders) {
+	public OrderDTO orderToOrderDTO(Orders orders) {
 
 		OrderDTO poDTO = modelMapper.map(orders, OrderDTO.class);
 		return poDTO;
 	}
 
-	public Orders OrderDTOToOrder(OrderDTO orderDTO) {
+	public Orders orderDTOToOrder(OrderDTO orderDTO) {
 
 		Orders po = modelMapper.map(orderDTO, Orders.class);
 		return po;
 	}
 
-	public ReturnOrderDTO ReturnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
+	public ReturnOrderDTO returnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
 
 		ReturnOrderDTO poDTO = modelMapper.map(returnOrder, ReturnOrderDTO.class);
 		returnOrder.getId();
@@ -40,7 +40,7 @@ public class OrderMapper {
 		return poDTO;
 	}
 
-	public ReturnOrder ReturnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
+	public ReturnOrder returnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
 		ReturnOrder returOrder;
 		returOrder = modelMapper.map(returnOrderDTO, ReturnOrder.class);
 		returOrder.setReturnOrderItem(mapList(returnOrderDTO.getReturnOrderItemDTOList(), ReturnOrderItem.class));

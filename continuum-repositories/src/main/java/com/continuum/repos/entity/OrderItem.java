@@ -27,7 +27,7 @@ import lombok.Setter;
 public class OrderItem extends BaseEntity {
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "purchaseOrderId")
+	@JoinColumn(name = "orderId")
 	private Orders orders;
 
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

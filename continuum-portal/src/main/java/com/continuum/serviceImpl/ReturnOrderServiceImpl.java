@@ -20,7 +20,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService{
 	ReturnOrderMapper returnOrderMapper;
 	
 	public String createReturnOrder(ReturnOrderDTO returnOrderDTO) {
-		ReturnOrder returnOrder= returnOrderMapper.ReturnOrderDTOToReturnOrder(returnOrderDTO);
+		ReturnOrder returnOrder= returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		repository.save(returnOrder);
 		return "Order returned successfully";
 	}

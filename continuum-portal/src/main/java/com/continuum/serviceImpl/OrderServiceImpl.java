@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.continuum.repos.entity.OrderAddress;
 import com.continuum.repos.entity.Orders;
-import com.continuum.repos.repositories.PurchaseOrderRepository;
+import com.continuum.repos.repositories.OrderRepository;
 import com.continuum.service.OrderService;
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
@@ -22,7 +22,7 @@ import com.di.commons.mapper.OrderMapper;
 public class OrderServiceImpl implements OrderService {
 	
 	@Autowired
-	PurchaseOrderRepository orderRepository;
+	OrderRepository orderRepository;
 	
 	@Autowired
 	OrderMapper orderMapper;
@@ -30,7 +30,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public String createOrder(OrderDTO orderDTO) {
-		Orders orders= orderMapper.OrderDTOToOrder(orderDTO);
+		Orders orders= orderMapper.orderDTOToOrder(orderDTO);
 		orderRepository.save(orders);
 		return "PO created succssfully";
 	}
@@ -72,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
 		List<Orders> poList= orderRepository.findAll(spec);
 		List<OrderDTO> poDTOList= new ArrayList<>();
 		poList.forEach(purchaseOrder-> {
-			poDTOList.add(orderMapper.PurchaseOrderToPurchaseOrderDTO(purchaseOrder));
+			poDTOList.add(orderMapper.orderToOrderDTO(purchaseOrder));
 		});
 		return poDTOList;
 	}

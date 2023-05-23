@@ -41,8 +41,10 @@ public class ReturnOrderItem extends BaseEntity {
 	@OneToMany(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL})
     private List<OrderItemDocuments> orderItemDocuments;
 	
-	@OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL})
-    private ReasonCode reasonCode;
+	/*
+	 * @OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL}) private
+	 * ReasonCode reasonCode;
+	 */
 	
 	 @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	    @JoinColumn(name ="purchaseOrderItemId")

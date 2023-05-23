@@ -17,7 +17,7 @@ public class ReturnOrderMapper {
     private ModelMapper modelMapper;
 
 	
-	public  ReturnOrderDTO ReturnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
+	public  ReturnOrderDTO returnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
 		
 		ReturnOrderDTO poDTO=  modelMapper.map(returnOrder, ReturnOrderDTO.class);
 		returnOrder.getId();
@@ -25,7 +25,7 @@ public class ReturnOrderMapper {
 	return poDTO;
 	}
 
-	public  ReturnOrder ReturnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
+	public  ReturnOrder returnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
 		ReturnOrder returOrder;
 		returOrder = modelMapper.map(returnOrderDTO, ReturnOrder.class);
 		returOrder.setReturnOrderItem(mapList(returnOrderDTO.getReturnOrderItemDTOList(), ReturnOrderItem.class));

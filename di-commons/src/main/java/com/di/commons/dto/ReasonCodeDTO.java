@@ -1,6 +1,6 @@
 package com.di.commons.dto;
 
-import java.util.Date;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,4 +16,9 @@ import lombok.experimental.Accessors;
 public class ReasonCodeDTO {
 
 	private Long id;
+	private ReasonCodeDTO parentReasonCode;
+	private List<ReasonCodeDTO> childReasonCodes;
+	private String code;
+	private String description;
+	private String status;
 }
