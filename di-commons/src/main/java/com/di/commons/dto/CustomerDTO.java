@@ -16,6 +16,7 @@ import lombok.experimental.Accessors;
 public class CustomerDTO {
 
 //	private Store store;
+	private Long id;
 	private String customerType;
 	private boolean status;
 	private String firstName;
@@ -23,6 +24,7 @@ public class CustomerDTO {
 	private String email;
 	private String lastname;
 	private String displayName;
+	private String phone;
 	
 	//private List<User> users;
 	

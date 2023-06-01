@@ -45,10 +45,11 @@ public class ReturnOrderItem extends BaseEntity {
 	 * @OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL}) private
 	 * ReasonCode reasonCode;
 	 */
-	
-	 @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	    @JoinColumn(name ="purchaseOrderItemId")
-	 private OrderItem orderItem;
+	/*
+	 * @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	 * 
+	 * @JoinColumn(name ="purchaseOrderItemId") private OrderItem orderItem;
+	 */
 	private String returnComments;
 	private int quanity;
 	private String itemName;
@@ -62,6 +63,7 @@ public class ReturnOrderItem extends BaseEntity {
 	private int receivedQuantity;
 	private String receivedState;
 	private String status;
+	private String reasonCode;
 	
 	
 	

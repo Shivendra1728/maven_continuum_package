@@ -10,7 +10,7 @@ import com.di.commons.helper.FileUploadHelper;
 @Service
 public class FileUploadServiceImpl implements FileUploadService {
 
-	@Autowired(required = true)
+	@Autowired
 	private FileUploadHelper fileuploadhelper;
 
 	@Override

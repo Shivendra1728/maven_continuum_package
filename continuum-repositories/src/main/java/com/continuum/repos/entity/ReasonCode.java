@@ -40,7 +40,7 @@ public class ReasonCode extends BaseEntity {
 	private List<ReasonCode> childReasonCodes;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "store_id")
+	@JoinColumn(name = "store")
 	@JsonIgnore
 	private Store store;
 

@@ -32,6 +32,7 @@ public class Customer extends BaseEntity{
 	private String email;
 	private String lastname;
 	private String displayName;
+	private String phone;
 	
 	@OneToMany(mappedBy = "customer")
 	private List<User> users;

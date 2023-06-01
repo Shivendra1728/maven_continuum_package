@@ -22,10 +22,10 @@ import lombok.experimental.Accessors;
 public class ReturnOrderItemDTO {
 	
 	private Long id;
-    private OrderAddressDTO shippTo;
+    private OrderAddressDTO shipTo;
     private OrderAddressDTO billTo;
     private List<OrderItemDocumentsDTO> orderItemDocuments;
-    private ReasonCodeDTO reasonCode;
+    private String reasonCode;
 	private String returnComments;
 	private int quanity;
 	private String itemName;
@@ -39,5 +39,5 @@ public class ReturnOrderItemDTO {
 	private int receivedQuantity;
 	private String receivedState;
 	private String status;
-	private OrderItemDTO orderItemDTO;
+	
 	}

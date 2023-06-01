@@ -27,14 +27,18 @@ public class Store extends BaseEntity{
 	private String StoreCode;
 	private String description;
 	private String URL;
-	private boolean enabled;
+	
+	@Builder.Default
+	private boolean enabled= true;
 	private String defaultLocale;
 	private String country;
 	private String subCountry;
 	private String timeZone;
 	private String storeType;
 	private String contentEncoding;
-	private boolean storeState;
+	
+	@Builder.Default
+	private boolean storeState = true;
 	private String storeConfigURL;
 	
 	@OneToOne
