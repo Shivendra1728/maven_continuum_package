@@ -40,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
 		
 		Specification<Orders> spec = Specification.where(null);
 
-		if (orderSearchParameters.getZipcode() != null) {
+		if (isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
 		    Specification<Orders> zipcodeSpec = (root, query, builder) -> {
 		        Join<Orders, OrderAddress> addressJoin = root.join("billTo");
 		        Predicate zipcodePredicate = builder.equal(addressJoin.get("zipcode"), orderSearchParameters.getZipcode());
@@ -48,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
 		    };
 		    spec = spec.and(zipcodeSpec);
 		}
-		if (orderSearchParameters.getCustomerId() != null) {
+		if (isNotNullAndNotEmpty(orderSearchParameters.getCustomerId())) {
 		    Specification<Orders> customerIdSpec = (root, query, builder) -> {
 		        Join<Orders, OrderAddress> addressJoin = root.join("customer");
 		        Predicate customerIdPredicate = builder.equal(addressJoin.get("customerId"), orderSearchParameters.getCustomerId());
@@ -57,13 +57,13 @@ public class OrderServiceImpl implements OrderService {
 		    spec = spec.and(customerIdSpec);
 		}
 
-		if (orderSearchParameters.getPoNo() != null) {
+		if (isNotNullAndNotEmpty(orderSearchParameters.getPoNo())) {
 		    Specification<Orders> poNoSpec = (root, query, builder) ->
 		        builder.equal(root.get("PONumber"), orderSearchParameters.getPoNo());
 		    spec = spec.and(poNoSpec);
 		}
 		
-		if (orderSearchParameters.getInvoiceNo() != null) {
+		if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
 		    Specification<Orders> poNoSpec = (root, query, builder) ->
 		        builder.equal(root.get("invoiceNo"), orderSearchParameters.getInvoiceNo());
 		    spec = spec.and(poNoSpec);
@@ -75,5 +75,9 @@ public class OrderServiceImpl implements OrderService {
 			poDTOList.add(orderMapper.orderToOrderDTO(purchaseOrder));
 		});
 		return poDTOList;
+	}
+	
+	public boolean isNotNullAndNotEmpty(String str) {
+	    return str != null && !str.trim().isEmpty();
 	}
 }

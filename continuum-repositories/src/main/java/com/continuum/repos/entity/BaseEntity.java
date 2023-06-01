@@ -12,6 +12,8 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,9 +27,11 @@ public abstract class BaseEntity {
 	private Long id;
 
 	@Temporal(TemporalType.TIMESTAMP)
+	@JsonIgnore
 	private Date createdDate;
 
 	@Temporal(TemporalType.TIMESTAMP)
+	@JsonIgnore
 	private Date updatedDate;
 
 	@PrePersist

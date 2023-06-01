@@ -15,7 +15,7 @@ import com.di.commons.dto.OrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
 
 @RestController
-@RequestMapping("/PO")
+@RequestMapping("/order")
 public class OrderController {
 	@Autowired
 	OrderService poService;
