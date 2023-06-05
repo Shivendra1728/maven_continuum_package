@@ -24,13 +24,6 @@ public class ReasonCodeController {
         this.reasonCodeService = reasonCodeService;
     }
 
-	/*
-	 * @GetMapping("/searchbyStore") public ResponseEntity<List<ReasonCodeDTO>>
-	 * searchReasonCodesByStoreId(@RequestParam("storeId") long storeId) {
-	 * List<ReasonCodeDTO> reasonCodeDTOs =
-	 * reasonCodeService.searchReasonCodesByStoreId(storeId); return
-	 * ResponseEntity.ok(reasonCodeDTOs); }
-	 */
 
 	/*
 	 * @PostMapping public ResponseEntity<ReasonCode> createReasonCode(@RequestBody
@@ -39,11 +32,19 @@ public class ReasonCodeController {
 	 * ResponseEntity.status(HttpStatus.CREATED).body(createdReasonCode); }
 	 */
     
-    @GetMapping("/searchbyStore")
+   // @GetMapping("/v1/searchbyStore")
     public ResponseEntity<List<ReasonCode>> searchReasonCodesByStoreId(@RequestParam("storeId") long storeId) {
         List<ReasonCode> reasonCodes = reasonCodeService.searchReasonCodesByStoreId(storeId);
         return ResponseEntity.ok(reasonCodes);
     }
+    
+   
+    @GetMapping("/searchbyStore")
+    public ResponseEntity<List<ReasonCodeDTO>> searchReasonFlatCodesByStoreId(@RequestParam("storeId") Long storeId) {
+        List<ReasonCodeDTO> reasonCodes = reasonCodeService.searchReasonFlatCodesByStoreId(storeId);
+        return ResponseEntity.ok(reasonCodes);
+    }
+    
     
 }
 

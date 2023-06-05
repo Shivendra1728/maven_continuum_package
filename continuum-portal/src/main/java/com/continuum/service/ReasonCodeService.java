@@ -12,4 +12,6 @@ public interface ReasonCodeService {
 	//public List<ReasonCodeDTO> searchReasonCodesByStoreId(long storeId);
 	public List<ReasonCode> searchReasonCodesByStoreId(Long storeId);
 
+	public List<ReasonCodeDTO> searchReasonFlatCodesByStoreId(Long storeId);
+
 }

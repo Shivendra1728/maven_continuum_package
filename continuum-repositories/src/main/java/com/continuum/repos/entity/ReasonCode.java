@@ -30,13 +30,14 @@ public class ReasonCode extends BaseEntity {
 	@JsonIgnore
 	private String status;
 
-	@JsonBackReference
-	@ManyToOne(fetch = FetchType.LAZY)
+	//@JsonBackReference
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "parent_reason_code_id", insertable = false, updatable = false)
 	private ReasonCode parentReasonCode;
 
-	@JsonManagedReference
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "parentReasonCode")
+	//@JsonManagedReference
+	@JsonIgnore
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentReasonCode")
 	private List<ReasonCode> childReasonCodes;
 
 	@ManyToOne(fetch = FetchType.LAZY)

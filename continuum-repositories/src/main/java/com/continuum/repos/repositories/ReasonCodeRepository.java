@@ -25,4 +25,6 @@ public interface ReasonCodeRepository extends JpaRepository<ReasonCode,Long >,Jp
 	    @Query("SELECT rc FROM ReasonCode rc " +
 	           "left JOIN FETCH rc.parentReasonCode prc  where rc.parentReasonCode is null and rc.store=1" )
 	 List<ReasonCode> findAll();
+
+		List<ReasonCode>  findByStore(Store store);
 	}

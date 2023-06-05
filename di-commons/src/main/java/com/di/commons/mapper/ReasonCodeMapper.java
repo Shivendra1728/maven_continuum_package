@@ -19,6 +19,9 @@ public class ReasonCodeMapper {
 	public ReasonCodeDTO reasonCodeToReasonCodeDTO(ReasonCode rc) {
 
 		ReasonCodeDTO rcDTO = modelMapper.map(rc, ReasonCodeDTO.class);
+		if(rc.getParentReasonCode()!=null) {
+			rcDTO.setParentReasonCodeId(rc.getParentReasonCode().getId());
+		}
 		return rcDTO;
 	}
 
