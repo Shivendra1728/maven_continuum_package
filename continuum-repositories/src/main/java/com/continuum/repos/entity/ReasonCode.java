@@ -42,7 +42,7 @@ public class ReasonCode extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "store")
-	@JsonIgnore
+	//@JsonIgnore
 	private Store store;
 
 }

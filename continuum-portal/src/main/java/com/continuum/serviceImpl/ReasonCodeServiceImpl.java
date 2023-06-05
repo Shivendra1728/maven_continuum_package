@@ -49,7 +49,6 @@ public class ReasonCodeServiceImpl implements ReasonCodeService{
 		for( ReasonCode code: reasonCodes ) {
 			codeDTOs.add(rcMapper.reasonCodeToReasonCodeDTO(code));
 		}
-	codeDTOs.forEach(code->{System.out.println(code);});
 		return codeDTOs;
 	}
 	}

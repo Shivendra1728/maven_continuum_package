@@ -48,7 +48,16 @@ public class Store extends BaseEntity{
 	@OneToMany(mappedBy = "store")
 	private List<Customer> customers;
 	
-	  @OneToMany( fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-	    @JoinColumn(name="store")
-	    private List<ReasonCode> reasonCodes;
+	/*
+	 * @OneToMany( fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	 * 
+	 * @JoinColumn(name="store") private List<ReasonCode> reasonCodes;
+	 */
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
+    @JoinColumn(name ="shipTo")
+    private StoreAddress shipTo;
+    
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name ="billto")
+    private StoreAddress billTo;
 }

@@ -1,5 +1,6 @@
 package com.continuum.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,4 +39,11 @@ public class OrderController {
 
 	}
 
-}
+	@GetMapping("/ERP/search")
+	public List<OrderDTO> getOrdersFromERP(){
+	
+		List<OrderDTO> dtos=new ArrayList<>();
+		return dtos;
+		
+	}
+	}

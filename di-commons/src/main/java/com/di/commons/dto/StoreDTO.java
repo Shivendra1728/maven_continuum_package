@@ -1,9 +1,5 @@
 package com.di.commons.dto;
 
-import java.util.List;
-
-import com.continuum.repos.entity.Store;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,12 +11,12 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @NoArgsConstructor
 @ToString
-public class ReasonCodeDTO {
-
+public class StoreDTO {
+	
 	private Long id;
-	private Long parentReasonCodeId;
-	private String code;
-	private String description;
-	private StoreDTO store;
-	//private String status;
+	private String storeName;
+	private String StoreCode;
+	private StoreAddressDTO shipTo;
+	private StoreAddressDTO billTo;
+
 }
