@@ -38,7 +38,6 @@ public class ReasonCodeController {
         return ResponseEntity.ok(reasonCodes);
     }
     
-   
     @GetMapping("/searchbyStore")
     public ResponseEntity<List<ReasonCodeDTO>> searchReasonFlatCodesByStoreId(@RequestParam("storeId") Long storeId) {
         List<ReasonCodeDTO> reasonCodes = reasonCodeService.searchReasonFlatCodesByStoreId(storeId);

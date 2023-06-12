@@ -1,50 +1,65 @@
 package com.di.commons.helper;
 
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
-//import java.nio.file.StandardCopyOption;
-
-//import org.springframework.core.io.ClassPathResource;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import com.continuum.repos.entity.ReturnOrderItem;
 
 @Component
 public class FileUploadHelper {
-    /* add the path of the folder which is present in static folder */
-	public final String UPLOAD_Dir = 
-			"C:\\Users\\ADMIN\\Desktop\\Continuum-Backend\\continuum-portal\\src\\main\\resources\\static\\Doc";
-     
-	//public final String UPLOAD_Dir=new ClassPathResource("/static/Doc/").getFile().getAbsolutePath(); 
-	
-	public FileUploadHelper() throws IOException{
-		
+
+	@Autowired
+	OrderItemDocumentsHelper orderItemDocumentsHelper;
+
+	@Value("${file.upload.directory}")
+	private String uploadDirectory;
+
+	public FileUploadHelper() throws IOException {
 	}
 
-	public boolean fileUploader(MultipartFile data) {
+	public boolean fileUploaders(MultipartFile data, String type, ReturnOrderItem returnOrderItemId) {
+		File directory = new File(uploadDirectory);
+		if (!directory.exists()) {
+			directory.mkdirs();
+		}
 		boolean f = false;
 		try {
-       
-			InputStream is = data.getInputStream();
-			byte b[] = new byte[is.available()];
-			is.read(b);
+			String originalFilename = data.getOriginalFilename();
+			String fileExtension = getFileExtension(originalFilename);
 
-			FileOutputStream fs = new FileOutputStream(UPLOAD_Dir + "\\" + data.getOriginalFilename());
-			fs.write(b);
+			if (isValidFileType(fileExtension)) {
+				Files.copy(data.getInputStream(), Paths.get(uploadDirectory + "/" + originalFilename),
+						StandardCopyOption.REPLACE_EXISTING);
 
-			fs.close();
-			is.close();
-            /*
-			Files.copy(data.getInputStream(),Paths.get(UPLOAD_Dir+"\\"+data.getOriginalFilename()),StandardCopyOption.COPY_ATTRIBUTES);
-			*/
-			f = true;
+				orderItemDocumentsHelper.storeOrderItemDocument(uploadDirectory, type, returnOrderItemId);
 
+				f = true;
+			} else {
+				f = false;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return f;
 	}
+
+	private boolean isValidFileType(String fileExtension) {
+		return fileExtension.equals("pdf") || fileExtension.equals("doc") || fileExtension.equals("jpg")
+				|| fileExtension.equals("jpeg") || fileExtension.equals("png");
+	}
+
+	private String getFileExtension(String fileName) {
+		int dotIndex = fileName.lastIndexOf(".");
+		if (dotIndex > -1 && dotIndex < fileName.length() - 1) {
+			return fileName.substring(dotIndex + 1).toLowerCase();
+		}
+		return "";
+	}
+
 }

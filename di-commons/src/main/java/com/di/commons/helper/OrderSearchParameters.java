@@ -1,7 +1,5 @@
 package com.di.commons.helper;
 
-import com.di.commons.dto.CustomerDTO;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

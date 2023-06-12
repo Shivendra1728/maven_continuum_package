@@ -2,14 +2,11 @@ package com.continuum.serviceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
 import com.continuum.repos.entity.OrderAddress;
 import com.continuum.repos.entity.Orders;
 import com.continuum.repos.repositories.OrderRepository;

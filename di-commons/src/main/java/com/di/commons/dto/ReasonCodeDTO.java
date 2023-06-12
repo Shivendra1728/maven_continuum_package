@@ -17,6 +17,12 @@ import lombok.experimental.Accessors;
 @ToString
 public class ReasonCodeDTO {
 
+	public Long getParentReasonCodeId() {
+		return parentReasonCodeId;
+	}
+	public void setParentReasonCodeId(Long parentReasonCodeId) {
+		this.parentReasonCodeId = parentReasonCodeId;
+	}
 	private Long id;
 	private Long parentReasonCodeId;
 	private String code;
