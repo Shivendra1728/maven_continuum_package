@@ -8,5 +8,5 @@ import com.continuum.repos.entity.OrderItemDocuments;
 
 @Repository
 public interface OrderItemDocumentRepository extends JpaRepository<OrderItemDocuments, Long> {
-     Optional<OrderItemDocuments> findById(Long id);
+
 }
