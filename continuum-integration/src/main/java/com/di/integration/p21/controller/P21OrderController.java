@@ -1,28 +1,28 @@
-package com.continuum.controller;
+package com.di.integration.p21.controller;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.continuum.service.OrderService;
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
+import com.di.integration.p21.service.P21OrderService;
 
 @RestController
-@RequestMapping("/order")
-public class OrderController {
+@RequestMapping("/P21/order")
+public class P21OrderController {
+	
 	@Autowired
-	OrderService poService;
+	P21OrderService orderService;
+	
 
 	@GetMapping("/search")
-	public List<OrderDTO> getOrdersBySearchCriteria(@RequestParam(required = false) String zipcode,
+	public String getOrdersBySearchCriteria(@RequestParam(required = false) String zipcode,
 			@RequestParam(required = false) String poNo, @RequestParam(required = false) String customerId,
 			@RequestParam(required = false) String invoiceNo) {
 		OrderSearchParameters orderSearchParameters = new OrderSearchParameters();
@@ -30,13 +30,7 @@ public class OrderController {
 		orderSearchParameters.setPoNo(poNo);
 		orderSearchParameters.setCustomerId(customerId);
 		orderSearchParameters.setInvoiceNo(invoiceNo);
-		return poService.getOrdersBySearchCriteria(orderSearchParameters);
+		
+		return orderService.getOrdersBySearchCriteria(orderSearchParameters);
 	}
-
-	@PostMapping("/create/v1")
-	public String createOrder(@RequestBody OrderDTO orderDTO) {
-		return poService.createOrder(orderDTO);
-
-	}
-
-	}
+}

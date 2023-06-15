@@ -5,8 +5,14 @@
     <artifactId>continuum-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>com.continuum-integration</groupId>
-  <artifactId>continuum-integration</artifactId>
-  <name>continuum-integration</name>
-  <description>continuum-integration</description>
+  <artifactId>di-integration</artifactId>
+  <name>di-integration</name>
+  <description>delta infotek integration</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>com.di-commons</groupId>
+  		<artifactId>di-commons</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  </dependencies>
 </project>

@@ -77,4 +77,6 @@ public class OrderServiceImpl implements OrderService {
 	public boolean isNotNullAndNotEmpty(String str) {
 	    return str != null && !str.trim().isEmpty();
 	}
+	
+	
 }

@@ -2,10 +2,13 @@ package com.continuum.repos.entity;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,5 +43,7 @@ public class Customer extends BaseEntity{
 	@OneToMany(mappedBy = "customer")
 	private List<Orders> orders;
 	
-
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
+    @JoinColumn(name ="shipTo")
+    private StoreAddress shipTo;
 }

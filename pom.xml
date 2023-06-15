@@ -20,8 +20,8 @@
 	<modules>
 		<module>continuum-portal</module>
 		<module>continuum-repositories</module>
-		<module>continuum-integration</module>
 		<module>di-commons</module>
+		<module>di-integration</module>
 	</modules>
 	<dependencies>
 		<dependency>
@@ -32,6 +32,10 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -51,7 +55,39 @@
     		<groupId>org.modelmapper</groupId>
     		<artifactId>modelmapper</artifactId>
    		 <version>3.1.0</version>
+		</dependency>
+		<dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.13</version>
+    </dependency>
+	<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpcore</artifactId>
+    <version>4.4.13</version>
+	</dependency>
+	<dependency>
+        <groupId>org.jdom</groupId>
+        <artifactId>jdom2</artifactId>
+        <version>2.0.6</version>
+    </dependency>
+    <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+    <version>2.7.2</version></dependency>
+<dependency>
+    <groupId>javax.cache</groupId>
+    <artifactId>cache-api</artifactId>
+    <version>1.1.1</version>
 </dependency>
-
+<dependency>
+    <groupId>org.ehcache</groupId>
+    <artifactId>ehcache</artifactId>
+    <version>3.8.1</version>
+</dependency>
+<dependency>
+    <groupId>net.sf.ehcache</groupId>
+    <artifactId>ehcache</artifactId> 
+</dependency> 
 	</dependencies>
 </project>
