@@ -52,5 +52,11 @@ public class ReasonCode extends BaseEntity {
 	@JoinColumn(name = "store")
 	// @JsonIgnore
 	private Store store;
+	
+	/*
+	 * @ManyToOne(fetch = FetchType.LAZY)
+	 * 
+	 * @JoinColumn(name = "customer") //@JsonIgnore private Customer customer;
+	 */
 
 }
