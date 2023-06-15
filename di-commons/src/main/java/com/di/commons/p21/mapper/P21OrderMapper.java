@@ -9,7 +9,7 @@ public class P21OrderMapper {
 
 	
 	
-	public OrderDTO convertP21OrderObjectToOrderDTO(Object order) {
+	public OrderDTO convertP21OrderObjectToOrderDTO(String order) {
 
 		OrderDTO poDTO = new OrderDTO();
 		return poDTO;

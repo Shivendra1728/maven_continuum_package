@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
+import com.di.commons.p21.mapper.P21OrderMapper;
 import com.di.integration.p21.service.P21OrderService;
 
 @RestController
@@ -20,9 +21,11 @@ public class P21OrderController {
 	@Autowired
 	P21OrderService orderService;
 	
+	@Autowired
+	P21OrderMapper p21OrderMapper;
 
 	@GetMapping("/search")
-	public String getOrdersBySearchCriteria(@RequestParam(required = false) String zipcode,
+	public OrderDTO getOrdersBySearchCriteria(@RequestParam(required = false) String zipcode,
 			@RequestParam(required = false) String poNo, @RequestParam(required = false) String customerId,
 			@RequestParam(required = false) String invoiceNo) {
 		OrderSearchParameters orderSearchParameters = new OrderSearchParameters();
@@ -30,7 +33,7 @@ public class P21OrderController {
 		orderSearchParameters.setPoNo(poNo);
 		orderSearchParameters.setCustomerId(customerId);
 		orderSearchParameters.setInvoiceNo(invoiceNo);
+		return p21OrderMapper.convertP21OrderObjectToOrderDTO(orderService.getOrdersBySearchCriteria(orderSearchParameters));
 		
-		return orderService.getOrdersBySearchCriteria(orderSearchParameters);
 	}
 }
