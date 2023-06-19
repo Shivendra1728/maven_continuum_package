@@ -21,7 +21,7 @@
 		<module>continuum-portal</module>
 		<module>continuum-repositories</module>
 		<module>di-commons</module>
-		<module>di-integration</module>
+		<module>continuum-integration</module>
 	</modules>
 	<dependencies>
 		<dependency>
