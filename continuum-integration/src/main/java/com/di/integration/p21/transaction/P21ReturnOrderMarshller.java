@@ -2,6 +2,7 @@ package com.di.integration.p21.transaction;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
@@ -32,6 +33,9 @@ public class P21ReturnOrderMarshller {
 
 		xml = xml.replaceAll("wstxns3:", "");
 		xml = xml.replaceAll("xmlns:wstxns3", "xmlns:a");
+		
+		xml = xml.replaceAll("wstxns4:", "");
+		xml = xml.replaceAll("xmlns:wstxns4", "xmlns:a");
 		System.out.println(xml);
 		return xml;
 	}
@@ -121,9 +125,40 @@ public class P21ReturnOrderMarshller {
 			reasonCodeRow.setEdits(Arrays.asList(reasonCodeEdit));
 			dataElement3.setRows(Collections.singletonList(reasonCodeRow));
 		}
+		
+		// INVOICE DATA ELEMENT 4-----------------------------------------
+		
+		DataElement dataElement4 = new DataElement();
+		dataElement4.setName("TP_CUSTSALESHISTORY.customer_sales_history");
+		dataElement4.setType("List");
+		
+		List<String> values = Arrays.asList("cc_invoice_no_display", "order_no", "location_id");
+        Keys keys = new Keys(values);
+	    dataElement4.setKeys(keys);
+	    
+		Row rowInvoice = new Row();
 
+		Edit editInvoice1 = new Edit();
+		editInvoice1.setName("order_no");
+		editInvoice1.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getOrder_no());
+
+		Edit editInvoice2 = new Edit();
+		editInvoice2.setName("cc_invoice_no_display");
+		editInvoice2.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getCc_invoice_no_display());
+
+		Edit editInvoice3 = new Edit();
+		editInvoice3.setName("location_id");
+		editInvoice3.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getLocation_id());
+
+		// Add the Edit objects to the Row object
+		rowInvoice.setEdits(Arrays.asList(editInvoice1, editInvoice2, editInvoice3));
+
+				// Add the Row objects to the DataElement objects
+		dataElement4.setRows(Collections.singletonList(rowInvoice));
+		
+		
 		// Add the DataElement objects to the Transaction object
-		transaction.setDataElements(Arrays.asList(dataElement1, dataElement2, dataElement3));
+		transaction.setDataElements(Arrays.asList(dataElement1, dataElement2, dataElement3,dataElement4));
 
 		// Add the Transaction object to the TransactionSet object
 		transactionSet.setTransactions(Collections.singletonList(transaction));

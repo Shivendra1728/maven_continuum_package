@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.integration.p21.service.P21ReturnOrderService;
+import com.di.integration.p21.transaction.P21OrderItemCustomerSalesHistory;
 import com.di.integration.p21.transaction.P21OrderItemHelper;
 import com.di.integration.p21.transaction.P21ReturnOrderDataHelper;
 import com.di.integration.p21.transaction.P21ReturnOrderHeaderHelper;
@@ -79,7 +80,14 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		reasonCodes.add(reasonCode);
 		
 		p21ReturnOrderDataHelper.setReasonCodes(reasonCodes);
+		
+		
+		P21OrderItemCustomerSalesHistory custSalesHistory= new P21OrderItemCustomerSalesHistory();
+		custSalesHistory.setOrder_no("419063");
+		custSalesHistory.setCc_invoice_no_display("1246655");
+		custSalesHistory.setLocation_id("101");
 	
+		p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
 		

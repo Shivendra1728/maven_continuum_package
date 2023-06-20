@@ -3,7 +3,6 @@ package com.di.integration.p21.transaction;
 import java.util.List;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,12 +17,9 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @ToString
 @AllArgsConstructor
-public class Edit {
+public class P21OrderItemCustomerSalesHistory {
 
-	@JacksonXmlProperty(localName  = "Name")
-    private String name;
-
-	@JacksonXmlProperty(localName = "Value")
-    private String value;
-
+	private String order_no;
+	private String cc_invoice_no_display;
+	private String location_id;
 }

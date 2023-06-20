@@ -2,8 +2,8 @@ package com.di.integration.p21.transaction;
 
 import java.util.List;
 
+import com.di.commons.dto.CustomerDTO;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,19 +11,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-
 @Getter
 @Setter
 @Accessors(chain = true)
 @NoArgsConstructor
 @ToString
 @AllArgsConstructor
-public class Edit {
+public class Keys {
 
-	@JacksonXmlProperty(localName  = "Name")
-    private String name;
-
-	@JacksonXmlProperty(localName = "Value")
-    private String value;
-
+	 @JacksonXmlElementWrapper(useWrapping = false)
+	 private List<String> key;
 }
