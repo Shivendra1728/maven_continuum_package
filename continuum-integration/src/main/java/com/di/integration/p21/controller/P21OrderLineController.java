@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.helper.OrderSearchParameters;
-import com.di.commons.p21.mapper.P21OrderLineItemMapper;
+//import com.di.commons.p21.mapper.P21OrderLineItemMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
 import com.di.integration.p21.service.P21OrderLineService;
 
@@ -19,8 +19,8 @@ public class P21OrderLineController {
 	@Autowired
 	P21OrderLineService p21orderLineService;
 
-	@Autowired
-	P21OrderLineItemMapper p21orderMapperItemMapper;
+	//@Autowired
+	//P21OrderLineItemMapper p21orderMapperItemMapper;
 
 	@GetMapping("/orderItem")
 	public OrderItemDTO getOrdersLineBySearchCriteria(@RequestParam(required = false) String zipcode,
@@ -31,13 +31,8 @@ public class P21OrderLineController {
 		orderSearchParameters.setInvoiceNo(invoiceNo);
 		orderSearchParameters.setPoNo(poNo);
 		orderSearchParameters.setZipcode(zipcode);
-<<<<<<< HEAD
-		return p21ordermapper.convertP21OrderObjectToOrderDTO(
-				p21orderlineservice.getordersLineBySearchcriteria(orderSearchParameters));
-=======
 		p21orderLineService.getordersLineBySearchcriteria(orderSearchParameters);
 		//return p21orderMapperItemMapper.convertP21OrderItemObjectToOrderItemDTO();
 		return new OrderItemDTO();
->>>>>>> branch 'master' of https://github.com/TechExprt-Consulting/continuumbackend.git
 	}
 }
