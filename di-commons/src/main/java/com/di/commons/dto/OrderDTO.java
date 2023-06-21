@@ -39,5 +39,6 @@ public class OrderDTO {
 		private Date updatedDate;
 		private String invoiceNo;
 		private List<OrderItemDTO> orderItems;
+		private String orderNo;
 
 }

@@ -14,6 +14,7 @@ import lombok.Setter;
 public class P21OrderData {
 	
 	private String order_no;
+	private String po_number;
 	private String location_id;
 	private String currency_desc;
 	private String original_invoice_no;

@@ -48,7 +48,8 @@ public class P21OrderMapper {
 			Date correctorderDate = dateFormat.parse(orderDate);
 			orderDTO.setOrderDate(correctorderDate);
 
-			orderDTO.setPONumber(p21OrderData.getOrder_no());
+			orderDTO.setPONumber(p21OrderData.getPo_number());
+			orderDTO.setOrderNo(p21OrderData.getOrder_no());
 			orderDTO.setCurrency(p21OrderData.getCurrency_desc());
 			orderDTO.setInvoiceNo(p21OrderData.getOriginal_invoice_no());
 			
