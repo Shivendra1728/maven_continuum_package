@@ -90,8 +90,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 		try {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
-			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_LINE_SELECT_FIELDS + "&$filter="
-					+ encodedFilter;
+			String query = "$format=" + ORDER_FORMAT + "&$select=&$filter="+ encodedFilter;
 			URI uri = new URI(DATA_API_BASE_URL + DATA_API_ORDER_LINE);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;
