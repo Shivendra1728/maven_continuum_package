@@ -21,4 +21,21 @@ public class P21ReturnOrderController {
 		return p21Service.createReturnOrder(returnOrderDTO);
 		
 	}
+	
+	/*
+	 * @GetMapping("/search") public List<ReturnOrderDTO>
+	 * getReturnOrdersBySearchCriteria(@RequestParam(required = false) String
+	 * zipcode,
+	 * 
+	 * @RequestParam(required = false) String poNo, @RequestParam(required = false)
+	 * String customerId,
+	 * 
+	 * @RequestParam(required = false) String invoiceNo) { OrderSearchParameters
+	 * orderSearchParameters = new OrderSearchParameters();
+	 * orderSearchParameters.setZipcode(zipcode);
+	 * orderSearchParameters.setPoNo(poNo);
+	 * orderSearchParameters.setCustomerId(customerId);
+	 * orderSearchParameters.setInvoiceNo(invoiceNo); return
+	 * returnOrderService.getReturnOrdersBySearchCriteria(orderSearchParameters); }
+	 */
 }
