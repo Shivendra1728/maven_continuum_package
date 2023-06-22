@@ -28,5 +28,6 @@ public class OrderItemDTO {
 		private String partNo;
 		private String description;
 		private BigDecimal amount;
+		private String invoiceNo;
 		
 }

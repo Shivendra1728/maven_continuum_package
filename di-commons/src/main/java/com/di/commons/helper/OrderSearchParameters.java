@@ -17,37 +17,5 @@ public class OrderSearchParameters {
 	private String customerId;
 	private String poNo;
 	private String invoiceNo;
-
-	public String getCustomerId() {
-		return customerId;
-	}
-
-	public void setCustomerId(String customerId) {
-		this.customerId = customerId;
-	}
-
-	public String getPoNo() {
-		return poNo;
-	}
-
-	public void setPoNo(String poNo) {
-		this.poNo = poNo;
-	}
-
-	public String getInvoiceNo() {
-		return invoiceNo;
-	}
-
-	public void setInvoiceNo(String invoiceNo) {
-		this.invoiceNo = invoiceNo;
-	}
-
-	public String getZipcode() {
-		return zipcode;
-	}
-
-	public void setZipcode(String zipcode) {
-		this.zipcode = zipcode;
-	}
-
+	private String orderNo;
 }

@@ -4,7 +4,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.Collections;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -14,9 +17,13 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21OrderLineItemMapper;
 import com.di.integration.p21.service.P21OrderLineService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 @Service
 public class P21OrderLineServiceImpl implements P21OrderLineService {
@@ -38,29 +45,27 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
+	
+	@Autowired
+	P21OrderLineItemMapper p21orderLineItemMapper;
 
 	@Override
-	public String getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters) {
-		String orderData = "";
-		try {
-			orderData = getOrderData(orderSearchParameters);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return orderData;
+	public List<OrderItemDTO> getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters) throws JsonMappingException, JsonProcessingException, ParseException, Exception {
+			return p21orderLineItemMapper.convertP21OrderLineObjectToOrderLineDTO(getOrderLineData(orderSearchParameters));
+			
 	}
 
-	private String getOrderData(OrderSearchParameters orderSearchParameters) throws Exception {
+	private String getOrderLineData(OrderSearchParameters orderSearchParameters) throws Exception {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
-		URI fulluri = prepareOrderURI(orderSearchParameters);
+		URI fulluri = prepareOrderLineURI(orderSearchParameters);
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		RequestEntity<Void> requestMapping = new RequestEntity<>(headers, HttpMethod.GET, fulluri);
 		ResponseEntity<String> response = restTemplate.exchange(requestMapping, String.class);
 		return response.getBody();
 	}
 
-	private URI prepareOrderURI(OrderSearchParameters orderSearchParameters) throws URISyntaxException {
+	private URI prepareOrderLineURI(OrderSearchParameters orderSearchParameters) throws URISyntaxException {
 
 		StringBuilder filter = new StringBuilder();
 
@@ -68,11 +73,11 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 			filter.append("original_invoice_no eq '" + orderSearchParameters.getInvoiceNo() + "'");
 		}
 
-		if (isNotNullAndNotEmpty(orderSearchParameters.getPoNo())) {
+		if (isNotNullAndNotEmpty(orderSearchParameters.getOrderNo())) {
 			if (filter.length() > 0) {
 				filter.append(" and ");
 			}
-			filter.append("order_no eq '" + orderSearchParameters.getPoNo() + "'");
+			filter.append("order_no eq '" + orderSearchParameters.getOrderNo() + "'");
 		}
 
 		if (isNotNullAndNotEmpty(orderSearchParameters.getCustomerId())) {

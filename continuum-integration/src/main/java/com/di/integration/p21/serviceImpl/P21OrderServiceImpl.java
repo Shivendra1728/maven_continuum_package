@@ -17,7 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.di.commons.dto.OrderDTO;
+import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.helper.OrderSearchParameters;
+import com.di.commons.p21.mapper.P21OrderLineItemMapper;
+import com.di.commons.p21.mapper.P21OrderMapper;
 import com.di.integration.p21.service.P21OrderService;
 
 @Service
@@ -43,20 +46,29 @@ public class P21OrderServiceImpl implements P21OrderService {
 	
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
+	
+	
+	@Autowired
+	P21OrderMapper p21OrderMapper;
+	
+	@Autowired
+	P21OrderLineServiceImpl p21OrderLineServiceImpl;
+	
 
 	@Override
-	public String getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) {
-		String orderData="";
-		try {
-			 orderData = getOrderData(orderSearchParameters);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return orderData;
+	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
+		
+			List<OrderDTO>  orderDTOList=p21OrderMapper.convertP21OrderObjectToOrderDTO(getOrderData(orderSearchParameters));
+			for (OrderDTO orderDTO : orderDTOList) {
+				OrderSearchParameters orderSearchParams= new OrderSearchParameters();
+				orderSearchParams.setOrderNo(orderDTO.getOrderNo());
+				List<OrderItemDTO> orderItemDTOList= p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParams);
+				orderDTO.setOrderItems(orderItemDTOList);
+			} 
+			
+			return orderDTOList;
 	}
-
 	private String getOrderData(OrderSearchParameters orderSearchParameters) throws Exception{
-		String responseBody = "";
 			// RestTemplate restTemplate = new RestTemplate();
 			// Add the Bearer token to the request headers
 			HttpHeaders headers = new HttpHeaders();

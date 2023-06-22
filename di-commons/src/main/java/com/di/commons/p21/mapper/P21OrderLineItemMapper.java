@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import java.text.DateFormat;
-
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import java.util.List;
@@ -23,7 +23,8 @@ import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.helper.P21OrderLineItem;
 
 import com.di.commons.helper.P21OrderLineItemHelper;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
@@ -40,67 +41,56 @@ public class P21OrderLineItemMapper {
 
 	}
 
-	public List<OrderItemDTO> convertP21OrderObjectToOrderDTO(String item) {
+	public List<OrderItemDTO> convertP21OrderLineObjectToOrderLineDTO(String item)
+			throws JsonMappingException, JsonProcessingException, ParseException {
 
-		try {
+		P21OrderLineItemHelper p21OrderLineItemHelper = objectMapper.readValue(item, P21OrderLineItemHelper.class);
 
-			P21OrderLineItemHelper p21OrderLineItemHelper = objectMapper.readValue(item, P21OrderLineItemHelper.class);
+		List<OrderItemDTO> orderItemDTOList = new ArrayList<>();
 
-			List<OrderItemDTO> orderItemDTOList = new ArrayList<>();
+		List<P21OrderLineItem> p21OrderLineItemList = p21OrderLineItemHelper.getValue();
 
-			List<P21OrderLineItem> p21OrderLineItemList = p21OrderLineItemHelper.getValue();
+		for (P21OrderLineItem p21OrderLineItem : p21OrderLineItemList) {
 
-			for (P21OrderLineItem p21OrderLineItem : p21OrderLineItemList) {
+			OrderItemDTO orderitemDTO = new OrderItemDTO();
 
-				OrderItemDTO orderitemDTO = new OrderItemDTO();
+			// orderitemDTO.setQuantity(p21OrderLineItem.getQty_ordered());
 
-				// orderitemDTO.setQuantity(p21OrderLineItem.getQty_ordered());
+			String invoiceDate = p21OrderLineItem.getOriginal_invoice_no();
 
-				String invoiceDate = p21OrderLineItem.getOriginal_invoice_date();
+			if (invoiceDate != null) {
 
-				if (invoiceDate != null) {
+				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
-					DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+				Date parsedInvoiceDate = dateFormat.parse(invoiceDate);
 
-					Date parsedInvoiceDate = dateFormat.parse(invoiceDate);
+				orderitemDTO.setPurchaseDate(parsedInvoiceDate);
 
-					orderitemDTO.setPurchaseDate(parsedInvoiceDate);
+			} else {
 
-				} else {
-
-					orderitemDTO.setPurchaseDate(null);
-
-				}
-
-				orderitemDTO.setDescription(p21OrderLineItem.getItem_desc());
-
-				orderitemDTO.setPartNo(p21OrderLineItem.getItem_id());
-
-				orderitemDTO.setAmount(new BigDecimal(p21OrderLineItem.getUnit_price()));
-
-				orderitemDTO.setItemName(p21OrderLineItem.getItem_id());
-
-				BigDecimal decimalQuantity = new BigDecimal(p21OrderLineItem.getOrdered_qty());
-
-				int quantity = decimalQuantity.setScale(0, RoundingMode.HALF_UP).intValue();
-
-				orderitemDTO.setQuantity(quantity);
-
-				orderItemDTOList.add(orderitemDTO);
+				orderitemDTO.setPurchaseDate(null);
 
 			}
 
-			return orderItemDTOList;
+			orderitemDTO.setDescription(p21OrderLineItem.getItem_desc());
+			orderitemDTO.setPartNo(p21OrderLineItem.getItem_id());
+
+			orderitemDTO.setAmount(new BigDecimal(p21OrderLineItem.getUnit_price()));
+
+			orderitemDTO.setItemName(p21OrderLineItem.getItem_id());
+			orderitemDTO.setInvoiceNo(p21OrderLineItem.getOriginal_invoice_no());
+			BigDecimal decimalQuantity = new BigDecimal(p21OrderLineItem.getOrdered_qty());
+
+			int quantity = decimalQuantity.setScale(0, RoundingMode.HALF_UP).intValue();
+
+			orderitemDTO.setQuantity(quantity);
+
+			orderItemDTOList.add(orderitemDTO);
 
 		}
 
-		catch (Exception e) {
-
-			e.printStackTrace();
-
-			return null;
-
-		}
+		return orderItemDTOList;
 
 	}
+
 }

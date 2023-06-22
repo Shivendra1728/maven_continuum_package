@@ -20,21 +20,17 @@ public class P21OrderController {
 	
 	@Autowired
 	P21OrderService orderService;
-	
-	@Autowired
-	P21OrderMapper p21OrderMapper;
-	
 
 	@GetMapping("/search")
-	public OrderDTO getOrdersBySearchCriteria(@RequestParam(required = false) String zipcode,
+	public List<OrderDTO> getOrdersBySearchCriteria(@RequestParam(required = false) String zipcode,
 			@RequestParam(required = false) String poNo, @RequestParam(required = false) String customerId,
-			@RequestParam(required = false) String invoiceNo) {
+			@RequestParam(required = false) String invoiceNo) throws Exception {
 		OrderSearchParameters orderSearchParameters = new OrderSearchParameters();
 		orderSearchParameters.setZipcode(zipcode);
 		orderSearchParameters.setPoNo(poNo);
 		orderSearchParameters.setCustomerId(customerId);
 		orderSearchParameters.setInvoiceNo(invoiceNo);
-		return p21OrderMapper.convertP21OrderObjectToOrderDTO(orderService.getOrdersBySearchCriteria(orderSearchParameters));
+		return orderService.getOrdersBySearchCriteria(orderSearchParameters);
 		
 	}
 }

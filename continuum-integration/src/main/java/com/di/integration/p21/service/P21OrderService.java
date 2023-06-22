@@ -7,5 +7,5 @@ import com.di.commons.helper.OrderSearchParameters;
 
 public interface P21OrderService {
 
-	public String getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters);
+	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception;
 }
