@@ -39,9 +39,6 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
 
-	@Autowired
-	P21OrderLineItemMapper p21orderLineItemMapper;
-
 	@Override
 	public String getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters) {
 		String orderData = "";
@@ -60,7 +57,6 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		RequestEntity<Void> requestMapping = new RequestEntity<>(headers, HttpMethod.GET, fulluri);
 		ResponseEntity<String> response = restTemplate.exchange(requestMapping, String.class);
-		System.out.println(response.getBody());
 		return response.getBody();
 	}
 
