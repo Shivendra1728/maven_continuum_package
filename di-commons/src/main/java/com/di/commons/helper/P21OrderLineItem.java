@@ -9,5 +9,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class P21OrderLineItem {
 
-	private String qty_ordered;
+	private String item_desc;
+	private String item_id;
+	
 }

@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.di.commons.helper.OrderSearchParameters;
+import com.di.commons.p21.mapper.P21OrderLineItemMapper;
 import com.di.integration.p21.service.P21OrderLineService;
 
 @Service
@@ -37,6 +38,9 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
+
+	@Autowired
+	P21OrderLineItemMapper p21orderLineItemMapper;
 
 	@Override
 	public String getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters) {
@@ -91,7 +95,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 		try {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
-			String query = "$format=" + ORDER_FORMAT + "&$select=&$filter="+ encodedFilter;
+			String query = "$format=" + ORDER_FORMAT + "&$select=&$filter=" + encodedFilter;
 			URI uri = new URI(DATA_API_BASE_URL + DATA_API_ORDER_LINE);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;
@@ -104,4 +108,5 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 	public boolean isNotNullAndNotEmpty(String str) {
 		return str != null && !str.trim().isEmpty();
 	}
+
 }
