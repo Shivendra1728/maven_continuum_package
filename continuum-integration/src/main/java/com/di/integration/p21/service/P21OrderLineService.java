@@ -11,8 +11,3 @@ public interface P21OrderLineService {
 
 }
 
-//public interface P21OrderLineService {
-//	
-//	public List<OrderItemDTO> getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters);
-//
-//}
