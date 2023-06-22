@@ -1,8 +1,18 @@
 package com.di.commons.p21.mapper;
 
+import java.math.BigDecimal;
+
 import java.util.ArrayList;
 
+import java.text.DateFormat;
+
+import java.text.SimpleDateFormat;
+
 import java.util.List;
+
+import java.util.Date;
+
+import java.math.RoundingMode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,11 +56,35 @@ public class P21OrderLineItemMapper {
 
 				// orderitemDTO.setQuantity(p21OrderLineItem.getQty_ordered());
 
+				String invoiceDate = p21OrderLineItem.getOriginal_invoice_date();
+
+				if (invoiceDate != null) {
+
+					DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+					Date parsedInvoiceDate = dateFormat.parse(invoiceDate);
+
+					orderitemDTO.setPurchaseDate(parsedInvoiceDate);
+
+				} else {
+
+					orderitemDTO.setPurchaseDate(null);
+
+				}
+
 				orderitemDTO.setDescription(p21OrderLineItem.getItem_desc());
 
 				orderitemDTO.setPartNo(p21OrderLineItem.getItem_id());
 
+				orderitemDTO.setAmount(new BigDecimal(p21OrderLineItem.getUnit_price()));
+
 				orderitemDTO.setItemName(p21OrderLineItem.getItem_id());
+
+				BigDecimal decimalQuantity = new BigDecimal(p21OrderLineItem.getOrdered_qty());
+
+				int quantity = decimalQuantity.setScale(0, RoundingMode.HALF_UP).intValue();
+
+				orderitemDTO.setQuantity(quantity);
 
 				orderItemDTOList.add(orderitemDTO);
 
@@ -69,5 +103,4 @@ public class P21OrderLineItemMapper {
 		}
 
 	}
-
 }
