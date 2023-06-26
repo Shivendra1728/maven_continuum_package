@@ -72,7 +72,7 @@ public class P21OrderMapper {
 					customerDTO.setFirstName(p21OrderData.getOrder_contact_first_name());
 					customerDTO.setLastname(p21OrderData.getOrder_contact_last_name());
 					customerDTO.setEmail(p21OrderData.getContact_email_address());
-					customerDTO.setDisplayName(p21OrderData.getOrder_contact_name());
+					customerDTO.setDisplayName(p21OrderData.getOrder_contact_first_name()+" "+p21OrderData.getOrder_contact_last_name());
 					customerDTO.setPhone(p21OrderData.getContact_phone_number());
 					orderDTO.setCustomer(customerDTO);
 					

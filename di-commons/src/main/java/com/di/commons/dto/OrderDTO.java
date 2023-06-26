@@ -40,5 +40,7 @@ public class OrderDTO {
 		private String invoiceNo;
 		private List<OrderItemDTO> orderItems;
 		private String orderNo;
+		private String companyId;
+		private String addressId;
 		
 }

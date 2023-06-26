@@ -42,4 +42,7 @@ public class P21OrderData {
 	private String mail_postal_code_a;
 	@JsonProperty("odata.metadata")
 	private String odataMetadata;
+	
+	private String address_id;
+	private String company_id;
 }
