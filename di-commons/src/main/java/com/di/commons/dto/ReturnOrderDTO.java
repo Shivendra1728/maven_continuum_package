@@ -10,6 +10,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import org.springframework.stereotype.Component;
+
 import com.continuum.repos.entity.Customer;
 import com.continuum.repos.entity.OrderAddress;
 import com.continuum.repos.entity.Orders;
@@ -30,20 +32,23 @@ import lombok.experimental.Accessors;
 @ToString
 //@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Component
 public class ReturnOrderDTO {
 
 	private Long id;
 	private Long ORMOrder;
-	private Long salesLocationId;
-	private Long contactId;
+	private String salesLocationId;
+	private String contactId;
 	private String PONumber;
 	private Date orderDate;
 	private Date requestedDate;
 	private String status;
 	private String currency;
+	private String quantity;
+	
 	
 	private CustomerDTO customer;
-
+	private OrderDTO order;
 	private List<ReturnOrderItemDTO> returnOrderItem;
 
 	private OrderAddressDTO shipTo;

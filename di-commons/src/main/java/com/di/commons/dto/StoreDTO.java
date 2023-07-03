@@ -1,5 +1,6 @@
 package com.di.commons.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.continuum.repos.entity.StoreAddress;
@@ -35,7 +36,12 @@ public class StoreDTO {
 	private String filterSearchConfiguration;
 	
 	private String ERPDataSychInterval;
+	private String feeType;
 	
+	private BigDecimal reStockingAmount;
+	
+	private String reasonListing;
+	private String category;
 	private String defaultLocale;
 	//private String country;
 	//private String subCountry;

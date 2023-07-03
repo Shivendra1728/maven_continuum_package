@@ -3,6 +3,7 @@ package com.di.commons.helper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +35,9 @@ public class FileUploadHelper {
 			String fileExtension = getFileExtension(originalFilename);
 
 			if (isValidFileType(fileExtension)) {
-				Files.copy(data.getInputStream(), Paths.get(uploadDirectory + "/" + originalFilename),
-						StandardCopyOption.REPLACE_EXISTING);
-
+				Path destinationfile = Paths.get(uploadDirectory + "/" + originalFilename);
+				data.transferTo(destinationfile);
+				
 				orderItemDocumentsHelper.storeOrderItemDocument(uploadDirectory, type, returnOrderItemId);
 
 				f = true;

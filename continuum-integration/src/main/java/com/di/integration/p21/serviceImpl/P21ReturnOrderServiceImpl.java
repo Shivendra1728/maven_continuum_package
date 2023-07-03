@@ -62,11 +62,12 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 		P21ReturnOrderHeaderHelper p21OrderHeader = new P21ReturnOrderHeaderHelper();
 		p21OrderHeader.setCompany_id("LD001");
-		p21OrderHeader.setContact_id("45560");
-		p21OrderHeader.setCustomer_id("164977");
-		p21OrderHeader.setPo_no("200000424");
-		p21OrderHeader.setSales_loc_id("101");
-		p21OrderHeader.setShip_to_id("164977");
+	    p21OrderHeader.setContact_id(returnOrderDTO.getContactId());
+	    p21OrderHeader.setCustomer_id(returnOrderDTO.getCustomer().getCustomerId());
+		p21OrderHeader.setPo_no(returnOrderDTO.getPONumber());
+		p21OrderHeader.setSales_loc_id(returnOrderDTO.getSalesLocationId());
+	    p21OrderHeader.setShip_to_id(returnOrderDTO.getShipTo().getId());
+		
 		p21OrderHeader.setTaker("Continuum");
 
 		p21ReturnOrderDataHelper.setP21OrderHeader(p21OrderHeader);
@@ -86,9 +87,9 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		p21ReturnOrderDataHelper.setReasonCodes(reasonCodes);
 
 		P21OrderItemCustomerSalesHistory custSalesHistory = new P21OrderItemCustomerSalesHistory();
-		custSalesHistory.setOrder_no("419063");
-		custSalesHistory.setCc_invoice_no_display("1246655");
-		custSalesHistory.setLocation_id("101");
+		custSalesHistory.setOrder_no(returnOrderDTO.getOrder().getOrderNo());
+		custSalesHistory.setCc_invoice_no_display(returnOrderDTO.getOrder().getInvoiceNo());
+		custSalesHistory.setLocation_id(returnOrderDTO.getSalesLocationId());
 
 		p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory);
 		HttpHeaders headers = new HttpHeaders();
@@ -102,7 +103,7 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		String apiUrl = "https://apiplay.labdepotinc.com/uiserver0/api/v2/transaction";
 
 		// Send the POST request
-//	        ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, requestEntity, String.class);
+//            ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, requestEntity, String.class);
 		ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST,
 				new HttpEntity<>(xmlPayload, headers), String.class);
 
@@ -111,11 +112,8 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		// Retrieve the response body
 		String responseBody = response.getBody();
 
-		System.out.println("### RMA RESPONSE####" + response.getBody());
-		
-		
-		
-		
+		System.out.println("#### RMA RESPONSE ####" + response.getBody());
+
 		return responseBody;
 	}
 

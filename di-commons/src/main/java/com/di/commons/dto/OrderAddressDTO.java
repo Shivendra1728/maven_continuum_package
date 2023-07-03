@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 public class OrderAddressDTO {
 
 	
-	private Long id;
+	private String id;
 	
 	private Date createdDate;
 	private Date updatedDate;

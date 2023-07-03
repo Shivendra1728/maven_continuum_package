@@ -1,5 +1,7 @@
 package com.continuum.repos.entity;
 
+import java.math.BigDecimal;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -53,7 +55,12 @@ public class Store extends BaseEntity{
 	
 	@Builder.Default
 	private boolean storeState = true;
+	private String feeType;
 	
+	private BigDecimal reStockingAmount;
+	
+	private String reasonListing;
+	private String category;
 	@OneToOne
 	@JoinColumn(name="storeLocaleId")
 	private StoreLocale storeLocale; 
@@ -62,4 +69,5 @@ public class Store extends BaseEntity{
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
     @JoinColumn(name ="shipTo")
     private StoreAddress shipTo;
+	
 }

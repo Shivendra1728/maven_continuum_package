@@ -60,7 +60,7 @@ public class P21ReturnOrderMarshller {
 		Edit edit2 = new Edit();
 		edit2.setName("customer_id");
 		edit2.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getCustomer_id());
-
+		
 		Edit edit3 = new Edit();
 		edit3.setName("sales_loc_id");
 		edit3.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getSales_loc_id());
@@ -80,6 +80,10 @@ public class P21ReturnOrderMarshller {
 		Edit edit7 = new Edit();
 		edit7.setName("taker");
 		edit7.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getTaker());
+		
+		//Edit edit8 = new Edit();
+		//edit8.setName("order_contact_first_name");
+		//edit8.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getOrder_contact_first_name());
 
 		// Add the Edit objects to the Row object
 		row1.setEdits(Arrays.asList(edit1, edit2, edit3, edit4, edit5, edit6, edit7));
