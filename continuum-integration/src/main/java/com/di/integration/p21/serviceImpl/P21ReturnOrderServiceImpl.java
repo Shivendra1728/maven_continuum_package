@@ -73,13 +73,15 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		p21ReturnOrderDataHelper.setP21OrderHeader(p21OrderHeader);
 
 		P21OrderItemHelper p21OrderItemHelper = new P21OrderItemHelper();
-		p21OrderItemHelper.setOe_order_item_id("FLOW-48");
-		p21OrderItemHelper.setUnit_quantity("1");
+		p21OrderItemHelper.setOe_order_item_id(returnOrderDTO.getId());
+		p21OrderItemHelper.setUnit_quantity(returnOrderDTO.getQuantity());
 
 		List<P21OrderItemHelper> p21OrderItemList = new ArrayList<>();
 		p21OrderItemList.add(p21OrderItemHelper);
 		p21ReturnOrderDataHelper.setP21OrderItemList(p21OrderItemList);
-
+		
+		
+		
 		String reasonCode = "RMA - BILL-TO CORRECTION";
 		List<String> reasonCodes = new ArrayList<>();
 		reasonCodes.add(reasonCode);
