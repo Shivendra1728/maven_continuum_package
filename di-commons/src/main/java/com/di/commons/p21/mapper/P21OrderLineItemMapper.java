@@ -48,10 +48,7 @@ public class P21OrderLineItemMapper {
 			orderitemDTO.setItemName(p21OrderLineItem.getItem_id());
 			orderitemDTO.setId(Long.parseLong(p21OrderLineItem.getOe_line_uid()));
 			orderitemDTO.setInvoiceNo(p21OrderLineItem.getOriginal_invoice_no());
-			
-			BigDecimal decimalQuantity = new BigDecimal(p21OrderLineItem.getOrdered_qty());
-			int quantity = decimalQuantity.setScale(0, RoundingMode.HALF_UP).intValue();
-			orderitemDTO.setQuantity(quantity);
+			orderitemDTO.setQuantity(Math.abs((int)Double.parseDouble(p21OrderLineItem.getOrdered_qty())));
 
 			orderItemDTOList.add(orderitemDTO);
 		}
