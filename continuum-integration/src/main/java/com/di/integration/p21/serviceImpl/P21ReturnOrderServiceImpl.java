@@ -70,7 +70,7 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 	    p21OrderHeader.setCustomer_id(returnOrderDTO.getCustomer().getCustomerId());
 		p21OrderHeader.setPo_no(returnOrderDTO.getPONumber());
 		p21OrderHeader.setSales_loc_id(returnOrderDTO.getSalesLocationId());
-	    p21OrderHeader.setShip_to_id(returnOrderDTO.getShipTo().getId());
+	    p21OrderHeader.setShip_to_id(returnOrderDTO.getShipTo().getAddressId());
 		
 		p21OrderHeader.setTaker("Continuum");
 

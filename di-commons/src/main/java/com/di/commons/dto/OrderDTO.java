@@ -29,7 +29,7 @@ public class OrderDTO {
 	    private Long salesLocationId;
 	    private OrderAddressDTO shipTo;
 	    private OrderAddressDTO billTo;
-	    private Long contactId;
+	    private String contactId;
 	    private String PONumber;
 	    private Date orderDate;
 	    private Date requestedDate;

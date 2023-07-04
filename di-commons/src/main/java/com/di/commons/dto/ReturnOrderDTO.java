@@ -49,7 +49,6 @@ public class ReturnOrderDTO {
 	private String currency;
 	private String quantity;
 	
-	
 	private CustomerDTO customer;
 	//private OrderDTO order;
 	private List<ReturnOrderItemDTO> returnOrderItem;

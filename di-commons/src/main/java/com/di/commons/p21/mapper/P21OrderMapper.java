@@ -55,9 +55,11 @@ public class P21OrderMapper {
 
 					orderDTO.setPONumber(p21OrderData.getPo_number());
 					orderDTO.setOrderNo(p21OrderData.getOrder_no());
+					orderDTO.setCompanyId(p21OrderData.getCompany_id());
 					orderDTO.setCurrency(p21OrderData.getCurrency_desc());
+					orderDTO.setContactId(p21OrderData.getCustomer_id()); //TODO need to fetch contact Id 
 					orderDTO.setInvoiceNo(p21OrderData.getOriginal_invoice_no());
-					
+					orderDTO.getShipTo().setAddressId(p21OrderData.getAddress_id());
 					String salesLocationIdString = p21OrderData.getLocation_id();
 					Long salesLocationId = Long.parseLong(salesLocationIdString);
 					orderDTO.setSalesLocationId(salesLocationId);
