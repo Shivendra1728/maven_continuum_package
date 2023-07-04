@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.di.commons.dto.ReturnOrderDTO;
+import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.p21.service.P21ReturnOrderService;
 import com.di.integration.p21.transaction.P21OrderItemCustomerSalesHistory;
 import com.di.integration.p21.transaction.P21OrderItemHelper;
@@ -39,6 +40,10 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 	@Value("${erp.order_format}")
 	String ORDER_FORMAT;
 
+	@Value("${erp.rma.create}")
+	String RMA_CREATE_API;
+	
+	
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
 
@@ -57,11 +62,10 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 	@Override
 	public String createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
-		// TODO Auto-generated method stub
 		P21ReturnOrderDataHelper p21ReturnOrderDataHelper = new P21ReturnOrderDataHelper();
 
 		P21ReturnOrderHeaderHelper p21OrderHeader = new P21ReturnOrderHeaderHelper();
-		p21OrderHeader.setCompany_id("LD001");
+		p21OrderHeader.setCompany_id(returnOrderDTO.getCompanyId());
 	    p21OrderHeader.setContact_id(returnOrderDTO.getContactId());
 	    p21OrderHeader.setCustomer_id(returnOrderDTO.getCustomer().getCustomerId());
 		p21OrderHeader.setPo_no(returnOrderDTO.getPONumber());
@@ -72,46 +76,32 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 		p21ReturnOrderDataHelper.setP21OrderHeader(p21OrderHeader);
 
-		P21OrderItemHelper p21OrderItemHelper = new P21OrderItemHelper();
-		p21OrderItemHelper.setOe_order_item_id(returnOrderDTO.getId());
-		p21OrderItemHelper.setUnit_quantity(returnOrderDTO.getQuantity());
-
 		List<P21OrderItemHelper> p21OrderItemList = new ArrayList<>();
-		p21OrderItemList.add(p21OrderItemHelper);
-		p21ReturnOrderDataHelper.setP21OrderItemList(p21OrderItemList);
-		
-		
-		
-		String reasonCode = "RMA - BILL-TO CORRECTION";
 		List<String> reasonCodes = new ArrayList<>();
-		reasonCodes.add(reasonCode);
-
+		for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderDTO.getReturnOrderItem()) {
+			P21OrderItemHelper p21OrderItemHelper = new P21OrderItemHelper();
+			p21OrderItemHelper.setOe_order_item_id(returnOrderItemDTO.getItemName());
+			p21OrderItemHelper.setUnit_quantity(returnOrderItemDTO.getQuanity()+"");
+			p21OrderItemList.add(p21OrderItemHelper);
+			reasonCodes.add(returnOrderItemDTO.getReasonCode());
+		}
+		p21ReturnOrderDataHelper.setP21OrderItemList(p21OrderItemList);
 		p21ReturnOrderDataHelper.setReasonCodes(reasonCodes);
 
-		P21OrderItemCustomerSalesHistory custSalesHistory = new P21OrderItemCustomerSalesHistory();
-		custSalesHistory.setOrder_no(returnOrderDTO.getOrder().getOrderNo());
-		custSalesHistory.setCc_invoice_no_display(returnOrderDTO.getOrder().getInvoiceNo());
-		custSalesHistory.setLocation_id(returnOrderDTO.getSalesLocationId());
+		//P21OrderItemCustomerSalesHistory custSalesHistory = new P21OrderItemCustomerSalesHistory();
+		//custSalesHistory.setOrder_no(returnOrderDTO.getOrderNo());
+	//	custSalesHistory.setCc_invoice_no_display(returnOrderDTO.getInvoiceNo());
+	//	custSalesHistory.setLocation_id(returnOrderDTO.getSalesLocationId());
 
-		p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory);
+		//p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory); //TODO invoice linking
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
 
 		String xmlPayload = p21ReturnOrderMarshller.createRMA(p21ReturnOrderDataHelper);
 		System.out.println("returnOrderXmlPayload" + xmlPayload);
 		headers.setContentType(MediaType.APPLICATION_XML);
-		HttpEntity<String> requestEntity = new HttpEntity<>(xmlPayload, headers);
-
-		String apiUrl = "https://apiplay.labdepotinc.com/uiserver0/api/v2/transaction";
-
-		// Send the POST request
-//            ResponseEntity<String> responseEntity = restTemplate.postForEntity(apiUrl, requestEntity, String.class);
-		ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST,
+		ResponseEntity<String> response = restTemplate.exchange(RMA_CREATE_API, HttpMethod.POST,
 				new HttpEntity<>(xmlPayload, headers), String.class);
-
-		// Create the HTTP entity with the XML payload and headers
-
-		// Retrieve the response body
 		String responseBody = response.getBody();
 
 		System.out.println("#### RMA RESPONSE ####" + response.getBody());

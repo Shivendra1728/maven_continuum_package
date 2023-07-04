@@ -38,7 +38,10 @@ public class ReturnOrderDTO {
 	private String id;
 	private Long ORMOrder;
 	private String salesLocationId;
+	private String companyId;
 	private String contactId;
+	private String orderNo;
+	private String invoiceNo;
 	private String PONumber;
 	private Date orderDate;
 	private Date requestedDate;
@@ -48,12 +51,13 @@ public class ReturnOrderDTO {
 	
 	
 	private CustomerDTO customer;
-	private OrderDTO order;
+	//private OrderDTO order;
 	private List<ReturnOrderItemDTO> returnOrderItem;
 
 	private OrderAddressDTO shipTo;
 
 	private OrderAddressDTO billTo;
+
 
 //	private Orders orders;
 }

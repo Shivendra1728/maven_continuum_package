@@ -1,5 +1,6 @@
 package com.di.integration.p21.transaction;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +46,8 @@ public class P21ReturnOrderMarshller {
 		transactionSet.setIgnoreDisabled(true);
 		transactionSet.setName("RMA");
 		Transaction transaction = new Transaction();
+		
+		List<DataElement> dataElements= new ArrayList<>();
 
 		// ORDER HEADER DATA ELEMENT 1-----------------------------------------
 		DataElement dataElement1 = new DataElement();
@@ -90,13 +93,13 @@ public class P21ReturnOrderMarshller {
 
 		// Add the Row objects to the DataElement objects
 		dataElement1.setRows(Collections.singletonList(row1));
-
+		dataElements.add(dataElement1);
 		// ORDERITEM DATA ELEMENT 1-----------------------------------------
 
 		DataElement dataElement2 = new DataElement();
 		dataElement2.setName("TP_ITEMS.items");
 		dataElement2.setType("List");
-
+		List<Row> rows= new ArrayList<>();
 		for (P21OrderItemHelper p21OrderItemHelper : p21ReturnOrderDataHelper.getP21OrderItemList()) {
 			Row itemRow = new Row();
 
@@ -110,8 +113,11 @@ public class P21ReturnOrderMarshller {
 			itemEdit2.setValue(p21OrderItemHelper.getUnit_quantity());
 
 			itemRow.setEdits(Arrays.asList(itemEdit1, itemEdit2));
-			dataElement2.setRows(Collections.singletonList(itemRow));
+			rows.add(itemRow);
+			
 		}
+		dataElement2.setRows(rows);
+		dataElements.add(dataElement2);
 
 		// REASONCODE DATA ELEMENT 3-----------------------------------------
 
@@ -130,39 +136,44 @@ public class P21ReturnOrderMarshller {
 			dataElement3.setRows(Collections.singletonList(reasonCodeRow));
 		}
 		
+		dataElements.add(dataElement3);
 		// INVOICE DATA ELEMENT 4-----------------------------------------
-		
 		DataElement dataElement4 = new DataElement();
-		dataElement4.setName("TP_CUSTSALESHISTORY.customer_sales_history");
-		dataElement4.setType("List");
+		if(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory()!=null) {
+			dataElement4.setName("TP_CUSTSALESHISTORY.customer_sales_history");
+			dataElement4.setType("List");
+			
+			List<String> values = Arrays.asList("cc_invoice_no_display", "order_no", "location_id");
+	        Keys keys = new Keys(values);
+		    dataElement4.setKeys(keys);
+		    
+			Row rowInvoice = new Row();
+
+			Edit editInvoice1 = new Edit();
+			editInvoice1.setName("order_no");
+			editInvoice1.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getOrder_no());
+
+			Edit editInvoice2 = new Edit();
+			editInvoice2.setName("cc_invoice_no_display");
+			editInvoice2.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getCc_invoice_no_display());
+
+			Edit editInvoice3 = new Edit();
+			editInvoice3.setName("location_id");
+			editInvoice3.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getLocation_id());
+
+			// Add the Edit objects to the Row object
+			rowInvoice.setEdits(Arrays.asList(editInvoice1, editInvoice2, editInvoice3));
+
+					// Add the Row objects to the DataElement objects
+			dataElement4.setRows(Collections.singletonList(rowInvoice));	
+			dataElements.add(dataElement4);
+		}
 		
-		List<String> values = Arrays.asList("cc_invoice_no_display", "order_no", "location_id");
-        Keys keys = new Keys(values);
-	    dataElement4.setKeys(keys);
-	    
-		Row rowInvoice = new Row();
-
-		Edit editInvoice1 = new Edit();
-		editInvoice1.setName("order_no");
-		editInvoice1.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getOrder_no());
-
-		Edit editInvoice2 = new Edit();
-		editInvoice2.setName("cc_invoice_no_display");
-		editInvoice2.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getCc_invoice_no_display());
-
-		Edit editInvoice3 = new Edit();
-		editInvoice3.setName("location_id");
-		editInvoice3.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getLocation_id());
-
-		// Add the Edit objects to the Row object
-		rowInvoice.setEdits(Arrays.asList(editInvoice1, editInvoice2, editInvoice3));
-
-				// Add the Row objects to the DataElement objects
-		dataElement4.setRows(Collections.singletonList(rowInvoice));
+		
 		
 		
 		// Add the DataElement objects to the Transaction object
-		transaction.setDataElements(Arrays.asList(dataElement1, dataElement2, dataElement3,dataElement4));
+		transaction.setDataElements(dataElements);
 
 		// Add the Transaction object to the TransactionSet object
 		transactionSet.setTransactions(Collections.singletonList(transaction));
