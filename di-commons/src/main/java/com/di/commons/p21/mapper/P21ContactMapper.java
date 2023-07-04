@@ -30,7 +30,7 @@ public class P21ContactMapper {
 		ContactDTO contactDTO = new ContactDTO();
 		for (P21ContactData p21ContactData : p21ContactDataHelper.getValue()) {
 			contactDTO.setContactId(p21ContactData.getId());
-			contactDTO.setContactEmailId(p21ContactData.getEmail());
+			contactDTO.setContactEmailId(p21ContactData.getEmail_address());
 			contactDTO.setContactName(p21ContactData.getContact_name());
 			contactDTO.setContactPhoneNo(p21ContactData.getDirect_phone());
 		}
