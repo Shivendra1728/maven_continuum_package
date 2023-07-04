@@ -38,13 +38,16 @@ import lombok.Setter;
 public class ReturnOrder extends BaseEntity {
 
 	private Long ORMOrder;
-	private Long salesLocationId;
-	private Long contactId;
+	private String salesLocationId;
+	private String contactId;
+	private String companyId;
 	private String PONumber;
 	private Date orderDate;
 	private Date requestedDate;
 	private String status;
 	private String currency;
+	private String orderNo;
+	private String invoiceNo;
 
 	@ManyToOne
 	@JoinColumn(name = "userId")
@@ -66,17 +69,5 @@ public class ReturnOrder extends BaseEntity {
     @JoinColumn(name ="billto")
     private OrderAddress billTo;
 
-	/*
-	 * @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	 * 
-	 * @JoinColumn(name = "purchaseOrderId") private Orders orders;
-	 */
-
-	/*
-	 * public List<ReturnOrderItem> getReturnOrderItem() { return returnOrderItem; }
-	 * 
-	 * public void setReturnOrderItem(List<ReturnOrderItem> returnOrderItem) {
-	 * this.returnOrderItem = returnOrderItem; }
-	 */
 
 }

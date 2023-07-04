@@ -18,6 +18,7 @@ import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.p21.service.P21ReturnOrderService;
 import com.di.integration.p21.transaction.P21OrderItemCustomerSalesHistory;
 import com.di.integration.p21.transaction.P21OrderItemHelper;
+import com.di.integration.p21.transaction.P21RMAResponse;
 import com.di.integration.p21.transaction.P21ReturnOrderDataHelper;
 import com.di.integration.p21.transaction.P21ReturnOrderHeaderHelper;
 import com.di.integration.p21.transaction.P21ReturnOrderMarshller;
@@ -61,7 +62,7 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 	P21OrderLineServiceImpl p21orderLineServiceImpl;
 
 	@Override
-	public String createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
+	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		P21ReturnOrderDataHelper p21ReturnOrderDataHelper = new P21ReturnOrderDataHelper();
 
 		P21ReturnOrderHeaderHelper p21OrderHeader = new P21ReturnOrderHeaderHelper();
@@ -103,10 +104,9 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		ResponseEntity<String> response = restTemplate.exchange(RMA_CREATE_API, HttpMethod.POST,
 				new HttpEntity<>(xmlPayload, headers), String.class);
 		String responseBody = response.getBody();
-
-		System.out.println("#### RMA RESPONSE ####" + response.getBody());
-
-		return responseBody;
+		
+		System.out.println("#### RMA RESPONSE ####" + response.getBody().replace("Keys", "resKeys"));
+		return	p21ReturnOrderMarshller.umMarshall( response.getBody().replace("Keys", "resKeys"));
 	}
 
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.integration.p21.service.P21ReturnOrderService;
+import com.di.integration.p21.transaction.P21RMAResponse;
 
 @RestController
 @RequestMapping("/P21/returnOrder")
@@ -17,7 +18,7 @@ public class P21ReturnOrderController {
 	P21ReturnOrderService p21Service;
 	
 	@PostMapping("/create/v1")
-	public String createReturnOrder(@RequestBody ReturnOrderDTO returnOrderDTO) throws Exception {
+	public P21RMAResponse createReturnOrder(@RequestBody ReturnOrderDTO returnOrderDTO) throws Exception {
 		return p21Service.createReturnOrder(returnOrderDTO);
 		
 	}

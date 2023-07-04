@@ -11,9 +11,10 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-
 @Component
 public class P21ReturnOrderMarshller {
 
@@ -24,7 +25,6 @@ public class P21ReturnOrderMarshller {
 		// xmlMapper.disable(MapperFeature.USE_STD_BEAN_NAMING);
 		xmlMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		// xmlMapper.setDefaultUseWrapper(false);
-
 		String xml = xmlMapper.writeValueAsString(prepareXMl(p21ReturnOrderDataHelper));
 		xml = xml.replaceAll("wstxns2:", "");
 		xml = xml.replaceAll("xmlns:wstxns2", "xmlns:a");
@@ -40,6 +40,59 @@ public class P21ReturnOrderMarshller {
 		System.out.println(xml);
 		return xml;
 	}
+	
+public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException, JsonProcessingException {
+	
+	P21RMAResponse p21RMAResp= new P21RMAResponse();
+	// Assuming the JSON string is stored in a variable called jsonString
+	ObjectMapper objectMapper = new ObjectMapper();
+	objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	RootObject rootObject = objectMapper.readValue(jsonString, RootObject.class);
+
+	// Access the unmarshalled data
+	System.out.println("Name: " + rootObject.getResults().getName());
+	System.out.println("getSummary faild: " + rootObject.getSummary().getFailed());
+	if(rootObject.getSummary().getFailed()==1) {
+		p21RMAResp.setStatus("Failed");
+	}else if(rootObject.getSummary().getSucceeded()==1) {
+		p21RMAResp.setStatus("Success");
+	}
+	p21RMAResp.setMessages(rootObject.getMessages());
+	//System.out.println("IgnoreDisabled: " + rootObject.isIgnoreDisabled());
+
+	// Access Transactions
+	List<ResponseTransaction> transactions = rootObject.getResults().getTransactions();
+	for (ResponseTransaction transaction : transactions) {
+	   // System.out.println("Transaction Status: " + transaction.getStatus());
+	    
+	    List<ResponseDataElements> dataElements = transaction.getDataElements();
+	    for (ResponseDataElements dataElement : dataElements) {
+	        System.out.println("Data Element Name: " + dataElement.getName());
+	        
+	        List<ResponseRows> rows = dataElement.getRows();
+	        for (ResponseRows row : rows) {
+	            List<ResponseEdit> edits = row.getEdits();
+	            for (ResponseEdit edit : edits) {
+	                System.out.println("Edit Name: " + edit.getName());
+	                if("order_no".equalsIgnoreCase(edit.getName())) {
+	                	p21RMAResp.setRmaOrderNo(edit.getValue());
+	                }
+	                System.out.println("Edit Value: " + edit.getValue());
+	            }
+	        }
+	    }
+	}
+	return p21RMAResp;
+
+	// Access Summary
+	/*
+	 * Summary summary = rootObject.getSummary(); System.out.println("Failed: " +
+	 * summary.getFailed()); System.out.println("Succeeded: " +
+	 * summary.getSucceeded()); System.out.println("Other: " + summary.getOther());
+	 */
+
+}
 
 	private TransactionSet prepareXMl(P21ReturnOrderDataHelper p21ReturnOrderDataHelper) {
 		TransactionSet transactionSet = new TransactionSet();

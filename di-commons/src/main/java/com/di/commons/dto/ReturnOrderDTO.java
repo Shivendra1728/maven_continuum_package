@@ -35,7 +35,7 @@ import lombok.experimental.Accessors;
 @Component
 public class ReturnOrderDTO {
 
-	private String id;
+	private Long id;
 	private Long ORMOrder;
 	private String salesLocationId;
 	private String companyId;
