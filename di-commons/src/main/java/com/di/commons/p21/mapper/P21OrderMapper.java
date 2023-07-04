@@ -52,12 +52,12 @@ public class P21OrderMapper {
 					String orderDate = p21OrderData.getOrder_date();
 					Date correctorderDate = dateFormat.parse(orderDate);
 					orderDTO.setOrderDate(correctorderDate);
-
+					orderDTO.setContactEmailId(p21OrderData.getContact_email_address());
 					orderDTO.setPONumber(p21OrderData.getPo_number());
 					orderDTO.setOrderNo(p21OrderData.getOrder_no());
 					orderDTO.setCompanyId(p21OrderData.getCompany_id());
 					orderDTO.setCurrency(p21OrderData.getCurrency_desc());
-					orderDTO.setContactId(p21OrderData.getCustomer_id()); //TODO need to fetch contact Id 
+					//orderDTO.setContactId(p21OrderData.getCustomer_id()); //TODO need to fetch contact Id 
 					orderDTO.setInvoiceNo(p21OrderData.getOriginal_invoice_no());
 					
 					String salesLocationIdString = p21OrderData.getLocation_id();

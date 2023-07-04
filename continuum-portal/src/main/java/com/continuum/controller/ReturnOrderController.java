@@ -14,6 +14,8 @@ import com.continuum.service.ReturnOrderService;
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
+import com.di.integration.p21.service.P21ReturnOrderService;
+import com.di.integration.p21.transaction.P21RMAResponse;
 
 @RestController
 @RequestMapping("/returnOrder")
@@ -23,7 +25,8 @@ public class ReturnOrderController {
 	ReturnOrderService returnOrderService;
 	
 	@PostMapping("/create/v1")
-	public String createReturnOrder(@RequestBody ReturnOrderDTO returnOrderDTO) {
+	public P21RMAResponse createReturnOrder(@RequestBody ReturnOrderDTO returnOrderDTO) throws Exception {
+		
 		return returnOrderService.createReturnOrder(returnOrderDTO);
 		
 	}

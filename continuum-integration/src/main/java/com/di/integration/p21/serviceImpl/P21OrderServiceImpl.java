@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.helper.OrderSearchParameters;
+import com.di.commons.p21.mapper.P21ContactMapper;
 import com.di.commons.p21.mapper.P21OrderLineItemMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
 import com.di.integration.p21.service.P21OrderService;
@@ -54,6 +55,9 @@ public class P21OrderServiceImpl implements P21OrderService {
 	
 	@Autowired
 	P21OrderLineServiceImpl p21OrderLineServiceImpl;
+	
+	@Autowired
+	P21ContactMapper p21ContactMapper;
 
 	@Override
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
@@ -64,7 +68,9 @@ public class P21OrderServiceImpl implements P21OrderService {
 				orderSearchParams.setOrderNo(orderDTO.getOrderNo());
 				List<OrderItemDTO> orderItemDTOList= p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParams);
 				orderDTO.setOrderItems(orderItemDTOList);
+				orderDTO.setContactDTO(p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
 			} 
+			
 			
 			return orderDTOList;
 	}
@@ -91,6 +97,52 @@ public class P21OrderServiceImpl implements P21OrderService {
 			 * else { System.err.println("API call failed with status code: " +
 			 * response.getStatusCodeValue()); }
 			 */
+	}
+	
+	private String getContactData(String email) throws Exception{
+		// RestTemplate restTemplate = new RestTemplate();
+		// Add the Bearer token to the request headers
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth(p21TokenServiceImpl.getToken());
+		URI fullURI = prepareContactURI(email);
+		// Set the Accept header to receive JSON response
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		// https://apiplay.labdepotinc.com/data/erp/views/v1/p21_view_ord_ack_hdr?$
+
+		// Create the request entity with headers
+		RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, fullURI);
+
+		// Make the API call
+		ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
+		return  response.getBody();
+		// Process the API response
+		/*
+		 * if (response.getStatusCode().is2xxSuccessful()) { responseBody =
+		 * response.getBody(); System.out.println("API response: " + responseBody); }
+		 * else { System.err.println("API call failed with status code: " +
+		 * response.getStatusCodeValue()); }
+		 */
+}
+	
+	private URI prepareContactURI(String email) {
+		
+		//p21_view_contacts?$select=&$filter=email_address eq 'SOUSADA.SALINTHONE@AZZUR.COM'&$format=json
+				
+				try {
+
+					String filter = "email_address eq '"+email+"'";
+					
+					String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
+					String query = "$format=" + ORDER_FORMAT + "&$select=" +"&$filter=" + encodedFilter;
+
+					URI uri = new URI(DATA_API_BASE_URL + "p21_view_contacts");
+					URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
+					return fullURI;
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+
+				}
+				return null;
 	}
 
 	private URI prepareOrderURI(OrderSearchParameters orderSearchParameters) {

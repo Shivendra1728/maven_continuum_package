@@ -56,7 +56,7 @@ public class ReturnOrderDTO {
 	private OrderAddressDTO shipTo;
 
 	private OrderAddressDTO billTo;
-
+	private String rmaOrderNo;
 
 //	private Orders orders;
 }

@@ -42,5 +42,7 @@ public class OrderDTO {
 		private String orderNo;
 		private String companyId;
 		private String addressId;
+		private ContactDTO contactDTO;
+		private String contactEmailId;
 		
 }
