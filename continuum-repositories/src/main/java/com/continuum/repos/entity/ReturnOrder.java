@@ -52,7 +52,7 @@ public class ReturnOrder extends BaseEntity {
 	@ManyToOne
 	@JoinColumn(name = "userId")
 	private User user;
-    @ManyToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="customerId")
     private Customer customer;
 
