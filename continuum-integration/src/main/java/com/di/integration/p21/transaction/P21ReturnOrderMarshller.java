@@ -224,6 +224,43 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 		
 		
 		
+		// INVOICE DATA ELEMENT 5-----------------------------------------
+				DataElement dataElement5 = new DataElement();
+				if(p21ReturnOrderDataHelper.getProbDescList()!=null) {
+					dataElement5.setName("HDR_NOTE.hdr_note");
+					dataElement5.setType("List");
+					
+					List<String> values = Arrays.asList("note_id");
+			        Keys keys = new Keys(values);
+				    dataElement5.setKeys(keys);
+				   // List<Row>
+				    for (P21OrderItemHelper p21OrderItemHelper : p21ReturnOrderDataHelper.getP21OrderItemList()) {
+				    	Row rowProbDesc = new Row();
+
+						Edit editInvoice1 = new Edit();
+						editInvoice1.setName("note_id");
+						editInvoice1.setValue("");
+
+						Edit editInvoice2 = new Edit();
+						editInvoice2.setName("topic");
+						editInvoice2.setValue("RMA NOTE: ITEM - "+p21OrderItemHelper.getOe_order_item_id());
+
+						Edit editInvoice3 = new Edit();
+						editInvoice3.setName("note");
+						editInvoice3.setValue(p21OrderItemHelper.getOe_order_item_id()+" -  "+p21OrderItemHelper.getNote());
+						
+						Edit editInvoice4 = new Edit();
+						editInvoice4.setName("notepad_class_desc");
+						editInvoice4.setValue("OTHER");
+
+
+						// Add the Edit objects to the Row object
+						rowProbDesc.setEdits(Arrays.asList(editInvoice1, editInvoice2, editInvoice3,editInvoice4));
+						// Add the Row objects to the DataElement objects
+						dataElement5.setRows(Collections.singletonList(rowProbDesc));
+					}
+					dataElements.add(dataElement5);
+				}
 		
 		// Add the DataElement objects to the Transaction object
 		transaction.setDataElements(dataElements);

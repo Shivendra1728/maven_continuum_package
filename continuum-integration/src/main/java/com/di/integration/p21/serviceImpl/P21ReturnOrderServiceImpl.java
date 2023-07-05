@@ -81,16 +81,20 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 		List<P21OrderItemHelper> p21OrderItemList = new ArrayList<>();
 		List<String> reasonCodes = new ArrayList<>();
+		List<String> probDescList = new ArrayList<>();
 		for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderDTO.getReturnOrderItem()) {
 			P21OrderItemHelper p21OrderItemHelper = new P21OrderItemHelper();
 			p21OrderItemHelper.setOe_order_item_id(returnOrderItemDTO.getItemName());
 			p21OrderItemHelper.setUnit_quantity(returnOrderItemDTO.getQuanity()+"");
+			p21OrderItemHelper.setNote(returnOrderItemDTO.getProblemDesc());
+			p21OrderItemHelper.setLost_sales_id(returnOrderItemDTO.getReasonCode());
 			p21OrderItemList.add(p21OrderItemHelper);
 			reasonCodes.add(returnOrderItemDTO.getReasonCode());
+			probDescList.add(returnOrderItemDTO.getProblemDesc());
 		}
 		p21ReturnOrderDataHelper.setP21OrderItemList(p21OrderItemList);
 		p21ReturnOrderDataHelper.setReasonCodes(reasonCodes);
-
+		p21ReturnOrderDataHelper.setProbDescList(probDescList);
 		//P21OrderItemCustomerSalesHistory custSalesHistory = new P21OrderItemCustomerSalesHistory();
 		//custSalesHistory.setOrder_no(returnOrderDTO.getOrderNo());
 	//	custSalesHistory.setCc_invoice_no_display(returnOrderDTO.getInvoiceNo());

@@ -19,4 +19,6 @@ public class P21OrderItemHelper {
 
 	private String oe_order_item_id;
 	private String unit_quantity;
+	private String note;
+	private String lost_sales_id;
 }

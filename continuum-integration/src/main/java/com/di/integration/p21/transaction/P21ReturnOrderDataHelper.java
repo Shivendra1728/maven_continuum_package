@@ -22,6 +22,7 @@ public class P21ReturnOrderDataHelper {
 	private P21ReturnOrderHeaderHelper p21OrderHeader;
 	private List<P21OrderItemHelper> p21OrderItemList;
 	private List<String> reasonCodes;
+	private List<String> probDescList;
 	private P21OrderItemCustomerSalesHistory p21OrderItemCustSalesHistory;
 	
 }
