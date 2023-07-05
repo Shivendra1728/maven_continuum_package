@@ -45,9 +45,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
     public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
         // Create RMA in p21
-        P21RMAResponse p21RMARespo = new P21RMAResponse();
-        returnOrderDTO.setRmaOrderNo(p21Service.createReturnOrder(returnOrderDTO).getRmaOrderNo());
-
+        P21RMAResponse p21RMARespo = p21Service.createReturnOrder(returnOrderDTO);
+        returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
+        returnOrderDTO.setStatus(p21RMARespo.getStatus());
         CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
         if (customerDTO == null) {
             customerDTO = new CustomerDTO();
@@ -59,8 +59,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
         ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
         repository.save(returnOrder);
 
-        p21RMARespo.setStatus("Success");
-        p21RMARespo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
+       // p21RMARespo.setStatus("Success");
+       // p21RMARespo.setStatus(returnOrderDTO.getStatus());
+       // p21RMARespo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
+        logger.info("orderNo: "+p21RMARespo.getRmaOrderNo()+" status: "+p21RMARespo.getStatus());
         return p21RMARespo;
     }
 

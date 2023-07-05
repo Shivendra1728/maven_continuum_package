@@ -55,7 +55,8 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 	System.out.println("getSummary faild: " + rootObject.getSummary().getFailed());
 	if(rootObject.getSummary().getFailed()==1) {
 		p21RMAResp.setStatus("Failed");
-	}else if(rootObject.getSummary().getSucceeded()==1) {
+	}
+	if(rootObject.getSummary().getSucceeded()==1) {
 		p21RMAResp.setStatus("Success");
 	}
 	p21RMAResp.setMessages(rootObject.getMessages());
@@ -64,7 +65,7 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 	// Access Transactions
 	List<ResponseTransaction> transactions = rootObject.getResults().getTransactions();
 	for (ResponseTransaction transaction : transactions) {
-	   // System.out.println("Transaction Status: " + transaction.getStatus());
+	 //  System.out.println("Transaction Status: " + transaction.ge);
 	    
 	    List<ResponseDataElements> dataElements = transaction.getDataElements();
 	    for (ResponseDataElements dataElement : dataElements) {
