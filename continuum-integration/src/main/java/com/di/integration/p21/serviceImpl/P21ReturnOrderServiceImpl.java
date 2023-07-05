@@ -3,6 +3,8 @@ package com.di.integration.p21.serviceImpl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -16,7 +18,6 @@ import org.springframework.web.client.RestTemplate;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.p21.service.P21ReturnOrderService;
-import com.di.integration.p21.transaction.P21OrderItemCustomerSalesHistory;
 import com.di.integration.p21.transaction.P21OrderItemHelper;
 import com.di.integration.p21.transaction.P21RMAResponse;
 import com.di.integration.p21.transaction.P21ReturnOrderDataHelper;
@@ -25,6 +26,8 @@ import com.di.integration.p21.transaction.P21ReturnOrderMarshller;
 
 @Service
 public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
+	
+	private static final Logger logger = LoggerFactory.getLogger(P21ReturnOrderServiceImpl.class);
 
 	@Value("${erp.data_api_base_url}")
 	String DATA_API_BASE_URL;
@@ -90,7 +93,9 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 			p21OrderItemHelper.setLost_sales_id(returnOrderItemDTO.getReasonCode());
 			p21OrderItemList.add(p21OrderItemHelper);
 			reasonCodes.add(returnOrderItemDTO.getReasonCode());
-			probDescList.add(returnOrderItemDTO.getProblemDesc());
+			if(returnOrderItemDTO.getProblemDesc()!=null) {
+				probDescList.add(returnOrderItemDTO.getProblemDesc().replaceAll("\n", " "));
+			}
 		}
 		p21ReturnOrderDataHelper.setP21OrderItemList(p21OrderItemList);
 		p21ReturnOrderDataHelper.setReasonCodes(reasonCodes);
@@ -103,7 +108,7 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		//p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory); //TODO invoice linking
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
-
+		logger.info("creating RMA");
 		String xmlPayload = p21ReturnOrderMarshller.createRMA(p21ReturnOrderDataHelper);
 		System.out.println("returnOrderXmlPayload" + xmlPayload);
 		headers.setContentType(MediaType.APPLICATION_XML);

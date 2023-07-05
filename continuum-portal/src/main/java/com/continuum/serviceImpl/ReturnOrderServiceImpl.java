@@ -6,6 +6,8 @@ import java.util.List;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,10 @@ import com.di.integration.p21.transaction.P21RMAResponse;
 @Service
 public class ReturnOrderServiceImpl implements ReturnOrderService {
 
-    @Autowired
+	private static final Logger logger = LoggerFactory.getLogger(ReturnOrderServiceImpl.class);
+
+
+	@Autowired
     ReturnOrderRepository repository;
 
     @Autowired
@@ -36,6 +41,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
     @Autowired
     CustomerService customerService;
+    
 
     public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
         // Create RMA in p21

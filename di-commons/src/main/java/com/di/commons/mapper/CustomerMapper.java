@@ -16,10 +16,10 @@ public class CustomerMapper {
 			CustomerDTO custDTO = modelMapper.map(customer, CustomerDTO.class);
 			return custDTO;
 		}
-		return new CustomerDTO();
+		return null;
 	}
 	public Customer cusotmerDTOTocusotmer(CustomerDTO custDTO) {
-		Customer rc = modelMapper.map(custDTO, Customer.class);
-		return rc;
+		Customer cust = modelMapper.map(custDTO, Customer.class);
+		return cust;
 	}
 }
