@@ -23,38 +23,42 @@ import com.di.integration.p21.service.P21ReturnOrderService;
 import com.di.integration.p21.transaction.P21RMAResponse;
 
 @Service
-public class ReturnOrderServiceImpl implements ReturnOrderService{
-	
-	@Autowired
-	ReturnOrderRepository repository;
-	
-	@Autowired
-	ReturnOrderMapper returnOrderMapper;
-	
-	@Autowired
-	P21ReturnOrderService p21Service;
-	
-	@Autowired
-	CustomerService customerService;
-	
-	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
-		
-		//Create RMA in p21 
-		P21RMAResponse p21RMARespo = new P21RMAResponse();
-		returnOrderDTO.setRmaOrderNo(p21Service.createReturnOrder(returnOrderDTO).getRmaOrderNo());
-		CustomerDTO customerDTO= customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
-		if(customerDTO!=null && customerDTO.getId() ==null) {
-			customerDTO.setCustomerId(returnOrderDTO.getCustomer().getCustomerId());
-			CustomerDTO customerDTO2=	customerService.createCustomer(customerDTO);
-			returnOrderDTO.setCustomer(customerDTO2);
-		}
-		ReturnOrder returnOrder= returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
-		repository.save(returnOrder);
-		p21RMARespo.setStatus("Success");
-		p21RMARespo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
-		return p21RMARespo;
-	}
-	@Override
+public class ReturnOrderServiceImpl implements ReturnOrderService {
+
+    @Autowired
+    ReturnOrderRepository repository;
+
+    @Autowired
+    ReturnOrderMapper returnOrderMapper;
+
+    @Autowired
+    P21ReturnOrderService p21Service;
+
+    @Autowired
+    CustomerService customerService;
+
+    public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
+        // Create RMA in p21
+        P21RMAResponse p21RMARespo = new P21RMAResponse();
+        returnOrderDTO.setRmaOrderNo(p21Service.createReturnOrder(returnOrderDTO).getRmaOrderNo());
+
+        CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
+        if (customerDTO == null) {
+            customerDTO = new CustomerDTO();
+            customerDTO.setCustomerId(returnOrderDTO.getCustomer().getCustomerId());
+            customerDTO = customerService.createCustomer(customerDTO);
+        }
+        returnOrderDTO.setCustomer(customerDTO);
+
+        ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
+        repository.save(returnOrder);
+
+        p21RMARespo.setStatus("Success");
+        p21RMARespo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
+        return p21RMARespo;
+    }
+
+    @Override
 	public List<ReturnOrderDTO> getReturnOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) {
 		
 		Specification<ReturnOrder> spec = Specification.where(null);
@@ -100,4 +104,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService{
 	    return str != null && !str.trim().isEmpty();
 	}
 
+
 }
+
+	
+
