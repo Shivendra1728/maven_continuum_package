@@ -47,7 +47,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
         // Create RMA in p21
         P21RMAResponse p21RMARespo = p21Service.createReturnOrder(returnOrderDTO);
         returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
-        returnOrderDTO.setStatus(p21RMARespo.getStatus());
+        
+        //returnOrderDTO.setStatus(p21RMARespo.getStatus());
+        
+        String Status=p21RMARespo.getStatus();
+        if (Status.equals("Success")) {
+            returnOrderDTO.setStatus("Under Review");
+        } else {
+            returnOrderDTO.setStatus("Failed");
+        }
+        
         CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
         if (customerDTO == null) {
             customerDTO = new CustomerDTO();
@@ -58,6 +67,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
         ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
         repository.save(returnOrder);
+        
+        // Trigger email based on RMA status
+     	String recipient = "connect@techexprt.com"; // Replace with actual recipient email
+     	String subject = "Your Return Order is:"+returnOrderDTO.getStatus();
+     	String body = "Your RMA status is:" + returnOrderDTO.getStatus();
+     	emailSender.sendEmail(recipient, subject, body);
 
        // p21RMARespo.setStatus("Success");
        // p21RMARespo.setStatus(returnOrderDTO.getStatus());
