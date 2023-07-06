@@ -1,6 +1,7 @@
 package com.continuum.serviceImpl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.criteria.Join;
@@ -47,7 +48,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
         // Create RMA in p21
         P21RMAResponse p21RMARespo = p21Service.createReturnOrder(returnOrderDTO);
         returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
-        
+        returnOrderDTO.setOrderDate(new Date());
+        returnOrderDTO.setCreatedDate(new Date());
+        returnOrderDTO.setRequestedDate(new Date());
         //returnOrderDTO.setStatus(p21RMARespo.getStatus());
         
         String Status=p21RMARespo.getStatus();
