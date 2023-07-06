@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -20,14 +22,13 @@ import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21ContactMapper;
-import com.di.commons.p21.mapper.P21OrderLineItemMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
 import com.di.integration.p21.service.P21OrderService;
-import com.di.integration.p21.service.P21ReturnOrderService;
 
 @Service
 public class P21OrderServiceImpl implements P21OrderService {
 
+	private static final Logger logger = LoggerFactory.getLogger(P21OrderServiceImpl.class);
 	@Autowired
 	RestTemplate restTemplate;
 
@@ -85,6 +86,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 			// https://apiplay.labdepotinc.com/data/erp/views/v1/p21_view_ord_ack_hdr?$
 
 			// Create the request entity with headers
+			logger.info("Order Search URI:"+fullURI);
 			RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, fullURI);
 
 			// Make the API call
@@ -144,6 +146,8 @@ public class P21OrderServiceImpl implements P21OrderService {
 				}
 				return null;
 	}
+	
+	
 
 	private URI prepareOrderURI(OrderSearchParameters orderSearchParameters) {
 		
