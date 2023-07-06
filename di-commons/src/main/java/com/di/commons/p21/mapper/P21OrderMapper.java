@@ -52,6 +52,7 @@ public class P21OrderMapper {
 					String orderDate = p21OrderData.getOrder_date();
 					Date correctorderDate = dateFormat.parse(orderDate);
 					orderDTO.setOrderDate(correctorderDate);
+					orderDTO.setCreatedDate(correctorderDate);
 					orderDTO.setContactEmailId(p21OrderData.getContact_email_address());
 					orderDTO.setPONumber(p21OrderData.getPo_number());
 					orderDTO.setOrderNo(p21OrderData.getOrder_no());
