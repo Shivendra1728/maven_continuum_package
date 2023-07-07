@@ -24,5 +24,4 @@ public class clientConfigServiceImpl implements clientService {
 		clientRepo.save(client);
 		return "Client Added Sucessfully";
 	}
-
 }

@@ -8,4 +8,5 @@ import com.continuum.repos.entity.Client;
 @Repository
 public interface clientRepository extends JpaRepository<Client, Long> {
 
+	
 }

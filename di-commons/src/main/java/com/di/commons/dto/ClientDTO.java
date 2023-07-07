@@ -18,4 +18,5 @@ public class ClientDTO {
 	private String state;
 	private String country;
 	private String email;
+
 }
