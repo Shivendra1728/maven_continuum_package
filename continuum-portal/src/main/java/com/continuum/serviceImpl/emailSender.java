@@ -1,44 +1,75 @@
 package com.continuum.serviceImpl;
-import javax.mail.*;
+
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.Properties;
+
+import org.apache.velocity.VelocityContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import com.di.commons.dto.ReturnOrderDTO;
+
+@Component
 public class emailSender {
+	@Value("${spring.mail.host}")
+	private String mailHost;
 
-	private static final String SMTP_HOST = "smtp.gmail.com";
-	private static final int SMTP_PORT = 587;
-	private static final String SMTP_USERNAME = "shivendrasinghbais14@gmail.com";
-	private static final String SMTP_PASSWORD = "grdtfdpcpealhmhe";
+	@Value("${spring.mail.port}")
+	private int mailPort;
+
+	@Value("${spring.mail.username}")
+	private String mailUsername;
+
+	@Value("${spring.mail.password}")
+	private String mailPassword;
+
 	private static final String EMAIL_FROM = "shivendra.bais@techexprt.com";
-	public static void sendEmail(String recipient, String subject, String body) throws MessagingException {
 
-		Properties props = new Properties();
-		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.host", SMTP_HOST);
-		props.put("mail.smtp.port", SMTP_PORT);
-		Session session = Session.getInstance(props, new Authenticator() {
+	private ReturnOrderDTO returnOrderDTO;
 
-			@Override
-			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(SMTP_USERNAME, SMTP_PASSWORD);
-
-			}
-
-		});
-
-		Message message = new MimeMessage(session);
-
-		message.setFrom(new InternetAddress(EMAIL_FROM));
-
-		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
-
-		message.setSubject(subject);
-
-		message.setText(body);
-
-		Transport.send(message);
-
+	@Autowired
+	public emailSender(ReturnOrderDTO returnOrderDTO) {
+		this.returnOrderDTO = returnOrderDTO;
 	}
 
+	public void sendEmail(String recipient, String subject, String body, ReturnOrderDTO returnOrderDTO)
+			throws MessagingException {
+		Properties props = new Properties();
+
+		props.put("mail.smtp.host", mailHost);
+		props.put("mail.smtp.port", mailPort);
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true"); // Enable STARTTLS
+
+		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
+			}
+		});
+
+		VelocityContext context = new VelocityContext();
+		context.put("status", returnOrderDTO.getStatus());
+		context.put("rma_order_no", returnOrderDTO.getRmaOrderNo());
+		context.put("order_no", returnOrderDTO.getOrderNo());
+
+		String templateFilePath = "src/main/resources/email_template.vm";
+		String renderedBody = EmailTemplateRenderer.renderTemplate(templateFilePath, context);
+
+		Message message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(EMAIL_FROM));
+		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+		message.setSubject(subject);
+		message.setContent(renderedBody, "text/html");
+
+		System.out.println(renderedBody);
+
+		Transport.send(message);
+	}
 }

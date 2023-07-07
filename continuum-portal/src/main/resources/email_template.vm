@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Template</title>
+</head>
+<body>
+    <h1>Hello Dear Customer,</h1>
+    
+    <p>Your ERP Order no. is: ${order_no}</p>
+    <p>Your RMA Order no. is: ${rma_order_no}</p>
+    
+    <p>Your RMA Order ${rma_order_no} is ${status}</p>
+    
+    <p>Thank you.</p>
+</body>
+</html>
