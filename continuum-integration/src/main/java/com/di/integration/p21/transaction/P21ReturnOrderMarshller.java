@@ -9,6 +9,7 @@ import javax.xml.bind.JAXBException;
 
 import org.springframework.stereotype.Component;
 
+import com.di.integration.constants.IntegrationConstants;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -54,10 +55,10 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 	System.out.println("Name: " + rootObject.getResults().getName());
 	System.out.println("getSummary faild: " + rootObject.getSummary().getFailed());
 	if(rootObject.getSummary().getFailed()==1) {
-		p21RMAResp.setStatus("Failed");
+		p21RMAResp.setStatus(IntegrationConstants.FAILED);
 	}
 	if(rootObject.getSummary().getSucceeded()==1) {
-		p21RMAResp.setStatus("Success");
+		p21RMAResp.setStatus(IntegrationConstants.SUCCESS);
 	}
 	p21RMAResp.setMessages(rootObject.getMessages());
 	//System.out.println("IgnoreDisabled: " + rootObject.isIgnoreDisabled());
@@ -98,28 +99,28 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 	private TransactionSet prepareXMl(P21ReturnOrderDataHelper p21ReturnOrderDataHelper) {
 		TransactionSet transactionSet = new TransactionSet();
 		transactionSet.setIgnoreDisabled(true);
-		transactionSet.setName("RMA");
+		transactionSet.setName(IntegrationConstants.RMA);
 		Transaction transaction = new Transaction();
 		
 		List<DataElement> dataElements= new ArrayList<>();
 
 		// ORDER HEADER DATA ELEMENT 1-----------------------------------------
 		DataElement dataElement1 = new DataElement();
-		dataElement1.setName("TABPAGE_1.order");
-		dataElement1.setType("Form");
+		dataElement1.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER);
+		dataElement1.setType(IntegrationConstants.DATA_ELEMENT_TYPE_FORM);
 
 		Row row1 = new Row();
 
 		Edit edit1 = new Edit();
-		edit1.setName("company_id");
+		edit1.setName(IntegrationConstants.EDIT_NAME_COMPANY_ID);
 		edit1.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getCompany_id());
 
 		Edit edit2 = new Edit();
-		edit2.setName("customer_id");
+		edit2.setName(IntegrationConstants.EDIT_NAME_CUSTOMER_ID);
 		edit2.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getCustomer_id());
 		
 		Edit edit3 = new Edit();
-		edit3.setName("sales_loc_id");
+		edit3.setName(IntegrationConstants.EDIT_NAME_SALES_LOC_ID);
 		edit3.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getSales_loc_id());
 
 		Edit edit4 = new Edit();
@@ -151,19 +152,19 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 		// ORDERITEM DATA ELEMENT 1-----------------------------------------
 
 		DataElement dataElement2 = new DataElement();
-		dataElement2.setName("TP_ITEMS.items");
-		dataElement2.setType("List");
+		dataElement2.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER_ITEMS);
+		dataElement2.setType(IntegrationConstants.DATA_ELEMENT_TYPE_LIST);
 		List<Row> rows= new ArrayList<>();
 		for (P21OrderItemHelper p21OrderItemHelper : p21ReturnOrderDataHelper.getP21OrderItemList()) {
 			Row itemRow = new Row();
 
 			// Create the Edit objects
 			Edit itemEdit1 = new Edit();
-			itemEdit1.setName("oe_order_item_id");
+			itemEdit1.setName(IntegrationConstants.EDIT_NAME_OE_ORDER_ITEM_ID);
 			itemEdit1.setValue(p21OrderItemHelper.getOe_order_item_id());
 
 			Edit itemEdit2 = new Edit();
-			itemEdit2.setName("unit_quantity");
+			itemEdit2.setName(IntegrationConstants.EDIT_NAME_UNIT_QUANTITY);
 			itemEdit2.setValue(p21OrderItemHelper.getUnit_quantity());
 
 			itemRow.setEdits(Arrays.asList(itemEdit1, itemEdit2));
@@ -176,14 +177,14 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 		// REASONCODE DATA ELEMENT 3-----------------------------------------
 
 		DataElement dataElement3 = new DataElement();
-		dataElement3.setName("REASONCODESHDR.reasoncodeshdr");
-		dataElement3.setType("Form");
+		dataElement3.setName(IntegrationConstants.DATA_ELEMENT_NAME_REASON_CODES);
+		dataElement3.setType(IntegrationConstants.DATA_ELEMENT_TYPE_FORM);
 
 		for (String reasonCode : p21ReturnOrderDataHelper.getReasonCodes()) {
 			Row reasonCodeRow = new Row();
 
 			Edit reasonCodeEdit = new Edit();
-			reasonCodeEdit.setName("lost_sales_id");
+			reasonCodeEdit.setName(IntegrationConstants.EDIT_NAME_LOST_SALES_ID);
 			reasonCodeEdit.setValue(reasonCode);
 
 			reasonCodeRow.setEdits(Arrays.asList(reasonCodeEdit));
@@ -197,22 +198,22 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 			dataElement4.setName("TP_CUSTSALESHISTORY.customer_sales_history");
 			dataElement4.setType("List");
 			
-			List<String> values = Arrays.asList("cc_invoice_no_display", "order_no", "location_id");
+			List<String> values = Arrays.asList(IntegrationConstants.KEY_NAME_CC_INVOICE_NO_DISPLAY, IntegrationConstants.KEY_NAME_ORDER_NO, IntegrationConstants.KEY_NAME_LOCATION_ID);
 	        Keys keys = new Keys(values);
 		    dataElement4.setKeys(keys);
 		    
 			Row rowInvoice = new Row();
 
 			Edit editInvoice1 = new Edit();
-			editInvoice1.setName("order_no");
+			editInvoice1.setName(IntegrationConstants.KEY_NAME_ORDER_NO);
 			editInvoice1.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getOrder_no());
 
 			Edit editInvoice2 = new Edit();
-			editInvoice2.setName("cc_invoice_no_display");
+			editInvoice2.setName(IntegrationConstants.KEY_NAME_CC_INVOICE_NO_DISPLAY);
 			editInvoice2.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getCc_invoice_no_display());
 
 			Edit editInvoice3 = new Edit();
-			editInvoice3.setName("location_id");
+			editInvoice3.setName(IntegrationConstants.KEY_NAME_LOCATION_ID);
 			editInvoice3.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getLocation_id());
 
 			// Add the Edit objects to the Row object

@@ -11,7 +11,7 @@ import com.di.commons.dto.ClientDTO;
 
 @RestController
 @RequestMapping("/client")
-public class clientController {
+public class ClientController {
 	@Autowired
 	clientService clientService;
 

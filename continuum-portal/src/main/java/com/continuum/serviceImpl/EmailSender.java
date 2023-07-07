@@ -14,10 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.continuum.constants.PortalConstants;
 import com.di.commons.dto.ReturnOrderDTO;
 
 @Component
-public class emailSender {
+public class EmailSender {
 	@Value("${spring.mail.host}")
 	private String mailHost;
 
@@ -35,7 +36,7 @@ public class emailSender {
 	private ReturnOrderDTO returnOrderDTO;
 
 	@Autowired
-	public emailSender(ReturnOrderDTO returnOrderDTO) {
+	public EmailSender(ReturnOrderDTO returnOrderDTO) {
 		this.returnOrderDTO = returnOrderDTO;
 	}
 
@@ -43,10 +44,10 @@ public class emailSender {
 			throws MessagingException {
 		Properties props = new Properties();
 
-		props.put("mail.smtp.host", mailHost);
-		props.put("mail.smtp.port", mailPort);
-		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.starttls.enable", "true"); // Enable STARTTLS
+		props.put(PortalConstants.SMTP_HOST, mailHost);
+		props.put(PortalConstants.SMTP_PORT, mailPort);
+		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
+		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
 
 		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
 			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
@@ -55,11 +56,19 @@ public class emailSender {
 		});
 
 		VelocityContext context = new VelocityContext();
-		context.put("status", returnOrderDTO.getStatus());
-		context.put("rma_order_no", returnOrderDTO.getRmaOrderNo());
+		
+		if(returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
+			context.put("status", returnOrderDTO.getStatus());
+			context.put("rma_order_no", returnOrderDTO.getRmaOrderNo());	
+		}
+		else {
+			context.put("status", returnOrderDTO.getStatus());
+			context.put("rma_order_no", "null");
+		}
+		
 		context.put("order_no", returnOrderDTO.getOrderNo());
 
-		String templateFilePath = "src/main/resources/email_template.vm";
+		String templateFilePath = PortalConstants.EMAIL_TEMPLATE_FILE_PATH;
 		String renderedBody = EmailTemplateRenderer.renderTemplate(templateFilePath, context);
 
 		Message message = new MimeMessage(session);
@@ -68,7 +77,7 @@ public class emailSender {
 		message.setSubject(subject);
 		message.setContent(renderedBody, "text/html");
 
-		System.out.println(renderedBody);
+	//	System.out.println(renderedBody);
 
 		Transport.send(message);
 	}

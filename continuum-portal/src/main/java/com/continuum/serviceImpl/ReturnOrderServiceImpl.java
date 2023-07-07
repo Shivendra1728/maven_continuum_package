@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.continuum.constants.PortalConstants;
 import com.continuum.repos.entity.OrderAddress;
 import com.continuum.repos.entity.ReturnOrder;
 import com.continuum.repos.repositories.ReturnOrderRepository;
@@ -43,23 +44,26 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	CustomerService customerService;
 
 	@Autowired
-	emailSender sender;
+	EmailSender sender;
 
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
 		P21RMAResponse p21RMARespo = p21Service.createReturnOrder(returnOrderDTO);
 		returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
-		returnOrderDTO.setStatus("Under Review");
+		returnOrderDTO.setStatus(PortalConstants.UNDER_REVIEW);
 		returnOrderDTO.setOrderDate(new Date());
 		returnOrderDTO.setCreatedDate(new Date());
 		returnOrderDTO.setRequestedDate(new Date());
 		// returnOrderDTO.setStatus(p21RMARespo.getStatus());
 
 		String Status = p21RMARespo.getStatus();
-		if (Status.equals("Success")) {
-			returnOrderDTO.setStatus("Under Review");
+		if (Status.equals(PortalConstants.SUCCESS)) {
+			returnOrderDTO.setStatus(PortalConstants.UNDER_REVIEW);
+            logger.info("Setting status to '{}'", PortalConstants.UNDER_REVIEW);
+
 		} else {
-			returnOrderDTO.setStatus("Failed");
+			returnOrderDTO.setStatus(PortalConstants.FAILED);
+			 logger.info("Setting status to '{}'", PortalConstants.FAILED);
 		}
 
 		CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
@@ -74,9 +78,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		repository.save(returnOrder);
 
 		// Trigger email based on RMA status
-		String recipient = "operations@techexprt.com"; // Replace with actual recipient email
-		String subject = "Your RMA Return Order " + returnOrderDTO.getRmaOrderNo() + " : " + returnOrderDTO.getStatus();
-		String body = "Your RMA status is:" + returnOrderDTO.getStatus();
+		String recipient = PortalConstants.EMAIL_RECIPIENT; // Replace with actual recipient email
+		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : " + returnOrderDTO.getStatus();
+		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
 //     	emailSender emailSender1 = new emailSender(returnOrderDTO);
 //     	emailSender1.
