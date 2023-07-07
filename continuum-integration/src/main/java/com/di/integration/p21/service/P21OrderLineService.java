@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 public interface P21OrderLineService {
 	
-	public List<OrderItemDTO> getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters) throws JsonMappingException, JsonProcessingException, ParseException, Exception;
+	public List<OrderItemDTO> getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters,int totalItem) throws JsonMappingException, JsonProcessingException, ParseException, Exception;
 
 }
 

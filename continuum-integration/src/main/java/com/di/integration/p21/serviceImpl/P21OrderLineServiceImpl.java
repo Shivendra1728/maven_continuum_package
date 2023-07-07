@@ -54,23 +54,23 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 	P21OrderLineItemMapper p21orderLineItemMapper;
 
 	@Override
-	public List<OrderItemDTO> getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters) throws JsonMappingException, JsonProcessingException, ParseException, Exception {
-			return p21orderLineItemMapper.convertP21OrderLineObjectToOrderLineDTO(getOrderLineData(orderSearchParameters));
+	public List<OrderItemDTO> getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters,int totalItem) throws JsonMappingException, JsonProcessingException, ParseException, Exception {
+			return p21orderLineItemMapper.convertP21OrderLineObjectToOrderLineDTO(getOrderLineData(orderSearchParameters,totalItem));
 			
 	}
 
-	private String getOrderLineData(OrderSearchParameters orderSearchParameters) throws Exception {
+	private String getOrderLineData(OrderSearchParameters orderSearchParameters, int totalItem) throws Exception {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
-		URI fulluri = prepareOrderLineURI(orderSearchParameters);
-		logger.info("getOrderLineData URI: ",fulluri);
+		URI fulluri = prepareOrderLineURI(orderSearchParameters,totalItem);
+		logger.info("getOrderLineData URI: "+fulluri);
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		RequestEntity<Void> requestMapping = new RequestEntity<>(headers, HttpMethod.GET, fulluri);
 		ResponseEntity<String> response = restTemplate.exchange(requestMapping, String.class);
 		return response.getBody();
 	}
 
-	private URI prepareOrderLineURI(OrderSearchParameters orderSearchParameters) throws URISyntaxException {
+	private URI prepareOrderLineURI(OrderSearchParameters orderSearchParameters,int totalItem) throws URISyntaxException {
 
 		StringBuilder filter = new StringBuilder();
 
@@ -92,16 +92,13 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 			filter.append("customer_id eq " + orderSearchParameters.getCustomerId());
 		}
 
-		if (isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
-			if (filter.length() > 0) {
-				filter.append(" and ");
-			}
-			filter.append("ship2_zip eq '" + orderSearchParameters.getZipcode() + "'");
-		}
 
 		try {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=&$filter=" + encodedFilter;
+			if(totalItem==1) {
+				query=query+"&$top=1";
+			}
 			URI uri = new URI(DATA_API_BASE_URL + DATA_API_ORDER_LINE);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;

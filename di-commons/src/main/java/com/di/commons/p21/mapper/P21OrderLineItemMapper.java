@@ -33,15 +33,8 @@ public class P21OrderLineItemMapper {
 		for (P21OrderLineItem p21OrderLineItem : p21OrderLineItemList) {
 
 			OrderItemDTO orderitemDTO = new OrderItemDTO();
-			String invoiceDate = p21OrderLineItem.getOriginal_invoice_no();
-			if (invoiceDate != null) {
-				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-				Date parsedInvoiceDate = dateFormat.parse(invoiceDate);
-				orderitemDTO.setPurchaseDate(parsedInvoiceDate);
-			} else {
-				orderitemDTO.setPurchaseDate(null);
-			}
-
+			orderitemDTO.setOrderNo(p21OrderLineItem.getOrder_no());
+			orderitemDTO.setInvoiceNo(p21OrderLineItem.getOriginal_invoice_no());
 			orderitemDTO.setDescription(p21OrderLineItem.getItem_desc());
 			orderitemDTO.setPartNo(p21OrderLineItem.getItem_id());
 			orderitemDTO.setAmount(new BigDecimal(p21OrderLineItem.getUnit_price()));

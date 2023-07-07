@@ -3,6 +3,8 @@ package com.di.integration.p21.serviceImpl;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,6 +26,8 @@ import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21ContactMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
 import com.di.integration.p21.service.P21OrderService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 @Service
 public class P21OrderServiceImpl implements P21OrderService {
@@ -62,18 +66,33 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 	@Override
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
-		
-			List<OrderDTO>  orderDTOList=p21OrderMapper.convertP21OrderObjectToOrderDTO(getOrderData(orderSearchParameters));
-			for (OrderDTO orderDTO : orderDTOList) {
-				OrderSearchParameters orderSearchParams= new OrderSearchParameters();
-				orderSearchParams.setOrderNo(orderDTO.getOrderNo());
-				List<OrderItemDTO> orderItemDTOList= p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParams);
-				orderDTO.setOrderItems(orderItemDTOList);
-				orderDTO.setContactDTO(p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
-			} 
-			
-			
+		 List<OrderDTO>  orderDTOList=new ArrayList<>();
+			if(isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
+				int totalItem=1; //fetching one item to get invoice no from item
+				List<OrderItemDTO> orderItemDTOList= p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParameters,totalItem);
+				if(orderItemDTOList.size()>0) {
+					orderSearchParameters.setOrderNo(orderItemDTOList.get(0).getOrderNo());
+					  orderDTOList=getAllOrdersBySearch(orderSearchParameters);
+				}
+				
+			}else {
+				   orderDTOList=getAllOrdersBySearch(orderSearchParameters);
+			}
 			return orderDTOList;
+	}
+	
+	private   List<OrderDTO> getAllOrdersBySearch(OrderSearchParameters orderSearchParameters) throws JsonMappingException, JsonProcessingException, ParseException, Exception {
+		 List<OrderDTO>  orderDTOList=new ArrayList<>();
+		 orderDTOList=p21OrderMapper.convertP21OrderObjectToOrderDTO(getOrderData(orderSearchParameters));
+		for (OrderDTO orderDTO : orderDTOList) {
+			int totalItem=-1; //fetch all items in case of -1 
+			OrderSearchParameters orderSearchParams= new OrderSearchParameters();
+			orderSearchParams.setOrderNo(orderDTO.getOrderNo());
+			List<OrderItemDTO> orderItemDTOList= p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParams,totalItem);
+			orderDTO.setOrderItems(orderItemDTOList);
+			orderDTO.setContactDTO(p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
+		} 
+		return orderDTOList;
 	}
 	private String getOrderData(OrderSearchParameters orderSearchParameters) throws Exception{
 			// RestTemplate restTemplate = new RestTemplate();
@@ -153,7 +172,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 	private URI prepareOrderURI(OrderSearchParameters orderSearchParameters) {
 		
 		StringBuilder filter =new StringBuilder();
-		if (isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
+		if (!isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo()) &&  isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
 			filter.append("ship2_zip eq '"+orderSearchParameters.getZipcode()+"'");
 		}
 		if (isNotNullAndNotEmpty(orderSearchParameters.getCustomerId())) {
@@ -170,13 +189,22 @@ public class P21OrderServiceImpl implements P21OrderService {
 			filter.append("po_number eq '"+orderSearchParameters.getPoNo()+"'");
 			 
 		}
-		if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
+		if (isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
+			 if (filter.length() > 0) {
+			        filter.append(" and ");
+			    }  
+			filter.append("mail_postal_code_a eq '"+orderSearchParameters.getZipcode()+"'");
+			 
+		}
+		if (isNotNullAndNotEmpty(orderSearchParameters.getOrderNo())) {
 			 if (filter.length() > 0) {
 			        filter.append(" and ");
 			    }
-			filter.append("original_invoice_no eq '"+orderSearchParameters.getInvoiceNo()+"'");
+			filter.append("order_no eq '"+orderSearchParameters.getOrderNo()+"'");
 			 
 		}
+		 
+		 
 		try {
 
 			//String filter = "customer_id eq 157108 and ship2_zip eq '35811'";
