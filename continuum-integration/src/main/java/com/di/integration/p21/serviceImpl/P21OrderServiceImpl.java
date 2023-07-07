@@ -107,6 +107,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
 		URI fullURI = prepareContactURI(email);
+		logger.info("getContactData URI:"+fullURI);
 		// Set the Accept header to receive JSON response
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		// https://apiplay.labdepotinc.com/data/erp/views/v1/p21_view_ord_ack_hdr?$
@@ -181,7 +182,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 			//String filter = "customer_id eq 157108 and ship2_zip eq '35811'";
 			
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
-			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter;
+			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter+"&$top=1&$orderby=order_date";
 
 			URI uri = new URI(DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);

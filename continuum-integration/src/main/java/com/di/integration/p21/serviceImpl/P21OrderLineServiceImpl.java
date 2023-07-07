@@ -8,6 +8,8 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +29,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 @Service
 public class P21OrderLineServiceImpl implements P21OrderLineService {
+	
+	private static final Logger logger = LoggerFactory.getLogger(P21OrderLineServiceImpl.class);
 
 	@Autowired
 	RestTemplate restTemplate;
@@ -59,6 +63,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
 		URI fulluri = prepareOrderLineURI(orderSearchParameters);
+		logger.info("getOrderLineData URI: ",fulluri);
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		RequestEntity<Void> requestMapping = new RequestEntity<>(headers, HttpMethod.GET, fulluri);
 		ResponseEntity<String> response = restTemplate.exchange(requestMapping, String.class);
