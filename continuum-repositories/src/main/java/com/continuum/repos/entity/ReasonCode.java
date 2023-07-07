@@ -53,6 +53,9 @@ public class ReasonCode extends BaseEntity {
 	// @JsonIgnore
 	private Store store;
 	
+	@Builder.Default
+	private boolean img_mandatory=true;
+	
 	/*
 	 * @ManyToOne(fetch = FetchType.LAZY)
 	 * 

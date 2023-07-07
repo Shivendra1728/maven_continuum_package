@@ -37,6 +37,9 @@ public class Store extends BaseEntity{
 	private boolean notificationEnable= true;
 	
 	@Builder.Default
+	private boolean allow_rstck_fees=true;
+	
+	@Builder.Default
 	private boolean seperateDBInstance= true;
 	
 	private String filterSearchConfiguration;

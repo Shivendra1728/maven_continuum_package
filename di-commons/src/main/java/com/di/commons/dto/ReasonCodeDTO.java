@@ -28,5 +28,6 @@ public class ReasonCodeDTO {
 	private String code;
 	private String description;
 	private StoreDTO store;
+	private boolean img_mandatory;
 	//private String status;
 }

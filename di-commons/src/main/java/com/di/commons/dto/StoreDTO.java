@@ -24,6 +24,7 @@ public class StoreDTO {
 	private String description;
 	private String URL;
 	
+	
 	private boolean enabled;
 	private boolean forceAccepTAndC;
 	private String ERPConnectionString;
@@ -38,6 +39,8 @@ public class StoreDTO {
 	private String ERPDataSychInterval;
 	private String feeType;
 	
+	
+	private boolean allow_rstck_fees;
 	private BigDecimal reStockingAmount;
 	
 	private String reasonListing;
