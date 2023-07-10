@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.OrderItemDTO;
+import com.di.commons.dto.StoreDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21ContactMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
@@ -42,91 +44,97 @@ public class P21OrderServiceImpl implements P21OrderService {
 	@Value("${erp.data_api_order_view}")
 	String DATA_API_ORDER_VIEW;
 
-	//@Value("${erp.token}") //property also commented
-	//String TOKEN;
+	// @Value("${erp.token}") //property also commented
+	// String TOKEN;
 
 	@Value("${erp.order_select_fields}")
 	String ORDER_SELECT_FIELDS;
 
 	@Value("${erp.order_format}")
 	String ORDER_FORMAT;
-	
+
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
-	
-	
+
 	@Autowired
 	P21OrderMapper p21OrderMapper;
-	
+
 	@Autowired
 	P21OrderLineServiceImpl p21OrderLineServiceImpl;
-	
+
 	@Autowired
 	P21ContactMapper p21ContactMapper;
+	@Autowired
+	StoreDTO storeDTO;
 
 	@Override
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
-		 List<OrderDTO>  orderDTOList=new ArrayList<>();
-			if(isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
-				int totalItem=1; //fetching one item to get invoice no from item
-				List<OrderItemDTO> orderItemDTOList= p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParameters,totalItem);
-				if(orderItemDTOList.size()>0) {
-					orderSearchParameters.setOrderNo(orderItemDTOList.get(0).getOrderNo());
-					  orderDTOList=getAllOrdersBySearch(orderSearchParameters);
-				}
-				
-			}else {
-				   orderDTOList=getAllOrdersBySearch(orderSearchParameters);
+		List<OrderDTO> orderDTOList = new ArrayList<>();
+		if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
+			int totalItem = 1; // fetching one item to get invoice no from item
+			List<OrderItemDTO> orderItemDTOList = p21OrderLineServiceImpl
+					.getordersLineBySearchcriteria(orderSearchParameters, totalItem);
+			if (orderItemDTOList.size() > 0) {
+				orderSearchParameters.setOrderNo(orderItemDTOList.get(0).getOrderNo());
+				orderDTOList = getAllOrdersBySearch(orderSearchParameters);
 			}
-			return orderDTOList;
-	}
-	
-	private   List<OrderDTO> getAllOrdersBySearch(OrderSearchParameters orderSearchParameters) throws JsonMappingException, JsonProcessingException, ParseException, Exception {
-		 List<OrderDTO>  orderDTOList=new ArrayList<>();
-		 orderDTOList=p21OrderMapper.convertP21OrderObjectToOrderDTO(getOrderData(orderSearchParameters));
-		for (OrderDTO orderDTO : orderDTOList) {
-			int totalItem=-1; //fetch all items in case of -1 
-			OrderSearchParameters orderSearchParams= new OrderSearchParameters();
-			orderSearchParams.setOrderNo(orderDTO.getOrderNo());
-			List<OrderItemDTO> orderItemDTOList= p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParams,totalItem);
-			orderDTO.setOrderItems(orderItemDTOList);
-			orderDTO.setContactDTO(p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
-		} 
+
+		} else {
+			orderDTOList = getAllOrdersBySearch(orderSearchParameters);
+		}
 		return orderDTOList;
 	}
-	private String getOrderData(OrderSearchParameters orderSearchParameters) throws Exception{
-			// RestTemplate restTemplate = new RestTemplate();
-			// Add the Bearer token to the request headers
-			HttpHeaders headers = new HttpHeaders();
-			headers.setBearerAuth(p21TokenServiceImpl.getToken());
-			URI fullURI = prepareOrderURI(orderSearchParameters);
-			// Set the Accept header to receive JSON response
-			headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-			// https://apiplay.labdepotinc.com/data/erp/views/v1/p21_view_ord_ack_hdr?$
 
-			// Create the request entity with headers
-			logger.info("Order Search URI:"+fullURI);
-			RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, fullURI);
-
-			// Make the API call
-			ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
-			return  response.getBody();
-			// Process the API response
-			/*
-			 * if (response.getStatusCode().is2xxSuccessful()) { responseBody =
-			 * response.getBody(); System.out.println("API response: " + responseBody); }
-			 * else { System.err.println("API call failed with status code: " +
-			 * response.getStatusCodeValue()); }
-			 */
+	private List<OrderDTO> getAllOrdersBySearch(OrderSearchParameters orderSearchParameters)
+			throws JsonMappingException, JsonProcessingException, ParseException, Exception {
+		List<OrderDTO> orderDTOList = new ArrayList<>();
+		orderDTOList = p21OrderMapper.convertP21OrderObjectToOrderDTO(getOrderData(orderSearchParameters));
+		for (OrderDTO orderDTO : orderDTOList) {
+			int totalItem = -1; // fetch all items in case of -1
+			OrderSearchParameters orderSearchParams = new OrderSearchParameters();
+			orderSearchParams.setOrderNo(orderDTO.getOrderNo());
+			List<OrderItemDTO> orderItemDTOList = p21OrderLineServiceImpl
+					.getordersLineBySearchcriteria(orderSearchParams, totalItem);
+			orderDTO.setOrderItems(orderItemDTOList);
+			orderDTO.setContactDTO(
+					p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
+		}
+		return orderDTOList;
 	}
-	
-	private String getContactData(String email) throws Exception{
+
+	private String getOrderData(OrderSearchParameters orderSearchParameters) throws Exception {
+		// RestTemplate restTemplate = new RestTemplate();
+		// Add the Bearer token to the request headers
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth(p21TokenServiceImpl.getToken());
+		URI fullURI = prepareOrderURI(orderSearchParameters);
+		// Set the Accept header to receive JSON response
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		// https://apiplay.labdepotinc.com/data/erp/views/v1/p21_view_ord_ack_hdr?$
+
+		// Create the request entity with headers
+		logger.info("Order Search URI:" + fullURI);
+		RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, fullURI);
+
+		// Make the API call
+		ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
+		return response.getBody();
+		// Process the API response
+		/*
+		 * if (response.getStatusCode().is2xxSuccessful()) { responseBody =
+		 * response.getBody(); System.out.println("API response: " + responseBody); }
+		 * else { System.err.println("API call failed with status code: " +
+		 * response.getStatusCodeValue()); }
+		 */
+	}
+
+	private String getContactData(String email) throws Exception {
 		// RestTemplate restTemplate = new RestTemplate();
 		// Add the Bearer token to the request headers
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
 		URI fullURI = prepareContactURI(email);
-		logger.info("getContactData URI:"+fullURI);
+		logger.info("getContactData URI:" + fullURI);
 		// Set the Accept header to receive JSON response
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		// https://apiplay.labdepotinc.com/data/erp/views/v1/p21_view_ord_ack_hdr?$
@@ -136,7 +144,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 		// Make the API call
 		ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
-		return  response.getBody();
+		return response.getBody();
 		// Process the API response
 		/*
 		 * if (response.getStatusCode().is2xxSuccessful()) { responseBody =
@@ -144,79 +152,93 @@ public class P21OrderServiceImpl implements P21OrderService {
 		 * else { System.err.println("API call failed with status code: " +
 		 * response.getStatusCodeValue()); }
 		 */
-}
-	
-	private URI prepareContactURI(String email) {
-		
-		//p21_view_contacts?$select=&$filter=email_address eq 'SOUSADA.SALINTHONE@AZZUR.COM'&$format=json
-				
-				try {
-
-					String filter = "email_address eq '"+email+"'";
-					
-					String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
-					String query = "$format=" + ORDER_FORMAT + "&$select=" +"&$filter=" + encodedFilter;
-
-					URI uri = new URI(DATA_API_BASE_URL + "p21_view_contacts");
-					URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
-					return fullURI;
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-
-				}
-				return null;
 	}
-	
-	
 
-	private URI prepareOrderURI(OrderSearchParameters orderSearchParameters) {
-		
-		StringBuilder filter =new StringBuilder();
-		if (!isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo()) &&  isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
-			filter.append("ship2_zip eq '"+orderSearchParameters.getZipcode()+"'");
-		}
-		if (isNotNullAndNotEmpty(orderSearchParameters.getCustomerId())) {
-			 if (filter.length() > 0) {
-			        filter.append(" and ");
-			    }
-			filter.append("customer_id eq "+orderSearchParameters.getCustomerId());
-		}
+	private URI prepareContactURI(String email) {
 
-		if (isNotNullAndNotEmpty(orderSearchParameters.getPoNo())) {
-			 if (filter.length() > 0) {
-			        filter.append(" and ");
-			    }
-			filter.append("po_number eq '"+orderSearchParameters.getPoNo()+"'");
-			 
-		}
-		if (isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
-			 if (filter.length() > 0) {
-			        filter.append(" and ");
-			    }  
-			filter.append("mail_postal_code_a eq '"+orderSearchParameters.getZipcode()+"'");
-			 
-		}
-		if (isNotNullAndNotEmpty(orderSearchParameters.getOrderNo())) {
-			 if (filter.length() > 0) {
-			        filter.append(" and ");
-			    }
-			filter.append("order_no eq '"+orderSearchParameters.getOrderNo()+"'");
-			 
-		}
-		 
-		 
+		// p21_view_contacts?$select=&$filter=email_address eq
+		// 'SOUSADA.SALINTHONE@AZZUR.COM'&$format=json
+
 		try {
 
-			//String filter = "customer_id eq 157108 and ship2_zip eq '35811'";
-			
-			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
-			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter+"&$top=1&$orderby=order_date";
+			String filter = "email_address eq '" + email + "'";
 
-			URI uri = new URI(DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
+			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
+			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter;
+
+			URI uri = new URI(DATA_API_BASE_URL + "p21_view_contacts");
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			
+			logger.error("An error occurred while preparing the contact URI: {}", e.getMessage());
+
+		}
+		return null;
+	}
+
+	private URI prepareOrderURI(OrderSearchParameters orderSearchParameters) {
+
+		StringBuilder filter = new StringBuilder();
+		if (!isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())
+				&& isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
+			filter.append("ship2_zip eq '" + orderSearchParameters.getZipcode() + "'");
+		}
+		if (isNotNullAndNotEmpty(orderSearchParameters.getCustomerId())) {
+			if (filter.length() > 0) {
+				filter.append(" and ");
+			}
+			filter.append("customer_id eq " + orderSearchParameters.getCustomerId());
+		}
+
+		if (isNotNullAndNotEmpty(orderSearchParameters.getPoNo())) {
+			if (filter.length() > 0) {
+				filter.append(" and ");
+			}
+			filter.append("po_number eq '" + orderSearchParameters.getPoNo() + "'");
+		}
+		if (isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
+			if (filter.length() > 0) {
+				filter.append(" and ");
+			}
+			filter.append("mail_postal_code_a eq '" + orderSearchParameters.getZipcode() + "'");
+		}
+		if (isNotNullAndNotEmpty(orderSearchParameters.getOrderNo())) {
+			if (filter.length() > 0) {
+				filter.append(" and ");
+			}
+			filter.append("order_no eq '" + orderSearchParameters.getOrderNo() + "'");
+		}
+
+		LocalDate localDate ;
+		if(storeDTO.getReturnPolicyPeriod()!=null) {
+		     localDate = LocalDate.now().minusDays(storeDTO.getReturnPolicyPeriod());
+		}
+		else {
+			// Add the condition to filter out return orders older than 90 days
+			 localDate = LocalDate.now().minusDays(90);
+
+		}
+		
+		if (filter.length() > 0) {
+			filter.append(" and ");
+		}
+		filter.append("order_date ge " + "datetime'" + localDate.toString() + "'");
+
+		try {
+			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
+			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter
+					+ "&$top=1&$orderby=order_date";
+
+			URI uri = new URI(DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
+			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
+			logger.info("Filtering orders with order_date greater than or equal to: {}", localDate);
+			logger.info("Current date: {}", LocalDate.now());
+
+			return fullURI;
+		} catch (Exception e) {
+			
+			logger.error("An error occurred while preparing the order URI: {}", e.getMessage());
 
 		}
 		return null;
