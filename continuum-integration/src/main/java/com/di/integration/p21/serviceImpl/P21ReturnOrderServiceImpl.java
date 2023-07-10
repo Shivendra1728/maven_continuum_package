@@ -109,14 +109,18 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
 		logger.info("creating RMA");
+		
 		String xmlPayload = p21ReturnOrderMarshller.createRMA(p21ReturnOrderDataHelper);
-		System.out.println("returnOrderXmlPayload" + xmlPayload);
+		logger.info("returnOrderXmlPayload {}", xmlPayload);
+
 		headers.setContentType(MediaType.APPLICATION_XML);
 		ResponseEntity<String> response = restTemplate.exchange(RMA_CREATE_API, HttpMethod.POST,
 				new HttpEntity<>(xmlPayload, headers), String.class);
 		String responseBody = response.getBody();
 		
-		System.out.println("#### RMA RESPONSE ####" + response.getBody().replace("Keys", "resKeys"));
+		
+		 logger.info("#### RMA RESPONSE #### {}", response.getBody().replace("Keys", "resKeys"));
+
 		return	p21ReturnOrderMarshller.umMarshall( response.getBody().replace("Keys", "resKeys"));
 	}
 

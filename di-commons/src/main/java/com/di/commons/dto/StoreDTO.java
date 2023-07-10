@@ -3,6 +3,8 @@ package com.di.commons.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 import com.continuum.repos.entity.StoreAddress;
 
 import lombok.Getter;
@@ -16,6 +18,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @NoArgsConstructor
 @ToString
+@Component
 public class StoreDTO {
 	
 	private Long id;

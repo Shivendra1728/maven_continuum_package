@@ -7,6 +7,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.di.integration.constants.IntegrationConstants;
@@ -18,6 +20,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 @Component
 public class P21ReturnOrderMarshller {
+
+	private static final Logger logger = LoggerFactory.getLogger(P21ReturnOrderMarshller.class);
 
 	public String createRMA(P21ReturnOrderDataHelper p21ReturnOrderDataHelper)
 			throws JAXBException, JsonProcessingException {
@@ -38,7 +42,8 @@ public class P21ReturnOrderMarshller {
 		
 		xml = xml.replaceAll("wstxns4:", "");
 		xml = xml.replaceAll("xmlns:wstxns4", "xmlns:a");
-		System.out.println(xml);
+		
+		logger.info(xml);
 		return xml;
 	}
 	
@@ -52,8 +57,11 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 	RootObject rootObject = objectMapper.readValue(jsonString, RootObject.class);
 
 	// Access the unmarshalled data
-	System.out.println("Name: " + rootObject.getResults().getName());
-	System.out.println("getSummary faild: " + rootObject.getSummary().getFailed());
+	//System.out.println("Name: " + rootObject.getResults().getName());
+	//System.out.println("getSummary faild: " + rootObject.getSummary().getFailed());
+	logger.info("Name: {}", rootObject.getResults().getName());
+	logger.info("getSummary failed: {}", rootObject.getSummary().getFailed());
+
 	if(rootObject.getSummary().getFailed()==1) {
 		p21RMAResp.setStatus(IntegrationConstants.FAILED);
 	}
@@ -70,17 +78,20 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 	    
 	    List<ResponseDataElements> dataElements = transaction.getDataElements();
 	    for (ResponseDataElements dataElement : dataElements) {
-	        System.out.println("Data Element Name: " + dataElement.getName());
-	        
+	       // System.out.println("Data Element Name: " + dataElement.getName());
+	    	logger.info("Data Element Name: {}", dataElement.getName());
+	    	
 	        List<ResponseRows> rows = dataElement.getRows();
 	        for (ResponseRows row : rows) {
 	            List<ResponseEdit> edits = row.getEdits();
 	            for (ResponseEdit edit : edits) {
-	                System.out.println("Edit Name: " + edit.getName());
-	                if("order_no".equalsIgnoreCase(edit.getName())) {
+	               
+	            	logger.info("Edit Name: {}", edit.getName());
+	            	if("order_no".equalsIgnoreCase(edit.getName())) {
 	                	p21RMAResp.setRmaOrderNo(edit.getValue());
 	                }
-	                System.out.println("Edit Value: " + edit.getValue());
+	              
+	            	logger.info("Edit Value: {}", edit.getValue());
 	            }
 	        }
 	    }

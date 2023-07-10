@@ -103,7 +103,9 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+	
+	        logger.error("An error occurred while preparing the order line URI: {}", e.getMessage());
+
 		}
 		return null;
 	}
