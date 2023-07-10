@@ -21,6 +21,6 @@ public final class PortalConstants {
 	public static final String SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
 
 	// Email template file path
-	public static final String EMAIL_TEMPLATE_FILE_PATH = "src/main/resources/email_template.vm";
+	public static final String EMAIL_TEMPLATE_FILE_PATH = "resources/email_template.vm";
 
 }

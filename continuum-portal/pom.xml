@@ -9,23 +9,23 @@
 	</parent>
 	<artifactId>continuum-portal</artifactId>
 	<dependencies>
-		
+
 		<dependency>
 			<groupId>com.continuum-repositories</groupId>
 			<artifactId>continuum-repositories</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-        <groupId>javax.mail</groupId>
-        <artifactId>javax.mail-api</artifactId>
-        <version>1.6.2</version>
-    </dependency>
-   
-    <dependency>
-        <groupId>com.sun.mail</groupId>
-        <artifactId>javax.mail</artifactId>
-        <version>1.6.2</version>
-    </dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>javax.mail-api</artifactId>
+			<version>1.6.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.6.2</version>
+		</dependency>
 		<dependency>
 			<groupId>com.di-commons</groupId>
 			<artifactId>di-commons</artifactId>
@@ -36,20 +36,18 @@
 			<artifactId>continuum-integration</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		 <dependency>
-	<!-- <groupId>org.springframework.boot</groupId>
-	<artifactId>spring-boot-starter-thymeleaf</artifactId>
-	</dependency>
-	<dependency> -->
-    <groupId>org.apache.velocity</groupId>
-    <artifactId>velocity-engine-core</artifactId>
-    <version>2.3</version>
-	</dependency>
-	<dependency>
-    <groupId>org.apache.velocity.tools</groupId>
-    <artifactId>velocity-tools-generic</artifactId>
-    <version>3.1</version>
-	</dependency>
+		<dependency>
+			<!-- <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-thymeleaf</artifactId> 
+				</dependency> <dependency> -->
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity-engine-core</artifactId>
+			<version>2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.velocity.tools</groupId>
+			<artifactId>velocity-tools-generic</artifactId>
+			<version>3.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -68,5 +66,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 </project>

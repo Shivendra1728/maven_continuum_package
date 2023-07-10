@@ -38,7 +38,7 @@ public class FileUploadHelper {
 				Path destinationfile = Paths.get(uploadDirectory + "/" + originalFilename);
 				data.transferTo(destinationfile);
 				
-				orderItemDocumentsHelper.storeOrderItemDocument(uploadDirectory, type, returnOrderItemId);
+				orderItemDocumentsHelper.storeOrderItemDocument(destinationfile.toString(), type, returnOrderItemId);
 
 				f = true;
 			} else {

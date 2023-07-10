@@ -1,24 +1,37 @@
 package com.continuum.serviceImpl;
-
-import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.exception.ResourceNotFoundException;
-import org.apache.velocity.exception.ParseErrorException;
-import org.apache.velocity.exception.MethodInvocationException;
-
+import org.apache.velocity.app.VelocityEngine;
 import java.io.StringWriter;
 
+
 public class EmailTemplateRenderer {
-    public static String renderTemplate(String templateFilePath, VelocityContext context) {
-        Velocity.init();
-        
+    private static final String TEMPLATE_CONTENT = "<html>\r\n"
+    		+ "<head>\r\n"
+    		+ "    <meta charset=\"UTF-8\">\r\n"
+    		+ "    <title>Email Template</title>\r\n"
+    		+ "</head>\r\n"
+    		+ "<body>\r\n"
+    		+ "    <h1>Hello Dear Customer,</h1>\r\n"
+    		+ "    \r\n"
+    		+ "    <p>Your ERP Order no. is: ${order_no}</p>\r\n"
+    		+ "    <p>Your RMA Order no. is: ${rma_order_no}</p>\r\n"
+    		+ "    \r\n"
+    		+ "    <p>Your RMA Order ${rma_order_no} is ${status}</p>\r\n"
+    		+ "    \r\n"
+    		+ "    <p>Thank you.</p>\r\n"
+    		+ "</body>\r\n"
+    		+ "</html>\r\n"
+    		+ "";
+
+    public static String renderTemplate(VelocityContext context) {
+        VelocityEngine velocityEngine = new VelocityEngine();
+        velocityEngine.init();
+
         try {
-            Template template = Velocity.getTemplate(templateFilePath);
             StringWriter writer = new StringWriter();
-            template.merge(context, writer);
+            velocityEngine.evaluate(context, writer, "EmailTemplate", TEMPLATE_CONTENT);
             return writer.toString();
-        } catch (ResourceNotFoundException | ParseErrorException | MethodInvocationException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 

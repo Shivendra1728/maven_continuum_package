@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import com.continuum.constants.PortalConstants;
 import com.di.commons.dto.ReturnOrderDTO;
 
+
 @Component
 public class EmailSender {
 	@Value("${spring.mail.host}")
@@ -69,7 +70,8 @@ public class EmailSender {
 		context.put("order_no", returnOrderDTO.getOrderNo());
 
 		String templateFilePath = PortalConstants.EMAIL_TEMPLATE_FILE_PATH;
-		String renderedBody = EmailTemplateRenderer.renderTemplate(templateFilePath, context);
+		String renderedBody = EmailTemplateRenderer.renderTemplate(context);
+
 
 		Message message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(EMAIL_FROM));
