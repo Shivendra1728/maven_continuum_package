@@ -21,12 +21,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.repos.entity.Customer;
+import com.continuum.repos.entity.Store;
+import com.continuum.repos.repositories.CustomerRepository;
+import com.continuum.repos.repositories.StoreRepository;
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.dto.StoreDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21ContactMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
+import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21OrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -38,19 +43,19 @@ public class P21OrderServiceImpl implements P21OrderService {
 	@Autowired
 	RestTemplate restTemplate;
 
-	@Value("${erp.data_api_base_url}")
+	@Value(IntegrationConstants.ERP_DATA_API_BASE_URL)
 	String DATA_API_BASE_URL;
 
-	@Value("${erp.data_api_order_view}")
+	@Value(IntegrationConstants.ERP_DATA_API_ORDER_VIEW)
 	String DATA_API_ORDER_VIEW;
 
 	// @Value("${erp.token}") //property also commented
 	// String TOKEN;
 
-	@Value("${erp.order_select_fields}")
+	@Value(IntegrationConstants.ERP_ORDER_SELECT_FIELDS)
 	String ORDER_SELECT_FIELDS;
 
-	@Value("${erp.order_format}")
+	@Value(IntegrationConstants.ERP_ORDER_FORMAT)
 	String ORDER_FORMAT;
 
 	@Autowired
@@ -66,6 +71,14 @@ public class P21OrderServiceImpl implements P21OrderService {
 	P21ContactMapper p21ContactMapper;
 	@Autowired
 	StoreDTO storeDTO;
+	
+	@Autowired
+	CustomerRepository customerRepository;
+	
+	@Autowired
+	StoreRepository storeRepository;
+	
+	LocalDate localDate;
 
 	@Override
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
@@ -161,16 +174,17 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 		try {
 
-			String filter = "email_address eq '" + email + "'";
+			 String filter = "email_address eq '" + email + "'";
+
 
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter;
 
-			URI uri = new URI(DATA_API_BASE_URL + "p21_view_contacts");
+			URI uri = new URI(DATA_API_BASE_URL + IntegrationConstants.ENDPOINT_VIEW_CONTACTS);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;
 		} catch (Exception e) {
-			
+
 			logger.error("An error occurred while preparing the contact URI: {}", e.getMessage());
 
 		}
@@ -182,49 +196,68 @@ public class P21OrderServiceImpl implements P21OrderService {
 		StringBuilder filter = new StringBuilder();
 		if (!isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())
 				&& isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
-			filter.append("ship2_zip eq '" + orderSearchParameters.getZipcode() + "'");
+			 filter.append("ship2_zip eq '" + orderSearchParameters.getZipcode() + "'");
+
+			
 		}
 		if (isNotNullAndNotEmpty(orderSearchParameters.getCustomerId())) {
 			if (filter.length() > 0) {
-				filter.append(" and ");
+				filter.append(IntegrationConstants.AND);
 			}
 			filter.append("customer_id eq " + orderSearchParameters.getCustomerId());
+			
 		}
 
 		if (isNotNullAndNotEmpty(orderSearchParameters.getPoNo())) {
 			if (filter.length() > 0) {
-				filter.append(" and ");
+				filter.append(IntegrationConstants.AND);
 			}
-			filter.append("po_number eq '" + orderSearchParameters.getPoNo() + "'");
+			 filter.append("po_number eq '" + orderSearchParameters.getPoNo() + "'");
+
+			
 		}
 		if (isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
 			if (filter.length() > 0) {
-				filter.append(" and ");
+				filter.append(IntegrationConstants.AND);
 			}
-			filter.append("mail_postal_code_a eq '" + orderSearchParameters.getZipcode() + "'");
+			 filter.append("mail_postal_code_a eq '" + orderSearchParameters.getZipcode()+ "'");
+
+			
 		}
 		if (isNotNullAndNotEmpty(orderSearchParameters.getOrderNo())) {
 			if (filter.length() > 0) {
-				filter.append(" and ");
+				filter.append(IntegrationConstants.AND);
 			}
-			filter.append("order_no eq '" + orderSearchParameters.getOrderNo() + "'");
-		}
+			 filter.append("order_no eq '" + orderSearchParameters.getOrderNo() + "'");
+		
 
-		LocalDate localDate ;
-		if(storeDTO.getReturnPolicyPeriod()!=null) {
-		     localDate = LocalDate.now().minusDays(storeDTO.getReturnPolicyPeriod());
 		}
+	
+		//logic for get dynamic return policy period
+        Customer customer = customerRepository.findByCustomerId(orderSearchParameters.getCustomerId());
+       
+        Store store=customer.getStore();
+         
+		if (store != null) {
+		   
+		        localDate = LocalDate.now().minusDays(store.getReturnPolicyPeriod());
+		        logger.info("Return policy period : " + store.getReturnPolicyPeriod());
+		        
+		    }
 		else {
-			// Add the condition to filter out return orders older than 90 days
-			 localDate = LocalDate.now().minusDays(90);
-
+			 logger.info("customer or store data is not found" );
 		}
 		
+		 filter = new StringBuilder();
+
+		
+
 		if (filter.length() > 0) {
-			filter.append(" and ");
+			filter.append(IntegrationConstants.AND);
 		}
 		filter.append("order_date ge " + "datetime'" + localDate.toString() + "'");
 
+		
 		try {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter
@@ -237,7 +270,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 			return fullURI;
 		} catch (Exception e) {
-			
+
 			logger.error("An error occurred while preparing the order URI: {}", e.getMessage());
 
 		}
