@@ -87,7 +87,7 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 	            for (ResponseEdit edit : edits) {
 	               
 	            	logger.info("Edit Name: {}", edit.getName());
-	            	if("order_no".equalsIgnoreCase(edit.getName())) {
+	            	if(IntegrationConstants.ORDER_NO.equalsIgnoreCase(edit.getName())) {
 	                	p21RMAResp.setRmaOrderNo(edit.getValue());
 	                }
 	              
@@ -123,31 +123,31 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 		Row row1 = new Row();
 
 		Edit edit1 = new Edit();
-		edit1.setName(IntegrationConstants.EDIT_NAME_COMPANY_ID);
+		edit1.setName(IntegrationConstants.COMPANY_ID);
 		edit1.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getCompany_id());
 
 		Edit edit2 = new Edit();
-		edit2.setName(IntegrationConstants.EDIT_NAME_CUSTOMER_ID);
+		edit2.setName(IntegrationConstants.CUSTOMER_ID);
 		edit2.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getCustomer_id());
 		
 		Edit edit3 = new Edit();
-		edit3.setName(IntegrationConstants.EDIT_NAME_SALES_LOC_ID);
+		edit3.setName(IntegrationConstants.SALES_LOC_ID);
 		edit3.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getSales_loc_id());
 
 		Edit edit4 = new Edit();
-		edit4.setName("ship_to_id");
+		edit4.setName(IntegrationConstants.SHIP_TO_ID);
 		edit4.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getShip_to_id());
 
 		Edit edit5 = new Edit();
-		edit5.setName("contact_id");
+		edit5.setName(IntegrationConstants.CONTACT_ID);
 		edit5.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getContact_id());
 
 		Edit edit6 = new Edit();
-		edit6.setName("po_no");
+		edit6.setName(IntegrationConstants.PO_NO);
 		edit6.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getPo_no());
 
 		Edit edit7 = new Edit();
-		edit7.setName("taker");
+		edit7.setName(IntegrationConstants.TAKER);
 		edit7.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getTaker());
 		
 		//Edit edit8 = new Edit();
@@ -171,11 +171,11 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 
 			// Create the Edit objects
 			Edit itemEdit1 = new Edit();
-			itemEdit1.setName(IntegrationConstants.EDIT_NAME_OE_ORDER_ITEM_ID);
+			itemEdit1.setName(IntegrationConstants.OE_ORDER_ITEM_ID);
 			itemEdit1.setValue(p21OrderItemHelper.getOe_order_item_id());
 
 			Edit itemEdit2 = new Edit();
-			itemEdit2.setName(IntegrationConstants.EDIT_NAME_UNIT_QUANTITY);
+			itemEdit2.setName(IntegrationConstants.UNIT_QUANTITY);
 			itemEdit2.setValue(p21OrderItemHelper.getUnit_quantity());
 
 			itemRow.setEdits(Arrays.asList(itemEdit1, itemEdit2));
@@ -195,7 +195,7 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 			Row reasonCodeRow = new Row();
 
 			Edit reasonCodeEdit = new Edit();
-			reasonCodeEdit.setName(IntegrationConstants.EDIT_NAME_LOST_SALES_ID);
+			reasonCodeEdit.setName(IntegrationConstants.LOST_SALES_ID);
 			reasonCodeEdit.setValue(reasonCode);
 
 			reasonCodeRow.setEdits(Arrays.asList(reasonCodeEdit));
@@ -209,22 +209,22 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 			dataElement4.setName("TP_CUSTSALESHISTORY.customer_sales_history");
 			dataElement4.setType("List");
 			
-			List<String> values = Arrays.asList(IntegrationConstants.KEY_NAME_CC_INVOICE_NO_DISPLAY, IntegrationConstants.KEY_NAME_ORDER_NO, IntegrationConstants.KEY_NAME_LOCATION_ID);
+			List<String> values = Arrays.asList(IntegrationConstants.CC_INVOICE_NO_DISPLAY, IntegrationConstants.ORDER_NO, IntegrationConstants.LOCATION_ID);
 	        Keys keys = new Keys(values);
 		    dataElement4.setKeys(keys);
 		    
 			Row rowInvoice = new Row();
 
 			Edit editInvoice1 = new Edit();
-			editInvoice1.setName(IntegrationConstants.KEY_NAME_ORDER_NO);
+			editInvoice1.setName(IntegrationConstants.ORDER_NO);
 			editInvoice1.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getOrder_no());
 
 			Edit editInvoice2 = new Edit();
-			editInvoice2.setName(IntegrationConstants.KEY_NAME_CC_INVOICE_NO_DISPLAY);
+			editInvoice2.setName(IntegrationConstants.CC_INVOICE_NO_DISPLAY);
 			editInvoice2.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getCc_invoice_no_display());
 
 			Edit editInvoice3 = new Edit();
-			editInvoice3.setName(IntegrationConstants.KEY_NAME_LOCATION_ID);
+			editInvoice3.setName(IntegrationConstants.LOCATION_ID);
 			editInvoice3.setValue(p21ReturnOrderDataHelper.getP21OrderItemCustSalesHistory().getLocation_id());
 
 			// Add the Edit objects to the Row object
@@ -240,10 +240,10 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 		// INVOICE DATA ELEMENT 5-----------------------------------------
 				DataElement dataElement5 = new DataElement();
 				if(p21ReturnOrderDataHelper.getProbDescList()!=null) {
-					dataElement5.setName("HDR_NOTE.hdr_note");
-					dataElement5.setType("List");
+					dataElement5.setName(IntegrationConstants.HDR_NOTE);
+					dataElement5.setType(IntegrationConstants.LIST);
 					
-					List<String> values = Arrays.asList("note_id");
+					List<String> values = Arrays.asList(IntegrationConstants.NOTE_ID);
 			        Keys keys = new Keys(values);
 				    dataElement5.setKeys(keys);
 				   // List<Row>
@@ -251,20 +251,20 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 				    	Row rowProbDesc = new Row();
 
 						Edit editInvoice1 = new Edit();
-						editInvoice1.setName("note_id");
+						editInvoice1.setName(IntegrationConstants.NOTE_ID);
 						editInvoice1.setValue("");
 
 						Edit editInvoice2 = new Edit();
-						editInvoice2.setName("topic");
+						editInvoice2.setName(IntegrationConstants.TOPIC);
 						editInvoice2.setValue("RMA NOTE: ITEM - "+p21OrderItemHelper.getOe_order_item_id());
 
 						Edit editInvoice3 = new Edit();
-						editInvoice3.setName("note");
+						editInvoice3.setName(IntegrationConstants.NOTE);
 						editInvoice3.setValue(p21OrderItemHelper.getOe_order_item_id()+" -  "+p21OrderItemHelper.getNote());
 						
 						Edit editInvoice4 = new Edit();
-						editInvoice4.setName("notepad_class_desc");
-						editInvoice4.setValue("OTHER");
+						editInvoice4.setName(IntegrationConstants.NOTEPAD_CLASS_DESC);
+						editInvoice4.setValue(IntegrationConstants.OTHER);
 
 
 						// Add the Edit objects to the Row object

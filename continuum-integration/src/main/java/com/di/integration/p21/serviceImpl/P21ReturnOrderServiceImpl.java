@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.dto.ReturnOrderItemDTO;
+import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21ReturnOrderService;
 import com.di.integration.p21.transaction.P21OrderItemHelper;
 import com.di.integration.p21.transaction.P21RMAResponse;
@@ -26,28 +27,27 @@ import com.di.integration.p21.transaction.P21ReturnOrderMarshller;
 
 @Service
 public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(P21ReturnOrderServiceImpl.class);
 
-	@Value("${erp.data_api_base_url}")
+	@Value(IntegrationConstants.ERP_DATA_API_BASE_URL)
 	String DATA_API_BASE_URL;
 
-	@Value("${erp.data_api_order_line}")
+	@Value(IntegrationConstants.ERP_DATA_API_ORDER_LINE)
 	String DATA_API_ORDER_LINE;
 
 	// @Value("${erp.token}") //property also commented
 	// String TOKEN;
 
-	@Value("${erp.order_select_fields}")
+	@Value(IntegrationConstants.ERP_ORDER_SELECT_FIELDS)
 	String ORDER_SELECT_FIELDS;
 
-	@Value("${erp.order_format}")
+	@Value(IntegrationConstants.ERP_ORDER_FORMAT)
 	String ORDER_FORMAT;
 
-	@Value("${erp.rma.create}")
+	@Value(IntegrationConstants.ERP_RMA_CREATE_API)
 	String RMA_CREATE_API;
-	
-	
+
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
 
@@ -66,19 +66,18 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 	@Override
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
-		
-		
+
 		P21ReturnOrderDataHelper p21ReturnOrderDataHelper = new P21ReturnOrderDataHelper();
 
 		P21ReturnOrderHeaderHelper p21OrderHeader = new P21ReturnOrderHeaderHelper();
 		p21OrderHeader.setCompany_id(returnOrderDTO.getCompanyId());
-	    p21OrderHeader.setContact_id(returnOrderDTO.getContactId());
-	    p21OrderHeader.setCustomer_id(returnOrderDTO.getCustomer().getCustomerId());
+		p21OrderHeader.setContact_id(returnOrderDTO.getContactId());
+		p21OrderHeader.setCustomer_id(returnOrderDTO.getCustomer().getCustomerId());
 		p21OrderHeader.setPo_no(returnOrderDTO.getPONumber());
 		p21OrderHeader.setSales_loc_id(returnOrderDTO.getSalesLocationId());
-	    p21OrderHeader.setShip_to_id(returnOrderDTO.getShipTo().getAddressId());
-		
-		p21OrderHeader.setTaker("Continuum");
+		p21OrderHeader.setShip_to_id(returnOrderDTO.getShipTo().getAddressId());
+
+		p21OrderHeader.setTaker(IntegrationConstants.CONTINUUM);
 
 		p21ReturnOrderDataHelper.setP21OrderHeader(p21OrderHeader);
 
@@ -88,28 +87,30 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderDTO.getReturnOrderItem()) {
 			P21OrderItemHelper p21OrderItemHelper = new P21OrderItemHelper();
 			p21OrderItemHelper.setOe_order_item_id(returnOrderItemDTO.getItemName());
-			p21OrderItemHelper.setUnit_quantity(returnOrderItemDTO.getQuanity()+"");
+			p21OrderItemHelper.setUnit_quantity(returnOrderItemDTO.getQuanity() + "");
 			p21OrderItemHelper.setNote(returnOrderItemDTO.getProblemDesc());
 			p21OrderItemHelper.setLost_sales_id(returnOrderItemDTO.getReasonCode());
 			p21OrderItemList.add(p21OrderItemHelper);
 			reasonCodes.add(returnOrderItemDTO.getReasonCode());
-			if(returnOrderItemDTO.getProblemDesc()!=null) {
+			if (returnOrderItemDTO.getProblemDesc() != null) {
 				probDescList.add(returnOrderItemDTO.getProblemDesc().replaceAll("\n", " "));
 			}
 		}
 		p21ReturnOrderDataHelper.setP21OrderItemList(p21OrderItemList);
 		p21ReturnOrderDataHelper.setReasonCodes(reasonCodes);
 		p21ReturnOrderDataHelper.setProbDescList(probDescList);
-		//P21OrderItemCustomerSalesHistory custSalesHistory = new P21OrderItemCustomerSalesHistory();
-		//custSalesHistory.setOrder_no(returnOrderDTO.getOrderNo());
-	//	custSalesHistory.setCc_invoice_no_display(returnOrderDTO.getInvoiceNo());
-	//	custSalesHistory.setLocation_id(returnOrderDTO.getSalesLocationId());
+		// P21OrderItemCustomerSalesHistory custSalesHistory = new
+		// P21OrderItemCustomerSalesHistory();
+		// custSalesHistory.setOrder_no(returnOrderDTO.getOrderNo());
+		// custSalesHistory.setCc_invoice_no_display(returnOrderDTO.getInvoiceNo());
+		// custSalesHistory.setLocation_id(returnOrderDTO.getSalesLocationId());
 
-		//p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory); //TODO invoice linking
+		// p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory);
+		// //TODO invoice linking
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.getToken());
 		logger.info("creating RMA");
-		
+
 		String xmlPayload = p21ReturnOrderMarshller.createRMA(p21ReturnOrderDataHelper);
 		logger.info("returnOrderXmlPayload {}", xmlPayload);
 
@@ -117,11 +118,10 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		ResponseEntity<String> response = restTemplate.exchange(RMA_CREATE_API, HttpMethod.POST,
 				new HttpEntity<>(xmlPayload, headers), String.class);
 		String responseBody = response.getBody();
-		
-		
-		 logger.info("#### RMA RESPONSE #### {}", response.getBody().replace("Keys", "resKeys"));
 
-		return	p21ReturnOrderMarshller.umMarshall( response.getBody().replace("Keys", "resKeys"));
+		logger.info("#### RMA RESPONSE #### {}", response.getBody().replace("Keys", "resKeys"));
+
+		return p21ReturnOrderMarshller.umMarshall(response.getBody().replace("Keys", "resKeys"));
 	}
 
 }

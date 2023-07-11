@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.continuum.repos.entity.Client;
 
 @Repository
-public interface clientRepository extends JpaRepository<Client, Long> {
+public interface ClientRepository extends JpaRepository<Client, Long> {
 
 	
 }

@@ -12,6 +12,7 @@ public final class PortalConstants {
 	public static final String EMAIL_RECIPIENT = "operations@techexprt.com";
 	public static final String EMAIL_SUBJECT_PREFIX = "Your RMA Return Order ";
 	public static final String EMAIL_BODY_PREFIX = "Your RMA status is ";
+	public static final String EMAIL_FROM = "shivendra.bais@techexprt.com";
 	public static final String TRUE ="true";
 	public static final String FALSE ="false";
 	// SMTP properties
@@ -22,5 +23,12 @@ public final class PortalConstants {
 
 	// Email template file path
 	public static final String EMAIL_TEMPLATE_FILE_PATH = "resources/email_template.vm";
+	
+	
+	public static final String MAIL_HOST = "${spring.mail.host}";
+    public static final String MAIL_PORT = "${spring.mail.port}";
+    public static final String MAIL_USERNAME = "${spring.mail.username}";
+    public static final String MAIL_PASSWORD = "${spring.mail.password}";
+    
 
 }

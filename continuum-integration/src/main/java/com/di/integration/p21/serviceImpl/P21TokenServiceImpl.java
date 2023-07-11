@@ -28,109 +28,104 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21TokenSerivce;
 
 @Service
-public class P21TokenServiceImpl implements P21TokenSerivce{
-	
+public class P21TokenServiceImpl implements P21TokenSerivce {
+
 	private static final Logger logger = LoggerFactory.getLogger(P21TokenServiceImpl.class);
 
-	@Value("${erp.username}")
+	@Value(IntegrationConstants.ERP_USERNAME)
 	String USERNAME;
-	
-	@Value("${erp.password}")
+
+	@Value(IntegrationConstants.ERP_PASSWORD)
 	String PASSWORD;
-	
-	@Value("${erp.token_end_point}")
+
+	@Value(IntegrationConstants.ERP_TOKEN_ENDPOINT)
 	String TOKEN_ENDPOINT;
-	
-		@Override
-		//@Cacheable(value = "accessTokenCache", key = "#accessToken")
-		public String getToken() throws Exception  {
-			  String accessToken=getAccessTokenFromCookie();
-			  logger.info("getAccessTokenFromCookie::"+accessToken);
-			  if(accessToken==null) {
-	        	CloseableHttpClient httpClient = HttpClients.createDefault();
-	            HttpPost request = new HttpPost(TOKEN_ENDPOINT);
 
-	            // Set request parameters
-	            List<NameValuePair> params = new ArrayList<>();
-	            params.add(new BasicNameValuePair("grant_type", "password"));
-	            params.add(new BasicNameValuePair("username", USERNAME));
-	            params.add(new BasicNameValuePair("password", PASSWORD));
-	           //params.add(new BasicNameValuePair("scope", SCOPE));
+	@Override
+	// @Cacheable(value = "accessTokenCache", key = "#accessToken")
+	public String getToken() throws Exception {
+		String accessToken = getAccessTokenFromCookie();
+		logger.info("getAccessTokenFromCookie::" + accessToken);
+		if (accessToken == null) {
+			CloseableHttpClient httpClient = HttpClients.createDefault();
+			HttpPost request = new HttpPost(TOKEN_ENDPOINT);
 
-	            // Set request headers
-	            request.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
-	            request.setEntity(new UrlEncodedFormEntity(params));
-	            // Execute the request
-	            HttpResponse response = httpClient.execute(request);
-	            HttpEntity entity = response.getEntity();
-	            String responseBody = EntityUtils.toString(entity);
+			// Set request parameters
+			List<NameValuePair> params = new ArrayList<>();
+			params.add(new BasicNameValuePair("grant_type", "password"));
+			params.add(new BasicNameValuePair("username", USERNAME));
+			params.add(new BasicNameValuePair("password", PASSWORD));
+			// params.add(new BasicNameValuePair("scope", SCOPE));
 
-	            // Extract the access token from the response
-	            // Assuming the response is in JSON format
-	            // Adjust the parsing logic based on the actual response format
-	              accessToken = parseAccessToken(responseBody);
-	              setAccessTokenCookie(accessToken);
-			  }
-	            return accessToken;
-	    }
+			// Set request headers
+			request.setHeader(HttpHeaders.CONTENT_TYPE, IntegrationConstants.CONTENT_TYPE_FORM_URLENCODED);
+			request.setEntity(new UrlEncodedFormEntity(params));
+			// Execute the request
+			HttpResponse response = httpClient.execute(request);
+			HttpEntity entity = response.getEntity();
+			String responseBody = EntityUtils.toString(entity);
 
-	
-	    
-	    private String getAccessTokenFromCookie() {
-	    	HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-
-	        Cookie[] cookies = request.getCookies();
-
-	        if (cookies != null) {
-	            for (Cookie cookie : cookies) {
-	                if (cookie.getName().equals("accessToken")) {
-	                    String accessToken = cookie.getValue();
-
-	                    // Use the token as needed
-	                    return  accessToken;
-	                }
-	            }
-	        }
-			return null;
-			
+			// Extract the access token from the response
+			// Assuming the response is in JSON format
+			// Adjust the parsing logic based on the actual response format
+			accessToken = parseAccessToken(responseBody);
+			setAccessTokenCookie(accessToken);
 		}
-
-
-
-		private void setAccessTokenCookie(String accessToken) {
-			logger.info("setAccessTokenCookie::"+accessToken); 
-			HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
-	          // Create a new cookie with the token
-	          Cookie cookie = new Cookie("accessToken", accessToken);
-
-	          // Set additional properties for the cookie (optional)
-	          cookie.setMaxAge(3600); // Set the expiration time in seconds
-	          cookie.setPath("/"); // Set the path for which the cookie is valid
-
-	          // Add the cookie to the response
-	          response.addCookie(cookie);
-			
-		}
-
-
-
-		private static String parseAccessToken(String responseBody) throws Exception {
-	        // Create a JDOM Document from the XML response
-	        SAXBuilder builder = new SAXBuilder();
-	        Document document = builder.build(new StringReader(responseBody));
-	        
-	        // Get the root element of the document
-	        Element root = document.getRootElement();
-	        
-	        // Find the AccessToken element and extract its value
-	        Element accessTokenElement = root.getChild("AccessToken");
-	        String accessToken = accessTokenElement.getText();
-	        
-	        return accessToken;
-	    }
+		return accessToken;
 	}
 
+	private String getAccessTokenFromCookie() {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
 
+		Cookie[] cookies = request.getCookies();
+
+		if (cookies != null) {
+			for (Cookie cookie : cookies) {
+				if (cookie.getName().equals("accessToken")) {
+					String accessToken = cookie.getValue();
+
+					// Use the token as needed
+					return accessToken;
+				}
+			}
+		}
+		return null;
+
+	}
+
+	private void setAccessTokenCookie(String accessToken) {
+		logger.info("setAccessTokenCookie::" + accessToken);
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getResponse();
+		// Create a new cookie with the token
+		Cookie cookie = new Cookie("accessToken", accessToken);
+
+		// Set additional properties for the cookie (optional)
+		cookie.setMaxAge(3600); // Set the expiration time in seconds
+		cookie.setPath("/"); // Set the path for which the cookie is valid
+
+		// Add the cookie to the response
+		response.addCookie(cookie);
+
+	}
+
+	private static String parseAccessToken(String responseBody) throws Exception {
+		// Create a JDOM Document from the XML response
+		SAXBuilder builder = new SAXBuilder();
+		Document document = builder.build(new StringReader(responseBody));
+
+		// Get the root element of the document
+		Element root = document.getRootElement();
+
+		// Find the AccessToken element and extract its value
+		Element accessTokenElement = root.getChild(IntegrationConstants.ACCESS_TOKEN_ELEMENT);
+		String accessToken = accessTokenElement.getText();
+
+		return accessToken;
+	}
+}

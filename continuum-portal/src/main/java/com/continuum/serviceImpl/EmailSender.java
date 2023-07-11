@@ -8,6 +8,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.sound.sampled.Port;
 
 import org.apache.velocity.VelocityContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,21 +21,21 @@ import com.di.commons.dto.ReturnOrderDTO;
 
 @Component
 public class EmailSender {
-	@Value("${spring.mail.host}")
+	
+	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
 
-	@Value("${spring.mail.port}")
+	@Value(PortalConstants.MAIL_PORT)
 	private int mailPort;
 
-	@Value("${spring.mail.username}")
+	@Value(PortalConstants.MAIL_USERNAME)
 	private String mailUsername;
 
-	@Value("${spring.mail.password}")
+	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
 
-	private static final String EMAIL_FROM = "shivendra.bais@techexprt.com";
-
-	private ReturnOrderDTO returnOrderDTO;
+    @Autowired
+	ReturnOrderDTO returnOrderDTO;
 
 	@Autowired
 	public EmailSender(ReturnOrderDTO returnOrderDTO) {
@@ -74,7 +75,7 @@ public class EmailSender {
 
 
 		Message message = new MimeMessage(session);
-		message.setFrom(new InternetAddress(EMAIL_FROM));
+		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
 		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
 		message.setSubject(subject);
 		message.setContent(renderedBody, "text/html");
