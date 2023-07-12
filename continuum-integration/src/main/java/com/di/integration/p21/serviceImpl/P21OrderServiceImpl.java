@@ -235,18 +235,17 @@ public class P21OrderServiceImpl implements P21OrderService {
 	
 		//logic for get dynamic return policy period
         Customer customer = customerRepository.findByCustomerId(orderSearchParameters.getCustomerId());
-       
-        Store store=customer.getStore();
-         
-		if (store != null) {
-		   
-		        localDate = LocalDate.now().minusDays(store.getReturnPolicyPeriod());
-		        logger.info("Return policy period : " + store.getReturnPolicyPeriod());
-		        
-		    }
-		else {
+      
+        if(customer!=null) {
+        	Store store=customer.getStore();
+    	   if(store!=null){
+    		   localDate = LocalDate.now().minusDays(store.getReturnPolicyPeriod());
+		        logger.info("Return policy period : " + store.getReturnPolicyPeriod()); 
+    	   }
+       }else {
 			 logger.info("customer or store data is not found" );
 		}
+		
 		
 		// filter = new StringBuilder();
 
