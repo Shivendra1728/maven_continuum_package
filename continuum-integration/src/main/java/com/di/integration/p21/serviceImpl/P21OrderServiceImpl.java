@@ -248,7 +248,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 			 logger.info("customer or store data is not found" );
 		}
 		
-		 filter = new StringBuilder();
+		// filter = new StringBuilder();
 
 		
 
