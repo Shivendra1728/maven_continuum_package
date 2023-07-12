@@ -20,5 +20,6 @@ public class UserController {
 	@GetMapping("/login")
 	public String login(@RequestParam String usernameOrEmail, @RequestParam String password) {
 		return userService.getUserByUsernameOrEmail(usernameOrEmail, password);
+	
 	}
 }
