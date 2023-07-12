@@ -21,6 +21,4 @@ public class UserController {
 	public String login(@RequestParam String usernameOrEmail, @RequestParam String password) {
 		return userService.getUserByUsernameOrEmail(usernameOrEmail, password);
 	}
-
-	
 }
