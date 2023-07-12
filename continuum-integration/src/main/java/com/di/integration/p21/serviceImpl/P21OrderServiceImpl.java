@@ -246,16 +246,12 @@ public class P21OrderServiceImpl implements P21OrderService {
 			 logger.info("customer or store data is not found" );
 		}
 		
-		
-		// filter = new StringBuilder();
-
-		
-
-		if (filter.length() > 0) {
-			filter.append(IntegrationConstants.AND);
+		if(localDate!=null) {
+			if (filter.length() > 0) {
+				filter.append(IntegrationConstants.AND);
+			}
+			filter.append("order_date ge " + "datetime'" + localDate.toString() + "'");
 		}
-		filter.append("order_date ge " + "datetime'" + localDate.toString() + "'");
-
 		
 		try {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());

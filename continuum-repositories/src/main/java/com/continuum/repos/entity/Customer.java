@@ -24,7 +24,7 @@ import lombok.Setter;
 @Setter
 public class Customer extends BaseEntity{
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="storeId")
 	private Store store;
 	
@@ -40,10 +40,10 @@ public class Customer extends BaseEntity{
 	@OneToMany(mappedBy = "customer")
 	private List<User> users;
 	
-	@OneToMany(mappedBy = "customer")
+	@OneToMany(mappedBy = "customer",fetch = FetchType.LAZY)
 	private List<Orders> orders;
 	
-	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL )
     @JoinColumn(name ="shipTo")
     private StoreAddress shipTo;
 }

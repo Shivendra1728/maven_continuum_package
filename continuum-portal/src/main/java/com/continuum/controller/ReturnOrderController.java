@@ -11,10 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.ReturnOrderService;
-import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
-import com.di.integration.p21.service.P21ReturnOrderService;
 import com.di.integration.p21.transaction.P21RMAResponse;
 
 @RestController
@@ -27,7 +25,9 @@ public class ReturnOrderController {
 	@PostMapping("/create/v1")
 	public P21RMAResponse createReturnOrder(@RequestBody ReturnOrderDTO returnOrderDTO) throws Exception {
 		
-		return returnOrderService.createReturnOrder(returnOrderDTO);
+		 P21RMAResponse rmaResponse=  returnOrderService.createReturnOrder(returnOrderDTO);
+		 returnOrderService.crateReturnOrderInDB(returnOrderDTO, rmaResponse);
+		  return rmaResponse;
 		
 	}
 	

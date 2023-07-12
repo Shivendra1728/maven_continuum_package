@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.mail.MessagingException;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.continuum.constants.PortalConstants;
@@ -49,6 +51,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
 		P21RMAResponse p21RMARespo = p21Service.createReturnOrder(returnOrderDTO);
+		logger.info("orderNo::: " + p21RMARespo.getRmaOrderNo() + " status: " + p21RMARespo.getStatus());
+		return p21RMARespo;
+	}
+	@Async
+	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO,P21RMAResponse p21RMARespo) throws MessagingException {
 		returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
 		returnOrderDTO.setStatus(PortalConstants.UNDER_REVIEW);
 		returnOrderDTO.setOrderDate(new Date());
@@ -59,11 +66,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String Status = p21RMARespo.getStatus();
 		if (Status.equals(PortalConstants.SUCCESS)) {
 			returnOrderDTO.setStatus(PortalConstants.UNDER_REVIEW);
-            logger.info("Setting status to '{}'", PortalConstants.UNDER_REVIEW);
+            logger.info("Setting status to:: '{}'", PortalConstants.UNDER_REVIEW);
 
 		} else {
 			returnOrderDTO.setStatus(PortalConstants.FAILED);
-			 logger.info("Setting status to '{}'", PortalConstants.FAILED);
+			 logger.info("Setting status to:: '{}'", PortalConstants.FAILED);
 		}
 
 		CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
@@ -86,11 +93,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 //     	emailSender1.
 		sender.sendEmail(recipient, subject, body, returnOrderDTO);
 
-		// p21RMARespo.setStatus("Success");
-		// p21RMARespo.setStatus(returnOrderDTO.getStatus());
-		// p21RMARespo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
-		logger.info("orderNo: " + p21RMARespo.getRmaOrderNo() + " status: " + p21RMARespo.getStatus());
-		return p21RMARespo;
 	}
 
 	@Override
