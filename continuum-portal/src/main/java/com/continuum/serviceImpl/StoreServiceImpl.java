@@ -2,6 +2,7 @@ package com.continuum.serviceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -32,25 +33,12 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public List<StoreDTO> getStoreBysearchCriteria(StoreSearchParameters storeSearchParameter) {
+	public Optional<Store> getStoreBysearchCriteria(StoreSearchParameters storeSearchParameter) {
 
-		Specification<Store> spec = Specification.where(null);
+		if (storeSearchParameter.getId() != null) {
 
-		if (isNotNullAndNotEmpty(storeSearchParameter.getStroreName())) {
-			Specification<Store> Strname = (root, query, builder) -> builder.equal(root.get("storeName"),
-					storeSearchParameter.getStroreName());
-			spec = spec.and(Strname);
+			return repository.findById(storeSearchParameter.getId());
 		}
-
-		List<Store> storeList = repository.findAll(spec);
-		List<StoreDTO> storeDTOList = new ArrayList<>();
-		storeList.forEach(store -> {
-			storeDTOList.add(storeMapper.storeToStoreDTO(store));
-		});
-		return storeDTOList;
-	}
-
-	public boolean isNotNullAndNotEmpty(String str) {
-		return str != null && !str.trim().isEmpty();
+		return Optional.empty();
 	}
 }

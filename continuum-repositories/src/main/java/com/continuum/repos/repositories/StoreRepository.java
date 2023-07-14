@@ -13,6 +13,7 @@ import com.continuum.repos.entity.Store;
 @Repository
 public interface StoreRepository extends JpaRepository<Store, Long>, JpaSpecificationExecutor<Store> {
 
+	
 	Store findById(Store storeId);
 
 	

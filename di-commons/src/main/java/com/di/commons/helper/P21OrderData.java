@@ -1,6 +1,5 @@
 package com.di.commons.helper;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -12,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class P21OrderData {
-	
+
 	private String order_no;
 	private String po_number;
 	private String location_id;
@@ -42,7 +41,9 @@ public class P21OrderData {
 	private String mail_postal_code_a;
 	@JsonProperty("odata.metadata")
 	private String odataMetadata;
-	
+
 	private String address_id;
 	private String company_id;
+	
+	private String ship2_name;
 }

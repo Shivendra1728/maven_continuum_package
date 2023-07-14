@@ -13,5 +13,7 @@ import lombok.experimental.Accessors;
 @ToString
 public class StoreSearchParameters {
 
+	private Long id;
 	private String stroreName;
+
 }

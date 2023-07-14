@@ -12,4 +12,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
 	
 	  Customer findByCustomerId(String customerId);
 
+	String getCustomerNameById(String customerId);
+
 }

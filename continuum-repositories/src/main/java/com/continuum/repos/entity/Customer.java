@@ -22,12 +22,12 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class Customer extends BaseEntity{
-	
+public class Customer extends BaseEntity {
+
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="storeId")
+	@JoinColumn(name = "storeId")
 	private Store store;
-	
+
 	private String customerType;
 	private boolean status;
 	private String firstName;
@@ -36,14 +36,16 @@ public class Customer extends BaseEntity{
 	private String lastname;
 	private String displayName;
 	private String phone;
-	
+
 	@OneToMany(mappedBy = "customer")
 	private List<User> users;
-	
-	@OneToMany(mappedBy = "customer",fetch = FetchType.LAZY)
+
+	@OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
 	private List<Orders> orders;
-	
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL )
-    @JoinColumn(name ="shipTo")
-    private StoreAddress shipTo;
+
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name = "shipTo")
+	private StoreAddress shipTo;
+
+	private String companyName;
 }
