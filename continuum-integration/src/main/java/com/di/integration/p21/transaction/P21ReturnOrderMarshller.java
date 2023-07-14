@@ -25,12 +25,14 @@ public class P21ReturnOrderMarshller {
 
 	public String createRMA(P21ReturnOrderDataHelper p21ReturnOrderDataHelper)
 			throws JAXBException, JsonProcessingException {
-		XmlMapper xmlMapper = new XmlMapper();
-		xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
-		// xmlMapper.disable(MapperFeature.USE_STD_BEAN_NAMING);
-		xmlMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		// xmlMapper.setDefaultUseWrapper(false);
-		String xml = xmlMapper.writeValueAsString(prepareXMl(p21ReturnOrderDataHelper));
+		/*
+		 * XmlMapper xmlMapper = new XmlMapper();
+		 * xmlMapper.enable(SerializationFeature.INDENT_OUTPUT); //
+		 * xmlMapper.disable(MapperFeature.USE_STD_BEAN_NAMING);
+		 * xmlMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES); //
+		 * xmlMapper.setDefaultUseWrapper(false);
+		 */		String xml = getXMLFromObject(prepareXMl(p21ReturnOrderDataHelper));
+		
 		xml = xml.replaceAll("wstxns2:", "");
 		xml = xml.replaceAll("xmlns:wstxns2", "xmlns:a");
 
@@ -47,6 +49,16 @@ public class P21ReturnOrderMarshller {
 		return xml;
 	}
 	
+	
+	public String getXMLFromObject(Object object) throws JsonProcessingException {
+		XmlMapper xmlMapper = new XmlMapper();
+		xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		// xmlMapper.disable(MapperFeature.USE_STD_BEAN_NAMING);
+		xmlMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		// xmlMapper.setDefaultUseWrapper(false);
+		String xml = xmlMapper.writeValueAsString(object);
+		return xml;
+	}
 public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException, JsonProcessingException {
 	
 	P21RMAResponse p21RMAResp= new P21RMAResponse();

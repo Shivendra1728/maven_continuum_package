@@ -19,6 +19,8 @@ import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21ReturnOrderService;
+import com.di.integration.p21.transaction.OrderNote;
+import com.di.integration.p21.transaction.OrderXml;
 import com.di.integration.p21.transaction.P21OrderItemHelper;
 import com.di.integration.p21.transaction.P21RMAResponse;
 import com.di.integration.p21.transaction.P21ReturnOrderDataHelper;
@@ -47,7 +49,9 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 	@Value(IntegrationConstants.ERP_RMA_CREATE_API)
 	String RMA_CREATE_API;
-
+	
+	@Value("${erp.rma.notes.create}")
+	String RMA_NOTES_CREATE_API;
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
 
@@ -113,15 +117,43 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 		String xmlPayload = p21ReturnOrderMarshller.createRMA(p21ReturnOrderDataHelper);
 		logger.info("returnOrderXmlPayload {}", xmlPayload);
-
+		
 		headers.setContentType(MediaType.APPLICATION_XML);
 		ResponseEntity<String> response = restTemplate.exchange(RMA_CREATE_API, HttpMethod.POST,
 				new HttpEntity<>(xmlPayload, headers), String.class);
 		String responseBody = response.getBody();
 
-		logger.info("#### RMA RESPONSE #### {}", response.getBody().replace("Keys", "resKeys"));
+		logger.info("#### RMA RESPONSE #### {}", response.getBody());
+		P21RMAResponse rmaResponse=p21ReturnOrderMarshller.umMarshall(response.getBody().replace("Keys", "resKeys"));
+		//Code for Return Order Notes
+		
+				OrderXml orderXml= new OrderXml();
+				orderXml.setCompanyId(p21ReturnOrderDataHelper.getP21OrderHeader().getCompany_id());
+				orderXml.setContactId(p21ReturnOrderDataHelper.getP21OrderHeader().getContact_id());
+				orderXml.setCustomerId(p21ReturnOrderDataHelper.getP21OrderHeader().getCustomer_id());
+				orderXml.setLocationId(p21ReturnOrderDataHelper.getP21OrderHeader().getSales_loc_id());
+				orderXml.setOrderNo(rmaResponse.getRmaOrderNo());
+				
+				List<OrderNote> orderNotes= new ArrayList<>();
+				for (P21OrderItemHelper orderItem : p21ReturnOrderDataHelper.getP21OrderItemList()) {
+					OrderNote orderNote= new OrderNote();
+					orderNote.setMandatory(true);
+					orderNote.setOrderNo(orderXml.getOrderNo());
+					orderNote.setNotepadClassId("OTHER");
+					orderNote.setTopic("ORDER NOTE : "+orderItem.getOe_order_item_id());
+					orderNote.setNote(orderItem.getNote());//reason code
+					orderNotes.add(orderNote);
+				}
+				orderXml.setOrderNotes(orderNotes);
+				String orderNoteXml=p21ReturnOrderMarshller.getXMLFromObject(orderXml);
+				logger.info("RMA_NOTES_CREATE_API ::"+RMA_NOTES_CREATE_API);
+				logger.info("Order Notes XML ::"+orderNoteXml);
+				ResponseEntity<String> response1 = restTemplate.exchange(RMA_NOTES_CREATE_API, HttpMethod.POST,
+						new HttpEntity<>(orderNoteXml, headers), String.class);
+				String responseBody1 = response1.getBody();
 
-		return p21ReturnOrderMarshller.umMarshall(response.getBody().replace("Keys", "resKeys"));
+				logger.info("#### RMA Notes RESPONSE #### {}", responseBody1);
+		return rmaResponse;
 	}
 
 }
