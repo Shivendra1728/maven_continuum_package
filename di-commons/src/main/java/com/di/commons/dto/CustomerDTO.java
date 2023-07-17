@@ -25,9 +25,8 @@ public class CustomerDTO {
 	private String lastname;
 	private String displayName;
 	private String phone;
-
-	private String companyName;
-	// private List<User> users;
-
-	// private List<PurchaseOrder> purchaseOrders
+	
+	//private List<User> users;
+	
+	//private List<PurchaseOrder> purchaseOrders
 }

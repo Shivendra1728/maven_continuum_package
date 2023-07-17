@@ -11,7 +11,7 @@ public class EmailTemplateRenderer {
     		+ "    <title>Email Template</title>\r\n"
     		+ "</head>\r\n"
     		+ "<body>\r\n"
-    		+ "    <h1>Hello Dear ${order_contact_name}</h1>\r\n"
+    		+ "    <h1>Hello Dear Customer,</h1>\r\n"
     		+ "    \r\n"
     		+ "    <p>Your ERP Order no. is: ${order_no}</p>\r\n"
     		+ "    <p>Your RMA Order no. is: ${rma_order_no}</p>\r\n"

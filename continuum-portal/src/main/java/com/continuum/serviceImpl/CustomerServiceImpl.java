@@ -20,7 +20,6 @@ public class CustomerServiceImpl implements CustomerService{
 	
 	public CustomerDTO findbyCustomerId(String customerId){
 	Customer customer=	repo.findByCustomerId(customerId);
-
 	return customerMapper.cusotmerTocusotmerDTO(customer);
 	}
 	

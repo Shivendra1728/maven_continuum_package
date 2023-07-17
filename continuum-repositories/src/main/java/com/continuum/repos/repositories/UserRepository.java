@@ -7,9 +7,7 @@ import com.continuum.repos.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-
-	User findByEmail(String email);
-
-	User findByUsername(String username);
+    User findByUsername(String username);
+    User findByEmail(String email);
 
 }

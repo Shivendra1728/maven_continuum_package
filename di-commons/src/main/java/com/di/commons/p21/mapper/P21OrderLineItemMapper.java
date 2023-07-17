@@ -33,7 +33,6 @@ public class P21OrderLineItemMapper {
 		for (P21OrderLineItem p21OrderLineItem : p21OrderLineItemList) {
 
 			OrderItemDTO orderitemDTO = new OrderItemDTO();
-			
 			orderitemDTO.setOrderNo(p21OrderLineItem.getOrder_no());
 			orderitemDTO.setInvoiceNo(p21OrderLineItem.getOriginal_invoice_no());
 			orderitemDTO.setDescription(p21OrderLineItem.getItem_desc());

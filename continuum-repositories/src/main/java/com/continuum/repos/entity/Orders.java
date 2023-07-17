@@ -69,6 +69,4 @@ public class Orders  extends BaseEntity{
 	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	    @JoinColumn(name ="billto")
 	    private OrderAddress billTo;
-	    
-	  
 }

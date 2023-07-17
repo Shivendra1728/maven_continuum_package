@@ -13,10 +13,10 @@
 	<description>delta infotech commons</description>
 	<dependencies>
 
-		<dependency>
-			<groupId>com.continuum-repositories</groupId>
-			<artifactId>continuum-repositories</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+	<dependency>
+		<groupId>com.continuum-repositories</groupId>
+		<artifactId>continuum-repositories</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</dependency>
 	</dependencies>
 </project>
