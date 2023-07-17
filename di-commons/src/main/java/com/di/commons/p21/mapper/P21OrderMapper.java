@@ -114,6 +114,7 @@ public class P21OrderMapper {
 					orderAddressShipTODTO.setZipcode(p21OrderData.getMail_postal_code_a());
 					//orderAddressShipTODTO.setAddressType(p21OrderData.getaddresstype());
 					orderDTO.setBillTo(orderAddressBillTODTO);
+					orderDTO.setCompanyName(p21OrderData.getCompany_name());
 					orderDTOList.add(orderDTO);
 			}
 			

@@ -45,4 +45,5 @@ public class P21OrderData {
 	
 	private String address_id;
 	private String company_id;
+	private String company_name;
 }
