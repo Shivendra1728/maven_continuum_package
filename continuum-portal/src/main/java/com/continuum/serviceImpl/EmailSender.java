@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.continuum.constants.PortalConstants;
+import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.helper.P21OrderData;
 
@@ -43,7 +44,7 @@ public class EmailSender {
 		this.returnOrderDTO = returnOrderDTO;
 	}
 
-	public void sendEmail(String recipient, String subject, String body, ReturnOrderDTO returnOrderDTO)
+	public void sendEmail(String recipient, String subject, String body, ReturnOrderDTO returnOrderDTO, CustomerDTO customerDTO)
 			throws MessagingException {
 		Properties props = new Properties();
 
@@ -69,7 +70,7 @@ public class EmailSender {
 			context.put("rma_order_no", "null");
 		}
 		
-		context.put("order_contact_name","Customer");
+		context.put("order_contact_name",customerDTO.getDisplayName());
 		context.put("order_no", returnOrderDTO.getOrderNo());
 
 		String templateFilePath = PortalConstants.EMAIL_TEMPLATE_FILE_PATH;

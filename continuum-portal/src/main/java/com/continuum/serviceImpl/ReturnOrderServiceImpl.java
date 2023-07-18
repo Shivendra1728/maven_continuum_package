@@ -89,7 +89,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : " + returnOrderDTO.getStatus();
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
-		sender.sendEmail(recipient, subject, body, returnOrderDTO);
+		sender.sendEmail(recipient, subject, body, returnOrderDTO , customerDTO);
 
 	}
 
