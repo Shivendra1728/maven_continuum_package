@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.continuum.constants.PortalConstants;
 import com.di.commons.dto.ReturnOrderDTO;
+import com.di.commons.helper.P21OrderData;
 
 
 @Component
@@ -68,6 +69,7 @@ public class EmailSender {
 			context.put("rma_order_no", "null");
 		}
 		
+		context.put("order_contact_name","Customer");
 		context.put("order_no", returnOrderDTO.getOrderNo());
 
 		String templateFilePath = PortalConstants.EMAIL_TEMPLATE_FILE_PATH;

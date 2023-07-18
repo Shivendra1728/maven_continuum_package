@@ -21,8 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.repos.entity.ClientConfig;
 import com.continuum.repos.entity.Customer;
-import com.continuum.repos.entity.Store;
 import com.continuum.repos.repositories.CustomerRepository;
 import com.continuum.repos.repositories.StoreRepository;
 import com.di.commons.dto.OrderDTO;
@@ -71,13 +71,13 @@ public class P21OrderServiceImpl implements P21OrderService {
 	P21ContactMapper p21ContactMapper;
 	@Autowired
 	StoreDTO storeDTO;
-	
+
 	@Autowired
 	CustomerRepository customerRepository;
-	
+
 	@Autowired
 	StoreRepository storeRepository;
-	
+
 	LocalDate localDate;
 
 	@Override
@@ -174,8 +174,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 		try {
 
-			 String filter = "email_address eq '" + email + "'";
-
+			String filter = "email_address eq '" + email + "'";
 
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter;
@@ -196,63 +195,71 @@ public class P21OrderServiceImpl implements P21OrderService {
 		StringBuilder filter = new StringBuilder();
 		if (!isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())
 				&& isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
-			 filter.append("ship2_zip eq '" + orderSearchParameters.getZipcode() + "'");
+			filter.append("ship2_zip eq '" + orderSearchParameters.getZipcode() + "'");
 
-			
 		}
 		if (isNotNullAndNotEmpty(orderSearchParameters.getCustomerId())) {
 			if (filter.length() > 0) {
 				filter.append(IntegrationConstants.AND);
 			}
 			filter.append("customer_id eq " + orderSearchParameters.getCustomerId());
-			
+
 		}
 
 		if (isNotNullAndNotEmpty(orderSearchParameters.getPoNo())) {
 			if (filter.length() > 0) {
 				filter.append(IntegrationConstants.AND);
 			}
-			 filter.append("po_number eq '" + orderSearchParameters.getPoNo() + "'");
+			filter.append("po_number eq '" + orderSearchParameters.getPoNo() + "'");
 
-			
 		}
 		if (isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
 			if (filter.length() > 0) {
 				filter.append(IntegrationConstants.AND);
 			}
-			 filter.append("mail_postal_code_a eq '" + orderSearchParameters.getZipcode()+ "'");
+			filter.append("mail_postal_code_a eq '" + orderSearchParameters.getZipcode() + "'");
 
-			
 		}
 		if (isNotNullAndNotEmpty(orderSearchParameters.getOrderNo())) {
 			if (filter.length() > 0) {
 				filter.append(IntegrationConstants.AND);
 			}
-			 filter.append("order_no eq '" + orderSearchParameters.getOrderNo() + "'");
-		
+			filter.append("order_no eq '" + orderSearchParameters.getOrderNo() + "'");
 
 		}
-	
-		//logic for get dynamic return policy period
-        Customer customer = customerRepository.findByCustomerId(orderSearchParameters.getCustomerId());
-      
-        if(customer!=null) {
-        	Store store=customer.getStore();
-    	   if(store!=null){
-    		   localDate = LocalDate.now().minusDays(store.getReturnPolicyPeriod());
-		        logger.info("Return policy period : " + store.getReturnPolicyPeriod()); 
-    	   }
-       }else {
-			 logger.info("customer or store data is not found" );
+
+		// logic for get dynamic return policy period
+		Customer customer = customerRepository.findByCustomerId(orderSearchParameters.getCustomerId());
+
+		if (customer != null) {
+
+			ClientConfig clientConfig = customer.getClientConfig();
+
+			if (clientConfig != null) {
+
+				localDate = LocalDate.now().minusDays(clientConfig.getReturnPolicyPeriod());
+
+				logger.info("Return policy period: " + clientConfig.getReturnPolicyPeriod());
+
+			} else {
+
+				logger.info("Client config data is not found");
+
+			}
+
+		} else {
+
+			logger.info("Customer data is not found");
+
 		}
-		
-		if(localDate!=null) {
+
+		if (localDate != null) {
 			if (filter.length() > 0) {
 				filter.append(IntegrationConstants.AND);
 			}
 			filter.append("order_date ge " + "datetime'" + localDate.toString() + "'");
 		}
-		
+
 		try {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter
