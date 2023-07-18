@@ -14,10 +14,8 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @ToString
 public class OrderAddressDTO {
-
 	
 	private String addressId;
-	
 	private Date createdDate;
 	private Date updatedDate;
 	private String phoneNumber;

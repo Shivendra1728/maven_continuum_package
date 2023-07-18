@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ContactDTO {
-
+	
 	private String contactId;
 	private String contactEmailId;
 	private String contactPhoneNo;

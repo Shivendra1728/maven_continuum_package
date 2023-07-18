@@ -1,27 +1,14 @@
 package com.di.commons.dto;
 
- 
-
 import java.math.BigDecimal;
 import java.util.List;
-
- 
-
 import org.springframework.stereotype.Component;
-
- 
-
 import com.continuum.repos.entity.StoreAddress;
-
- 
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-
- 
 
 @Getter
 @Setter

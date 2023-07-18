@@ -23,18 +23,6 @@ import lombok.Setter;
 @Getter
 @Setter
 
-/*
- * @Getter
- * 
- * @Setter
- * 
- * @NoArgsConstructor
- * 
- * @Accessors(chain = true)
- * 
- * @Document(collection = "trip")
- */
-
 @Entity
 public class Orders  extends BaseEntity{
 	

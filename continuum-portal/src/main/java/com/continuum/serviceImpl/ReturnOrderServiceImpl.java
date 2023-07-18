@@ -84,13 +84,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		repository.save(returnOrder);
 
-		// Trigger email based on RMA status
-		String recipient = PortalConstants.EMAIL_RECIPIENT; // Replace with actual recipient email
+		
+		String recipient = PortalConstants.EMAIL_RECIPIENT; 
 		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : " + returnOrderDTO.getStatus();
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
-//     	emailSender emailSender1 = new emailSender(returnOrderDTO);
-//     	emailSender1.
 		sender.sendEmail(recipient, subject, body, returnOrderDTO);
 
 	}

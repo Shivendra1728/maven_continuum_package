@@ -24,29 +24,19 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Component
 public class JwtTokenUtil {
 
- 
-
-    
-    @Value("${jwt.expirationTime}")
+	@Value("${jwt.expirationTime}")
     private long expirationTimeMillis;
 
     @Value("${jwt.secretKey}")
     private String secretKey;
 
- 
-
     private Key signingKey;
-
- 
-
 
     @PostConstruct
     public void init() {
         byte[] decodedKey = Base64.getDecoder().decode(secretKey);
         signingKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
     }
-
- 
 
     public String generateToken(String username) {
         Date expirationDate = new Date(System.currentTimeMillis() + expirationTimeMillis);

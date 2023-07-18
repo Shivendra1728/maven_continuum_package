@@ -21,7 +21,6 @@ import lombok.experimental.Accessors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderDTO {
 	
-	
 		private Long id;
 	    private Long ORMOrder;
 	    private Long userId;

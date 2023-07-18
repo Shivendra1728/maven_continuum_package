@@ -1,6 +1,7 @@
 package com.continuum.serviceImpl;
 
 import java.util.ArrayList;
+
 import java.util.Iterator;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import com.continuum.repos.repositories.StoreRepository;
 import com.continuum.service.ReasonCodeService;
 import com.di.commons.dto.ReasonCodeDTO;
 import com.di.commons.mapper.ReasonCodeMapper;
+
 @Service
 public class ReasonCodeServiceImpl implements ReasonCodeService {
 
@@ -24,8 +26,6 @@ public class ReasonCodeServiceImpl implements ReasonCodeService {
 
 	@Autowired
 	StoreRepository storeRepository;
-
-	
 
 	@Override
 	public List<ReasonCode> searchReasonCodesByStoreId(Long storeId) {
