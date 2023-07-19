@@ -32,7 +32,7 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 			String fileName = file.getOriginalFilename();
 			String fileExtension = getFileExtension(fileName);
 
-			if (!isValidFileType(fileExtension)) {
+			if (isValidFileType(fileExtension)) {
 				BlobClient blobClient = containerClient.getBlobClient(rmaNo + "/" + fileName);
 				InputStream inputStream = file.getInputStream();
 				blobClient.upload(inputStream, file.getSize());
