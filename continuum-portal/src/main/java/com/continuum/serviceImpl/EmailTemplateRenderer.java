@@ -1,27 +1,79 @@
 package com.continuum.serviceImpl;
+
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+
 import java.io.StringWriter;
 
-
 public class EmailTemplateRenderer {
-    private static final String TEMPLATE_CONTENT = "<html>\r\n"
-    		+ "<head>\r\n"
-    		+ "    <meta charset=\"UTF-8\">\r\n"
-    		+ "    <title>Email Template</title>\r\n"
-    		+ "</head>\r\n"
-    		+ "<body>\r\n"
-    		+ "    <h1>Hello ${order_contact_name},</h1>\r\n"
-    		+ "    \r\n"
-    		+ "    <p>Your ERP Order no. is: ${order_no}</p>\r\n"
-    		+ "    <p>Your RMA Order no. is: ${rma_order_no}</p>\r\n"
-    		+ "    \r\n"
-    		+ "    <p>Your RMA Order ${rma_order_no} is ${status}</p>\r\n"
-    		+ "    \r\n"
-    		+ "    <p>Thank you.</p>\r\n"
-    		+ "</body>\r\n"
-    		+ "</html>\r\n"
-    		+ "";
+    private static final String TEMPLATE_CONTENT = "<html>\n" +
+            "<head>\n" +
+            "    <meta charset=\"UTF-8\">\n" +
+            "    <title>Email Template</title>\n" +
+            "    <style>\n" +
+            "        body {\n" +
+            "            font-family: Arial, sans-serif;\n" +
+            "            background-color: #f5f5f5;\n" +
+            "            margin: 0;\n" +
+            "            padding: 0;\n" +
+            "            display: flex;\n" +
+            "            justify-content: center;\n" +
+            "            align-items: center;\n" +
+            "            min-height: 100vh;\n" +
+            "            background-image: url('https://img.freepik.com/free-vector/gradient-background-green-tones_23-2148374530.jpg');\n" +
+            "            background-size: cover;\n" +
+            "            background-position: center;\n" +
+            "            background-repeat: no-repeat;\n" +
+            "        }\n" +
+            "        .email-container {\n" +
+            "            max-width: 600px;\n" +
+            "            background-image: url('https://wallpaperaccess.com/full/1556608.jpg');\n" +
+            "            border-radius: 10px;\n" +
+            "            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);\n" +
+            "            padding: 5px;\n" +
+            "            text-align: center;\n" +
+            "            width: 100%;\n" +
+            "        }\n" +
+            "        .logo img {\n" +
+            "            max-width: 150px;\n" +
+            "            height: 100px;\n" +
+            "            text-align: left;\n" +
+            "        }\n" +
+            "        h1 {\n" +
+            "            margin-bottom: 20px;\n" +
+            "        }\n" +
+            "        p {\n" +
+            "            margin: 0 0 10px;\n" +
+            "        }\n" +
+            "        .thank-you {\n" +
+            "            font-style: italic;\n" +
+            "            text-align: center;\n" +
+            "        }\n" +
+            "        h3 {\n" +
+            "            margin-top: 0;\n" +
+            "        }\n" +
+            "        .gradient-text {\n" +
+            "            font-size: 24px;\n" +
+            "            background: linear-gradient(92.83deg, #0092B8 -8.65%, rgba(41, 166, 109, 0.8) 85.41%);\n" +
+            "            -webkit-background-clip: text;\n" +
+            "            -webkit-text-fill-color: transparent;\n" +
+            "        }\n" +
+            "    </style>\n" +
+            "</head>\n" +
+            "<body>\n" +
+            "    <div class=\"email-container\">\n" +
+            "        <div class=\"logo\">\n" +
+            "            <img src=\"https://media.licdn.com/dms/image/C560BAQH7CHuevQWs6w/company-logo_200_200/0/1677702943611?e=1697673600&v=beta&t=gwMQwuywvhdbj2WGdjQ2-jkLuos7ZJGchVzchLIO264\" alt=\"Continuum\">\n" +
+            "            <h3>Return Order Summary </h3>\n" +
+            "        </div>\n" +
+            "        <h1 class=\"gradient-text\">Hello ${order_contact_name},</h1>\n" +
+            "        <p>Your ERP Order no. is: ${order_no}</p>\n" +
+            "        <p>Your RMA Order no. is: ${rma_order_no}</p>\n" +
+            "        <p>Your RMA Order ${rma_order_no} is ${status}</p>\n" +
+            "        <h3 class=\"gradient-text\">Thank you.</h3>\n" +
+            "    </div>\n" +
+            "</body>\n" +
+            "</html>";
 
     public static String renderTemplate(VelocityContext context) {
         VelocityEngine velocityEngine = new VelocityEngine();

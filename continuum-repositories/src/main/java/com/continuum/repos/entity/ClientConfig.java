@@ -1,6 +1,8 @@
 package com.continuum.repos.entity;
 
 import java.math.BigDecimal;
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -37,7 +39,10 @@ public class ClientConfig extends BaseEntity {
 	private Integer returnPolicyPeriod;
 	private String feeType;
 	private BigDecimal reStockingAmount;
-
+	
+	private String emailFrom;
+	private String emailTO;
+	
 	public ClientConfig() {
 		// No-argument constructor
 	}

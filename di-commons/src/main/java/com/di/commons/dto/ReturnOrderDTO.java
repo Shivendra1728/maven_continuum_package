@@ -55,6 +55,8 @@ public class ReturnOrderDTO {
 	private List<ReturnOrderItemDTO> returnOrderItem;
 
 	private OrderAddressDTO shipTo;
+	
+	private ContactDTO contact;
 
 	private OrderAddressDTO billTo;
 	private String rmaOrderNo;
