@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.continuum.repos.entity.ClientConfig;
 import com.continuum.repos.entity.Customer;
+import com.continuum.repos.repositories.ClientConfigRepository;
 import com.continuum.repos.repositories.CustomerRepository;
 import com.continuum.repos.repositories.StoreRepository;
 import com.di.commons.dto.OrderDTO;
@@ -79,6 +81,11 @@ public class P21OrderServiceImpl implements P21OrderService {
 	StoreRepository storeRepository;
 
 	LocalDate localDate;
+	
+	@Autowired
+	ClientConfigRepository clientConfigRepository;
+	
+	ClientConfig clientConfig;
 
 	@Override
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
@@ -95,6 +102,8 @@ public class P21OrderServiceImpl implements P21OrderService {
 		} else {
 			orderDTOList = getAllOrdersBySearch(orderSearchParameters);
 		}
+		
+		
 		return orderDTOList;
 	}
 
@@ -102,18 +111,46 @@ public class P21OrderServiceImpl implements P21OrderService {
 			throws JsonMappingException, JsonProcessingException, ParseException, Exception {
 		List<OrderDTO> orderDTOList = new ArrayList<>();
 		orderDTOList = p21OrderMapper.convertP21OrderObjectToOrderDTO(getOrderData(orderSearchParameters));
-		for (OrderDTO orderDTO : orderDTOList) {
+	
+		if(orderDTOList.size()>0) {
+			 clientConfig = clientConfigRepository.findByErpCompanyId(orderDTOList.get(0).getCompanyId());
+		}
+			for (OrderDTO orderDTO : orderDTOList) {
 			int totalItem = -1; // fetch all items in case of -1
 			OrderSearchParameters orderSearchParams = new OrderSearchParameters();
 			orderSearchParams.setOrderNo(orderDTO.getOrderNo());
 			List<OrderItemDTO> orderItemDTOList = p21OrderLineServiceImpl
 					.getordersLineBySearchcriteria(orderSearchParams, totalItem);
 			orderDTO.setOrderItems(orderItemDTOList);
-			orderDTO.setContactDTO(
-					p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
+			orderDTO.setContactDTO(p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
+		
+			if (clientConfig != null && clientConfig.getReturnPolicyPeriod()!=null) {
+					localDate = LocalDate.now().minusDays(clientConfig.getReturnPolicyPeriod());
+					logger.info("Return policy period: " + clientConfig.getReturnPolicyPeriod());
+
+			if (localDate != null) {
+				
+				for (OrderItemDTO orderItemDTO : orderItemDTOList) {
+					if(orderItemDTO.getInvoiceDate()!=null) {
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+					        LocalDate invoiceDate = LocalDate.parse(orderItemDTO.getInvoiceDate(), formatter);
+					        int comparisonResult = invoiceDate.compareTo(localDate);
+					        if (comparisonResult < 0) {
+					        	orderItemDTO.setEligibleForReturn(false);
+					        	logger.info("invoiceDate is before Return policy period");
+					        } else if (comparisonResult >= 0) {
+					        	orderItemDTO.setEligibleForReturn(true);
+					            System.out.println("invoiceDate is after Return policy period");
+					}
+				}
+			}
 		}
-		return orderDTOList;
 	}
+			
+ }
+		return orderDTOList;
+}
 
 	private String getOrderData(OrderSearchParameters orderSearchParameters) throws Exception {
 		// RestTemplate restTemplate = new RestTemplate();
@@ -226,38 +263,6 @@ public class P21OrderServiceImpl implements P21OrderService {
 			}
 			filter.append("order_no eq '" + orderSearchParameters.getOrderNo() + "'");
 
-		}
-
-		// logic for get dynamic return policy period
-		Customer customer = customerRepository.findByCustomerId(orderSearchParameters.getCustomerId());
-
-		if (customer != null) {
-
-			ClientConfig clientConfig = customer.getClientConfig();
-
-			if (clientConfig != null) {
-
-				localDate = LocalDate.now().minusDays(clientConfig.getReturnPolicyPeriod());
-
-				logger.info("Return policy period: " + clientConfig.getReturnPolicyPeriod());
-
-			} else {
-
-				logger.info("Client config data is not found");
-
-			}
-
-		} else {
-
-			logger.info("Customer data is not found");
-
-		}
-
-		if (localDate != null) {
-			if (filter.length() > 0) {
-				filter.append(IntegrationConstants.AND);
-			}
-			filter.append("order_date ge " + "datetime'" + localDate.toString() + "'");
 		}
 
 		try {

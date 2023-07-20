@@ -33,6 +33,6 @@ public class ClientConfigDTO {
 
     private boolean allow_rstck_fees;
     private BigDecimal reStockingAmount;
-
+    private String ERPCompanyId;//ERP companyId
 
 }

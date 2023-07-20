@@ -1,12 +1,14 @@
 package com.di.integration.p21.serviceImpl;
 
 import java.net.URI;
-
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -21,7 +23,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.repos.entity.ClientConfig;
+import com.continuum.repos.entity.Customer;
+import com.continuum.repos.repositories.CustomerRepository;
+import com.continuum.repos.repositories.StoreRepository;
 import com.di.commons.dto.OrderItemDTO;
+import com.di.commons.dto.StoreDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21OrderLineItemMapper;
 import com.di.integration.constants.IntegrationConstants;
@@ -54,13 +61,25 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 	@Autowired
 	P21OrderLineItemMapper p21orderLineItemMapper;
+	
+	@Autowired
+	StoreDTO storeDTO;
+
+	@Autowired
+	CustomerRepository customerRepository;
+
+	@Autowired
+	StoreRepository storeRepository;
+
+	LocalDate localDate;
 
 	@Override
 	public List<OrderItemDTO> getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters, int totalItem)
 			throws JsonMappingException, JsonProcessingException, ParseException, Exception {
-		return p21orderLineItemMapper
-				.convertP21OrderLineObjectToOrderLineDTO(getOrderLineData(orderSearchParameters, totalItem));
-
+		
+		List<OrderItemDTO> orderItemDTOList=p21orderLineItemMapper
+		.convertP21OrderLineObjectToOrderLineDTO(getOrderLineData(orderSearchParameters, totalItem),orderSearchParameters);
+		return orderItemDTOList;
 	}
 
 	private String getOrderLineData(OrderSearchParameters orderSearchParameters, int totalItem) throws Exception {

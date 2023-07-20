@@ -42,6 +42,7 @@ public class ClientConfig extends BaseEntity {
 	
 	private String emailFrom;
 	private String emailTO;
+	private String erpCompanyId;
 	
 	public ClientConfig() {
 		// No-argument constructor
