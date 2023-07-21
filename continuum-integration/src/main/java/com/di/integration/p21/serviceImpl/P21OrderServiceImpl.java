@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,24 +91,25 @@ public class P21OrderServiceImpl implements P21OrderService {
 	@Override
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
 		List<OrderDTO> orderDTOList = new ArrayList<>();
+		List<OrderItemDTO> orderItemDTOList  = new ArrayList<>();
 		if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
 			int totalItem = 1; // fetching one item to get invoice no from item
-			List<OrderItemDTO> orderItemDTOList = p21OrderLineServiceImpl
+			 orderItemDTOList = p21OrderLineServiceImpl
 					.getordersLineBySearchcriteria(orderSearchParameters, totalItem);
 			if (orderItemDTOList.size() > 0) {
 				orderSearchParameters.setOrderNo(orderItemDTOList.get(0).getOrderNo());
-				orderDTOList = getAllOrdersBySearch(orderSearchParameters);
+				orderDTOList = getAllOrdersBySearch(orderSearchParameters,orderItemDTOList);
 			}
 
 		} else {
-			orderDTOList = getAllOrdersBySearch(orderSearchParameters);
+			orderDTOList = getAllOrdersBySearch(orderSearchParameters,orderItemDTOList);
 		}
 		
 		
 		return orderDTOList;
 	}
 
-	private List<OrderDTO> getAllOrdersBySearch(OrderSearchParameters orderSearchParameters)
+	private List<OrderDTO> getAllOrdersBySearch(OrderSearchParameters orderSearchParameters,List<OrderItemDTO> orderItemDTOList)
 			throws JsonMappingException, JsonProcessingException, ParseException, Exception {
 		List<OrderDTO> orderDTOList = new ArrayList<>();
 		orderDTOList = p21OrderMapper.convertP21OrderObjectToOrderDTO(getOrderData(orderSearchParameters));
@@ -119,8 +121,14 @@ public class P21OrderServiceImpl implements P21OrderService {
 			int totalItem = -1; // fetch all items in case of -1
 			OrderSearchParameters orderSearchParams = new OrderSearchParameters();
 			orderSearchParams.setOrderNo(orderDTO.getOrderNo());
-			List<OrderItemDTO> orderItemDTOList = p21OrderLineServiceImpl
-					.getordersLineBySearchcriteria(orderSearchParams, totalItem);
+			if(orderItemDTOList.size()==0) {
+				orderItemDTOList = p21OrderLineServiceImpl
+						.getordersLineBySearchcriteria(orderSearchParams, totalItem);
+			}
+			
+			if(isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())){
+				orderItemDTOList=	orderItemDTOList.stream().filter(item->item.getInvoiceNo()!=null).collect(Collectors.toList());
+			}
 			orderDTO.setOrderItems(orderItemDTOList);
 			orderDTO.setContactDTO(p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
 		
