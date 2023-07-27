@@ -34,5 +34,11 @@ public class ClientConfigDTO {
     private boolean allow_rstck_fees;
     private BigDecimal reStockingAmount;
     private String ERPCompanyId;//ERP companyId
+    private String Host;
+	private Integer Port;
+	private String Username;
+	private String Password;
+	private String emailFrom;
+	private String emailTO;
 
 }

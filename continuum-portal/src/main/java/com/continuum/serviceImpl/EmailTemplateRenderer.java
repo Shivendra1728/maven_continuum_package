@@ -27,7 +27,7 @@ public class EmailTemplateRenderer {
             "        }\n" +
             "        .email-container {\n" +
             "            max-width: 600px;\n" +
-            "            background-image: url('https://wallpaperaccess.com/full/1556608.jpg');\n" +
+            "            background-image: url('https://th.bing.com/th/id/OIP.Hg2TOHknQbzGYA9cehJ_RwHaD_?w=271&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7');\n" +
             "            border-radius: 10px;\n" +
             "            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);\n" +
             "            padding: 5px;\n" +
@@ -51,6 +51,7 @@ public class EmailTemplateRenderer {
             "        }\n" +
             "        h3 {\n" +
             "            margin-top: 0;\n" +
+            "            color:black;\n" +
             "        }\n" +
             "        .gradient-text {\n" +
             "            font-size: 24px;\n" +

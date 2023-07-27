@@ -1,59 +1,48 @@
 package com.continuum.controller;
-import java.util.Date;
-import org.apache.http.HttpStatus;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.continuum.response.LoginResponse;
+
+import com.continuum.repos.entity.User;
 import com.continuum.service.UserService;
-import com.di.commons.helper.JwtTokenUtil;
-import io.jsonwebtoken.Claims;
+import com.di.commons.dto.UserDTO;
 
 @RestController
+@RequestMapping(value = "/users")
 public class UserController {
+
 	@Autowired
 	private UserService userService;
-	@Autowired
-	private JwtTokenUtil jwtTokenUtil;
-	@Autowired
-	private AuthenticationManager authenticationManager;
-	@Autowired
-	public UserController(UserService userService, JwtTokenUtil jwtTokenUtil) {
 
-		this.userService = userService;
-		this.jwtTokenUtil = jwtTokenUtil;
+	@PostMapping
+	public String createUser(@RequestBody UserDTO userDTO) {
+		return userService.createUser(userDTO);
 	}
 
-	
-
-	@GetMapping("/login")
-	public ResponseEntity<LoginResponse> login(@RequestParam String usernameOrEmail, @RequestParam String password)throws Exception {
-		String user = userService.getUserByUsernameOrEmail(usernameOrEmail, password);
-		String token = null;
-		Date expirationDate = null;
-		if (user != null) {
-			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(usernameOrEmail, password));
-			token = jwtTokenUtil.generateToken(usernameOrEmail);
-			String extractedUsername = jwtTokenUtil.getUsernameFromToken(token);
-			expirationDate = jwtTokenUtil.getExpirationDateFromToken(token);
-			Object customClaim = jwtTokenUtil.getClaimFromToken(token, "role");
-			Claims allClaims = jwtTokenUtil.getAllClaimsFromToken(token);
-		}
-
-		LoginResponse response = new LoginResponse();
-		if (token != null) {
-			response.setMessage("Login success!");
-			response.setToken(token);
-			response.setExpirationDate(expirationDate);
-			return ResponseEntity.ok(response);
-		} else {
-			response.setMessage("Login Failed!");
-			return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(response);
-		}
+	@GetMapping("/getbyId")
+	public List<User> getUserById(@RequestParam("id") Long id) {
+		return userService.getUserById(id);
 	}
 
+	@DeleteMapping("/deleteById")
+	public String deleteById(@RequestParam("id") Long id) {
+		return userService.deleteUserById(id);
+
+	}
+
+	/* @PutMapping("/UpdateById")
+	public String updateUser(@RequestParam("id") Long id, User user) {
+		return userService.updateUser(id, user);
+	} */
 }

@@ -2,9 +2,8 @@ package com.continuum.repos.entity;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import lombok.AllArgsConstructor;
@@ -25,15 +24,39 @@ public class User extends BaseEntity{
 	private String password;
 	private String email;
 	private boolean status;
+	private String firstName;
+	private String lastName;
+	private String contactInfo;
+	private long contactNo;
+	private long alternateNo;
+	private String address;
+	private String city;
+	private String country;
+	private String pinCode;
 	
-	@ManyToOne
-	@JoinColumn(name="customerId")
-	private Customer customer;
 	
-	@OneToMany(mappedBy = "user")
-	private List<Orders> orders;
+	private String gender;
+//	
+//	@ManyToOne
+//	@JoinColumn(name="customerId")
+//	private Customer customer;
+//	
+//	@OneToMany(mappedBy = "user")
+//	private List<Orders> orders;
 	
 	@OneToMany(mappedBy = "user")
 	private List<UserRole> userRoles;
+	
+	
+
+	
+
+
+	
+	
+
+	
+
+	
 
 }

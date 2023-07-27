@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @NoArgsConstructor
 @ToString
-@Component
+
 public class CustomerDTO {
 
 //	private Store store;
