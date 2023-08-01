@@ -14,6 +14,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,6 +39,7 @@ public class User extends BaseEntity {
 
 	private boolean enabled;
 	private boolean secured;
+	@JsonIgnore
 	private String uuid;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

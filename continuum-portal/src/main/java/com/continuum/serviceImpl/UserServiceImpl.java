@@ -7,7 +7,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.continuum.controller.LoginController;
 import com.continuum.repos.entity.User;
+import com.continuum.repos.entity.User_Address;
 import com.continuum.repos.repositories.UserRepository;
 import com.continuum.service.UserService;
 import com.di.commons.dto.ContactDTO;
@@ -63,19 +65,48 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public String updateUser(Long id, User user) {
-//		Optional<User> optionalUser = userRepository.findById(id);
-//		if (optionalUser.isPresent()) {
-//			User eUser = optionalUser.get();
-//			eUser.setCreatedDate(user.getCreatedDate());
-//			eUser.setEmail(user.getEmail());
-//			eUser.setFirstName(user.getFirstName());
-//			eUser.setGender(user.getGender());
-//			eUser.setId(user.getId());
-//			eUser.setLastName(user.getLastName());
-//			userRepository.save(eUser);
-//			return "User updated";
-//		} else {
+		Optional<User> optionalUser = userRepository.findById(id);
+		if (optionalUser.isPresent()) {
+			User eUser = optionalUser.get();
+			eUser.setFirstName(user.getFirstName());
+			if (user.getUsername() != null) {
+				eUser.setUsername(user.getUsername());
+			}
+			if (user.getPassword() != null) {
+				eUser.setPassword(user.getPassword());
+			}
+			if (user.getFirstName() != null) {
+				eUser.setFirstName(user.getFirstName());
+			}
+			if (user.getLastName() != null) {
+				eUser.setLastName(user.getLastName());
+			}
+			if (user.getUser_address() != null) {
+				eUser.setUser_address(user.getUser_address());
+			}
+			if (user.getUser_contact() != null) {
+				eUser.setUser_contact(user.getUser_contact());
+			}
+			if (user.getGender() != null) {
+				eUser.setGender(user.getGender());
+			}
+			if (user.getNote() != null) {
+				eUser.setNote(user.getNote());
+			}
+			if (user.getUpdatedDt() != null) {
+				eUser.setUpdatedDt(user.getUpdatedDt());
+			}
+			if (user.getLoginDt() != null) {
+				eUser.setLoginDt(user.getLoginDt());
+			}
+			if (user.getRoles() != null) {
+				eUser.setRoles(user.getRoles());
+			}
+			userRepository.save(eUser);
+			return "User updated";
+		} else {
 			return "User not found";
-//		}
+		}
 	}
 }
+

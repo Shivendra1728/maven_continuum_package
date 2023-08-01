@@ -13,6 +13,8 @@ public interface UserService {
 
 	String deleteUserById(Long id);
 
-	String updateUser(Long id, User user);
+	String updateUser(Long id,User user);
 
-}
+	
+
+	}

@@ -46,7 +46,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 		String uuid = UUID.randomUUID().toString();
 
 		User existingUser = userRepository.findByEmail(email);
-		if (existingUser != null && existingUser.getUuid() == null) {
+		if (existingUser != null) {
 			existingUser.setUuid(uuid);
 			userRepository.save(existingUser);
 		}
