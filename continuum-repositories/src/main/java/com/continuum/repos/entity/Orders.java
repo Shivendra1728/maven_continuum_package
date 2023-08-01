@@ -22,7 +22,6 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-
 @Entity
 public class Orders  extends BaseEntity{
 	

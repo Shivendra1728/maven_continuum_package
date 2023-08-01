@@ -9,7 +9,7 @@ public class LoginMapper {
 				UserDTO userDTO = new UserDTO();
 				userDTO.setId(userEntity.getId());
 				userDTO.setUsername(userEntity.getUsername());
-				userDTO.setEmail(userEntity.getEmail());
+				//userDTO.setEmail(userEntity.getEmail());
 				return "Login Success!";
 			}
 }

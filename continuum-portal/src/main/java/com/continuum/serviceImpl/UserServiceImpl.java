@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.continuum.repos.entity.User;
 import com.continuum.repos.repositories.UserRepository;
 import com.continuum.service.UserService;
+import com.di.commons.dto.ContactDTO;
 import com.di.commons.dto.UserDTO;
 import com.di.commons.mapper.UserMapper;
 
@@ -26,8 +27,11 @@ public class UserServiceImpl implements UserService {
 	UserDTO userDTO;
 
 	@Override
-	public String createUser(UserDTO userDTO) {
-		User user = usermaper.UserDTOToUser(userDTO);
+
+	public String createUser(User user) {
+		if (userRepository.existsByEmail(user.getEmail())) {
+			return "Email already exists. Cannot create user with the same email.";
+		}
 		userRepository.save(user);
 		return "User Created Sucessfully";
 	}
@@ -45,18 +49,33 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public String deleteUserById(Long id) {
-		 Optional<User> optionalUser = userRepository.findById(id);
-		    
-		    if (optionalUser.isPresent()) {
-		        User user = optionalUser.get();
-		        user.setStatus(false);
-		        userRepository.save(user);
-		        return "Status updated";
-		    } else {
-		        return "User Not Found";
-		    }
-		
+		Optional<User> optionalUser = userRepository.findById(id);
+
+		if (optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			user.setStatus(false);
+			userRepository.save(user);
+			return "Status updated";
+		} else {
+			return "User Not Found";
+		}
+	}
+
+	@Override
+	public String updateUser(Long id, User user) {
+//		Optional<User> optionalUser = userRepository.findById(id);
+//		if (optionalUser.isPresent()) {
+//			User eUser = optionalUser.get();
+//			eUser.setCreatedDate(user.getCreatedDate());
+//			eUser.setEmail(user.getEmail());
+//			eUser.setFirstName(user.getFirstName());
+//			eUser.setGender(user.getGender());
+//			eUser.setId(user.getId());
+//			eUser.setLastName(user.getLastName());
+//			userRepository.save(eUser);
+//			return "User updated";
+//		} else {
+			return "User not found";
+//		}
 	}
 }
-
-	

@@ -26,8 +26,8 @@ public class UserController {
 	private UserService userService;
 
 	@PostMapping
-	public String createUser(@RequestBody UserDTO userDTO) {
-		return userService.createUser(userDTO);
+	public String createUser(@RequestBody User user) {
+		return userService.createUser(user);
 	}
 
 	@GetMapping("/getbyId")
@@ -41,8 +41,8 @@ public class UserController {
 
 	}
 
-	/* @PutMapping("/UpdateById")
-	public String updateUser(@RequestParam("id") Long id, User user) {
-		return userService.updateUser(id, user);
-	} */
+//	@PutMapping("/UpdateById")
+//	public String updateUser(@PathVariable("id") Long id, @RequestBody User user) {
+//		return userService.updateUser(id, user);
+//	}
 }

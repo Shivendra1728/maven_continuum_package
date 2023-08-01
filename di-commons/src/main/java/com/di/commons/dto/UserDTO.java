@@ -1,13 +1,20 @@
 package com.di.commons.dto;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.continuum.repos.entity.UserRole;
+import com.continuum.repos.entity.BaseEntity;
+import com.continuum.repos.entity.Gender;
+import com.continuum.repos.entity.Permission;
+import com.continuum.repos.entity.Roles;
+import com.continuum.repos.entity.User;
+import com.continuum.repos.entity.User_Address;
+import com.continuum.repos.entity.User_Contact;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
@@ -15,32 +22,54 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @Accessors(chain = true)
-@NoArgsConstructor
 @ToString
 @Component
+public class UserDTO extends BaseEntity implements Serializable {
 
-public class UserDTO {
+	public UserDTO() {
+		roles = new ArrayList<>();
+		permissions = new ArrayList<>();
+	}
 
-	private Long id;
+	public UserDTO(User user) {
+		if (user != null) {
+			
+			this.username = user.getUsername();
+			this.firstName = user.getFirstName();
+			this.lastName = user.getLastName();
+			this.email = user.getEmail();
+			this.note = user.getNote();
+			
+			// address, if set
+
+			roles = new ArrayList<>();
+			permissions = new ArrayList<>();
+
+			for (Roles role : user.getRoles()) {
+				roles.add(null);
+				for (Permission permission : role.getPermissions()) {
+					String key = permission.getPermission();
+					if ((!permissions.contains(key) && (permission.isEnabled()))) {
+						permissions.add(key);
+					}
+				}
+			}
+		}
+	}
+
 	private String username;
-	private String password;
 	private String email;
 	private boolean status;
 	private String firstName;
 	private String lastName;
-	private String contactInfo;
-	private long contactNo;
-	private long alternateNo;
-	private String address;
-	private String city;
-	private String country;
-	private String pinCode;
-	private String gender;
-	
-//	private Customer customer;
-//	
-//	private List<Orders> orders;
+	private String note;
+	private Gender gender;
+	private boolean enabled;
+	private boolean secured;
 
-	private List<UserRole> userRoles;
+	private User_Address user_Address;
+	private User_Contact user_Contact;
 
+	private List<String> roles;
+	private List<String> permissions;
 }

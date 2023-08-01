@@ -1,10 +1,20 @@
 package com.continuum.repos.entity;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.OneToMany;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,45 +28,67 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class User extends BaseEntity{
-	
+public class User extends BaseEntity {
+
 	private String username;
 	private String password;
-	private String email;
-	private boolean status;
 	private String firstName;
 	private String lastName;
-	private String contactInfo;
-	private long contactNo;
-	private long alternateNo;
-	private String address;
-	private String city;
-	private String country;
-	private String pinCode;
+	private String email;
+	private boolean status;
+
+	private boolean enabled;
+	private boolean secured;
+
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name = "useraddressuserid")
+	private User_Address user_address;
+	
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name = "usercontactuserid")
+	private User_Contact user_contact;
 	
 	
-	private String gender;
-//	
+	@Enumerated
+	@Column(columnDefinition = "tinyint")
+	private Gender gender;
+
+	
+
+	@Column(name = "note")
+	private String note;
+
+	@Basic
+	private java.time.LocalDateTime updatedDt;
+
+	@Basic
+	private java.time.LocalDateTime loginDt;
+
+//	@ManyToMany(fetch = FetchType.EAGER)
+//	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+//	private Set<Roles> roles = new HashSet<>();
+
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinColumn(name = "user_role_id") // Change this to match your actual foreign key column name
+	private Set<Roles> roles = new HashSet<>();
+
+//
 //	@ManyToOne
 //	@JoinColumn(name="customerId")
 //	private Customer customer;
 //	
 //	@OneToMany(mappedBy = "user")
 //	private List<Orders> orders;
-	
-	@OneToMany(mappedBy = "user")
-	private List<UserRole> userRoles;
-	
-	
-
-	
-
-
-	
-	
-
-	
-
-	
+//
+//	@OneToMany(mappedBy = "user")
+//	private List<UserRole> userRoles;
+//
+//	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+//	@JoinColumn(name = "addressesId")
+//	private User_Address address;
+//
+//	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+//	@JoinColumn(name = "contactId")
+//	private Contact contact;
 
 }

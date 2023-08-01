@@ -1,6 +1,5 @@
 package com.continuum.repos.entity;
 
-
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -20,11 +19,11 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class Contact extends BaseEntity{
-	
+public class Contact extends BaseEntity {
+
 	private String contactEmailId;
 	private String contactPhoneNo;
 	private String contactName;
 	private String contactId;
-	
+
 }
