@@ -3,6 +3,7 @@ package com.di.commons.dto;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
@@ -66,6 +67,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 	private Gender gender;
 	private boolean enabled;
 	private boolean secured;
+	private String uuid;
 
 	private User_Address user_Address;
 	private User_Contact user_Contact;

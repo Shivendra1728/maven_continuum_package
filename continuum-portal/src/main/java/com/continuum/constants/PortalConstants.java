@@ -12,7 +12,8 @@ public final class PortalConstants {
 	public static final String EMAIL_RECIPIENT = "operations@techexprt.com";
 	public static final String EMAIL_SUBJECT_PREFIX = "Your RMA Return Order ";
 	public static final String EMAIL_BODY_PREFIX = "Your RMA status is ";
-	public static final String EMAIL_FROM = "shivendra.bais@techexprt.com";
+	public static final String FPasswordLink = "CHANGE YOUR PASSWORD.";
+	public static final String EMAIL_FROM = "priyanshi.porwal@techexprt.com";
 	public static final String TRUE ="true";
 	public static final String FALSE ="false";
 	// SMTP properties
