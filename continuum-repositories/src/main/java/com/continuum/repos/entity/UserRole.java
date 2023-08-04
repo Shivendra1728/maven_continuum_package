@@ -29,7 +29,7 @@ public class UserRole  extends BaseEntity{
 //	private List<User> user;
 //	
 	@OneToMany
-	private List<Roles> roles;
+	private List<Role> roles;
 	
 	private String userRoles;
 	

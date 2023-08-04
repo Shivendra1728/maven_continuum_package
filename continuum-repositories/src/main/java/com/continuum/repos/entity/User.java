@@ -72,7 +72,7 @@ public class User extends BaseEntity {
 
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinColumn(name = "user_role_id") // Change this to match your actual foreign key column name
-	private Set<Roles> roles = new HashSet<>();
+	private Set<Role> roles = new HashSet<>();
 
 //
 //	@ManyToOne

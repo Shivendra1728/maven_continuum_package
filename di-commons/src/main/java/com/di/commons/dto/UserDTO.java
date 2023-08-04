@@ -11,7 +11,7 @@ import com.continuum.repos.entity.BaseEntity;
 import com.continuum.repos.entity.Gender;
 import com.continuum.repos.entity.Permission;
 import com.continuum.repos.entity.Role;
-import com.continuum.repos.entity.Roles;
+
 import com.continuum.repos.entity.User;
 import com.continuum.repos.entity.User_Address;
 import com.continuum.repos.entity.User_Contact;
