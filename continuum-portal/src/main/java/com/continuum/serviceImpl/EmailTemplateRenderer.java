@@ -65,7 +65,8 @@ public class EmailTemplateRenderer {
 			+ "            <img src=\"https://media.licdn.com/dms/image/C560BAQH7CHuevQWs6w/company-logo_200_200/0/1677702943611?e=1697673600&v=beta&t=gwMQwuywvhdbj2WGdjQ2-jkLuos7ZJGchVzchLIO264\" alt=\"Continuum\">\n"
 			+ "            <h2>HELLO ${user_name} ,</h2>\n" + "        </div>\n"
 			+ "        <h3 class=\"gradient-text\">To reset password click on the link</h3>\n"
-			+ "        <p>Token : ${uuid}</p>\n" + "        <h3 class=\"gradient-text\">Thank you.</h3>\n"
+			+ "        <p>Token : ${uuid}</p>\n" + "<a href=\"$resetUrl\">Reset Password</a>"
+			+"        <h3 class=\"gradient-text\">Thank you.</h3>\n"
 			+ "    </div>\n" + "</body>\n" + "</html>";
 
 	public static String renderTemplate(VelocityContext context) {

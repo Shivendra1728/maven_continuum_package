@@ -1,5 +1,6 @@
 package com.continuum.serviceImpl;
 
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.velocity.VelocityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import com.continuum.constants.PortalConstants;
@@ -75,10 +77,12 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
 			}
 		});
+		String resetUrl = "http://localhost:8080/continuum/update/passwords?token=" + uuid;
 		String templateFilePath = PortalConstants.FPasswordLink;
 		VelocityContext context = new VelocityContext();
 		context.put("user_name", existingUser.getFirstName().toUpperCase());
 		context.put("uuid", uuid);
+		context.put("resetUrl", resetUrl);
 
 		String renderedBody = EmailTemplateRenderer.renderFPasswordTemplate(context);
 
@@ -87,8 +91,19 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
 		message.setSubject(templateFilePath);
 		message.setContent(renderedBody, "text/html");
-
 		Transport.send(message);
 
 	}
+
+	public String updatePassword(String uuid, String password) {
+		User user = userRepository.findByUuid(uuid);
+		if (user != null) {
+			user.setPassword(password);
+			userRepository.save(user);
+			return "Password Updated Successfully";
+		} else {
+			return "User not found";
+		}
+	}
+
 }

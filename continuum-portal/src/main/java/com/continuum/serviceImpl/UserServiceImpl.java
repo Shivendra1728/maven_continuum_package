@@ -29,7 +29,6 @@ public class UserServiceImpl implements UserService {
 	UserDTO userDTO;
 
 	@Override
-
 	public String createUser(User user) {
 		if (userRepository.existsByEmail(user.getEmail())) {
 			return "Email already exists. Cannot create user with the same email.";
@@ -68,12 +67,8 @@ public class UserServiceImpl implements UserService {
 		Optional<User> optionalUser = userRepository.findById(id);
 		if (optionalUser.isPresent()) {
 			User eUser = optionalUser.get();
-			eUser.setFirstName(user.getFirstName());
 			if (user.getUsername() != null) {
 				eUser.setUsername(user.getUsername());
-			}
-			if (user.getPassword() != null) {
-				eUser.setPassword(user.getPassword());
 			}
 			if (user.getFirstName() != null) {
 				eUser.setFirstName(user.getFirstName());
@@ -93,12 +88,6 @@ public class UserServiceImpl implements UserService {
 			if (user.getNote() != null) {
 				eUser.setNote(user.getNote());
 			}
-			if (user.getUpdatedDt() != null) {
-				eUser.setUpdatedDt(user.getUpdatedDt());
-			}
-			if (user.getLoginDt() != null) {
-				eUser.setLoginDt(user.getLoginDt());
-			}
 			if (user.getRoles() != null) {
 				eUser.setRoles(user.getRoles());
 			}
@@ -109,4 +98,3 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 }
-
