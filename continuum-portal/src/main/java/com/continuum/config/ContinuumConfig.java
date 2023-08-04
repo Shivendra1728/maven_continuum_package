@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -14,11 +15,16 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import com.continuum.multitenant.mastertenant.config.MasterDatabaseConfig;
+import com.continuum.multitenant.tenant.config.DataSourceBasedMultiTenantConnectionProviderImpl;
+import com.continuum.multitenant.tenant.config.TenantDatabaseConfig;
+
 @Configuration
-@EntityScan(basePackages = {"com.continuum.repos.entity"}) 
+//@EntityScan(basePackages = {"com.continuum.repos.entity"}) 
 @ComponentScan(basePackages = {"com.continuum","com.di"})
-@EnableJpaRepositories(basePackages = {"com.continuum.repos.repositories"})
+@EnableJpaRepositories(basePackages = {"com.continuum.repos.repositories","com.continuum.serviceImpl","com.continuum.service"})
 @EnableAsync
+//@Import({MasterDatabaseConfig.class,TenantDatabaseConfig.class,DataSourceBasedMultiTenantConnectionProviderImpl.class})
 public class ContinuumConfig {
 
 	@Bean

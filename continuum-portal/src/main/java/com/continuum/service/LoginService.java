@@ -1,6 +1,6 @@
 package com.continuum.service;
 
-import com.continuum.repos.entity.User;
+import com.continuum.tenant.repos.entity.User;
 
 public interface LoginService {
 	String getUserByUsernameOrEmail(String usernameOrEmail, String password);

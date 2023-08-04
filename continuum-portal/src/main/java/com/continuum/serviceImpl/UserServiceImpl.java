@@ -7,12 +7,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.continuum.controller.LoginController;
-import com.continuum.repos.entity.User;
-import com.continuum.repos.entity.User_Address;
-import com.continuum.repos.repositories.UserRepository;
 import com.continuum.service.UserService;
-import com.di.commons.dto.ContactDTO;
+import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repository.UserRepository;
 import com.di.commons.dto.UserDTO;
 import com.di.commons.mapper.UserMapper;
 
@@ -67,8 +64,8 @@ public class UserServiceImpl implements UserService {
 		Optional<User> optionalUser = userRepository.findById(id);
 		if (optionalUser.isPresent()) {
 			User eUser = optionalUser.get();
-			if (user.getUsername() != null) {
-				eUser.setUsername(user.getUsername());
+			if (user.getUserName() != null) {
+				eUser.setUserName(user.getUserName());
 			}
 			if (user.getFirstName() != null) {
 				eUser.setFirstName(user.getFirstName());

@@ -11,6 +11,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.continuum.tenant.repos.entity.User;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,7 +53,7 @@ public class ReturnOrder extends BaseEntity {
 
 	@ManyToOne
 	@JoinColumn(name = "userId")
-	private User user;
+	private User users;
     @ManyToOne
     @JoinColumn(name="customerId")
     private Customer customer;

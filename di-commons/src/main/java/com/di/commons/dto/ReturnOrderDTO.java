@@ -16,7 +16,6 @@ import com.continuum.repos.entity.Customer;
 import com.continuum.repos.entity.OrderAddress;
 import com.continuum.repos.entity.Orders;
 import com.continuum.repos.entity.ReturnOrderItem;
-import com.continuum.repos.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;

@@ -7,9 +7,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.continuum.repos.entity.Client;
-import com.continuum.repos.entity.User;
-import com.di.commons.dto.ClientDTO;
+import com.continuum.tenant.repos.entity.User;
 import com.di.commons.dto.UserDTO;
 
 @Component
@@ -18,15 +16,15 @@ public class UserMapper {
 	@Autowired
 	ModelMapper modelMapper;
 
-	public UserDTO UserToUserDTO(User user) {
+	public UserDTO UserToUserDTO(User users) {
 
-		UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+		UserDTO userDTO = modelMapper.map(users, UserDTO.class);
 		return userDTO;
 	}
 
 	public User UserDTOToUser(UserDTO userDTO) {
-		User user = modelMapper.map(userDTO, User.class);
-		return user;
+		User users = modelMapper.map(userDTO, User.class);
+		return users;
 	}
 
 	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {

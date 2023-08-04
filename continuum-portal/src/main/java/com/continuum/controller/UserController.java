@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.continuum.repos.entity.User;
 import com.continuum.service.UserService;
+import com.continuum.tenant.repos.entity.User;
 import com.di.commons.dto.UserDTO;
 
 @RestController

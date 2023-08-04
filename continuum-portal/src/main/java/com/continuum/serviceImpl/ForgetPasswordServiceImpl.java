@@ -18,9 +18,9 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import com.continuum.constants.PortalConstants;
-import com.continuum.repos.entity.User;
-import com.continuum.repos.repositories.UserRepository;
 import com.continuum.service.ForgetPasswordService;
+import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repository.UserRepository;
 
 @Service
 public class ForgetPasswordServiceImpl implements ForgetPasswordService {

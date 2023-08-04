@@ -11,10 +11,9 @@ import com.continuum.repos.entity.BaseEntity;
 import com.continuum.repos.entity.Gender;
 import com.continuum.repos.entity.Permission;
 import com.continuum.repos.entity.Role;
-
-import com.continuum.repos.entity.User;
 import com.continuum.repos.entity.User_Address;
 import com.continuum.repos.entity.User_Contact;
+import com.continuum.tenant.repos.entity.User;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -36,7 +35,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 	public UserDTO(User user) {
 		if (user != null) {
 			
-			this.username = user.getUsername();
+			this.username = user.getUserName();
 			this.firstName = user.getFirstName();
 			this.lastName = user.getLastName();
 			this.email = user.getEmail();
