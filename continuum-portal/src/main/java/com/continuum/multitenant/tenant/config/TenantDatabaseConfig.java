@@ -22,9 +22,9 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.continuum.repos.entity.ClientConfig;
+import com.continuum.repos.entity.User;
 import com.continuum.repos.repositories.ClientRepository;
-import com.continuum.tenant.repos.entity.User;
-import com.continuum.tenant.repos.repository.UserRepository;
+import com.continuum.repos.repositories.UserRepository;
 
 /**
  * @author RK

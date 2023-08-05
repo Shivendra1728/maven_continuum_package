@@ -3,7 +3,6 @@ package com.di.commons.dto;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
@@ -11,9 +10,9 @@ import com.continuum.repos.entity.BaseEntity;
 import com.continuum.repos.entity.Gender;
 import com.continuum.repos.entity.Permission;
 import com.continuum.repos.entity.Role;
+import com.continuum.repos.entity.User;
 import com.continuum.repos.entity.User_Address;
 import com.continuum.repos.entity.User_Contact;
-import com.continuum.tenant.repos.entity.User;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,4 +1,4 @@
-package com.continuum.tenant.repos.entity;
+package com.continuum.repos.entity;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -15,10 +15,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.Size;
 
-import com.continuum.repos.entity.BaseEntity;
-import com.continuum.repos.entity.Role;
-import com.continuum.repos.entity.User_Address;
-import com.continuum.repos.entity.User_Contact;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;

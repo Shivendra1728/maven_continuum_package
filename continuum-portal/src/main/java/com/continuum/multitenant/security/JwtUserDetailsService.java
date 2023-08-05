@@ -10,7 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.continuum.tenant.repos.repository.UserRepository;
+import com.continuum.repos.entity.User;
+import com.continuum.repos.repositories.UserRepository;
 
 /**
  * @author RK
@@ -23,7 +24,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        com.continuum.tenant.repos.entity.User user = userRepository.findByUserName(userName);
+        User user = userRepository.findByUserName(userName);
         if(null == user){
             throw new UsernameNotFoundException("Invalid user name or password.");
         }
