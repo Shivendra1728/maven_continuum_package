@@ -27,13 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.ApplicationScope;
 
 import com.continuum.multitenant.constant.UserStatus;
-import com.continuum.multitenant.dto.AuthResponse;
-import com.continuum.multitenant.dto.UserLoginDTO;
 import com.continuum.multitenant.mastertenant.config.DBContextHolder;
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.service.MasterTenantService;
 import com.continuum.multitenant.security.UserTenantInformation;
 import com.continuum.multitenant.util.JwtTokenUtil;
+import com.di.commons.dto.AuthResponse;
+import com.di.commons.dto.UserLoginDTO;
 
 /**
  * @author RK

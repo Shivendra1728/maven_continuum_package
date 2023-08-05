@@ -1,4 +1,4 @@
-package com.continuum.multitenant.dto;
+package com.di.commons.dto;
 
 import java.io.Serializable;
 
