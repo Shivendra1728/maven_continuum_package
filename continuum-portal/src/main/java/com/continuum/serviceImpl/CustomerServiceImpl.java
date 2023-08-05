@@ -3,9 +3,9 @@ package com.continuum.serviceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.continuum.repos.entity.Customer;
-import com.continuum.repos.repositories.CustomerRepository;
 import com.continuum.service.CustomerService;
+import com.continuum.tenant.repos.entity.Customer;
+import com.continuum.tenant.repos.repositories.CustomerRepository;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.mapper.CustomerMapper;
 

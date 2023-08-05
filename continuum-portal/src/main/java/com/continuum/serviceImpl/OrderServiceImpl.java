@@ -7,10 +7,11 @@ import javax.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import com.continuum.repos.entity.OrderAddress;
-import com.continuum.repos.entity.Orders;
-import com.continuum.repos.repositories.OrderRepository;
+
 import com.continuum.service.OrderService;
+import com.continuum.tenant.repos.entity.OrderAddress;
+import com.continuum.tenant.repos.entity.Orders;
+import com.continuum.tenant.repos.repositories.OrderRepository;
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.mapper.OrderMapper;

@@ -16,11 +16,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.continuum.constants.PortalConstants;
-import com.continuum.repos.entity.OrderAddress;
-import com.continuum.repos.entity.ReturnOrder;
-import com.continuum.repos.repositories.ReturnOrderRepository;
 import com.continuum.service.CustomerService;
 import com.continuum.service.ReturnOrderService;
+import com.continuum.tenant.repos.entity.OrderAddress;
+import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.helper.OrderSearchParameters;

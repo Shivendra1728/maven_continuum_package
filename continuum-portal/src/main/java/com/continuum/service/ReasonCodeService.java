@@ -1,6 +1,7 @@
 package com.continuum.service;
 import java.util.List;
-import com.continuum.repos.entity.ReasonCode;
+
+import com.continuum.tenant.repos.entity.ReasonCode;
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.ReasonCodeDTO;
 import com.di.commons.helper.OrderSearchParameters;

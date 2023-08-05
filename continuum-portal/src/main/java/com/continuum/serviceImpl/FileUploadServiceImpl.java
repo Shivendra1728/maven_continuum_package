@@ -2,8 +2,9 @@ package com.continuum.serviceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.continuum.repos.entity.ReturnOrderItem;
+
 import com.continuum.service.FileUploadService;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.di.commons.helper.FileUploadHelper;
 
 @Service

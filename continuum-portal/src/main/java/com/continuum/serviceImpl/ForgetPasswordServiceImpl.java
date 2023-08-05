@@ -16,9 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.continuum.constants.PortalConstants;
-import com.continuum.repos.entity.User;
-import com.continuum.repos.repositories.UserRepository;
 import com.continuum.service.ForgetPasswordService;
+import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repositories.UserRepository;
 
 @Service
 public class ForgetPasswordServiceImpl implements ForgetPasswordService {

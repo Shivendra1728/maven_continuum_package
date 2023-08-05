@@ -21,20 +21,22 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.continuum.repos.entity.ClientConfig;
-import com.continuum.repos.entity.User;
-import com.continuum.repos.repositories.ClientRepository;
-import com.continuum.repos.repositories.UserRepository;
+import com.continuum.tenant.repos.entity.ClientConfig;
+import com.continuum.tenant.repos.entity.Store;
+import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repositories.ClientRepository;
+import com.continuum.tenant.repos.repositories.StoreRepository;
+import com.continuum.tenant.repos.repositories.UserRepository;
 
 /**
  * @author RK
  */
 @Configuration
 @EnableTransactionManagement
-@ComponentScan(basePackages = { "com.continuum.tenant.repos.repository", "com.continuum.tenant.repos.entity","com.continuum.repos.repository", "com.continuum.repos.entity" })
-@EnableJpaRepositories(basePackages = {"com.continuum.tenant.repos.repository", "com.continuum.tenant.service","com.continuum.repos.repository", "com.continuum.service","com.continuum.serviceImpl"},
+@ComponentScan(basePackages = { "com.continuum.tenant.repos.repositories", "com.continuum.tenant.repos.entity"})
+@EnableJpaRepositories(basePackages = {"com.continuum.tenant.repos.repositories", "com.continuum.tenant.service","com.continuum.serviceImpl"},
         entityManagerFactoryRef = "entityManagerFactory",
-        transactionManagerRef = "tenantTransactionManager")
+        transactionManagerRef = "transactionManager")
 public class TenantDatabaseConfig {
 
     @Bean(name = "tenantJpaVendorAdapter")
@@ -42,7 +44,7 @@ public class TenantDatabaseConfig {
         return new HibernateJpaVendorAdapter();
     }
 
-    @Bean(name = "tenantTransactionManager")
+    @Bean(name = "transactionManager")
     public JpaTransactionManager transactionManager(@Qualifier("entityManagerFactory") EntityManagerFactory tenantEntityManager) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(tenantEntityManager);
@@ -89,8 +91,8 @@ public class TenantDatabaseConfig {
                     CurrentTenantIdentifierResolver tenantResolver) {
         LocalContainerEntityManagerFactoryBean emfBean = new LocalContainerEntityManagerFactoryBean();
         //All tenant related entities, repositories and service classes must be scanned
-        emfBean.setPackagesToScan(new String[] { User.class.getPackage().getName(),ClientConfig.class.getPackage().getName(),
-                UserRepository.class.getPackage().getName(),ClientRepository.class.getPackage().getName()
+        emfBean.setPackagesToScan(new String[] { Store.class.getPackage().getName(),ClientConfig.class.getPackage().getName(),
+                StoreRepository.class.getPackage().getName(),ClientRepository.class.getPackage().getName()
                 });
         emfBean.setJpaVendorAdapter(jpaVendorAdapter());
         emfBean.setPersistenceUnitName("tenantdb-persistence-unit");

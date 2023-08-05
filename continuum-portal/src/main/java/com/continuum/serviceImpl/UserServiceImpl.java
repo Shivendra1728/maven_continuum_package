@@ -7,9 +7,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.continuum.repos.entity.User;
-import com.continuum.repos.repositories.UserRepository;
 import com.continuum.service.UserService;
+import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.UserDTO;
 import com.di.commons.mapper.UserMapper;
 

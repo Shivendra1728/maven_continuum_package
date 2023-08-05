@@ -1,6 +1,6 @@
 package com.di.commons.dto;
 
-import com.continuum.repos.entity.Permission;
+import com.continuum.tenant.repos.entity.Permission;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

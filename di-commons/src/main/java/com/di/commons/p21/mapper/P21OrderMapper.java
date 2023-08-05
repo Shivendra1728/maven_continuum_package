@@ -11,8 +11,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.continuum.repos.entity.Customer;
-import com.continuum.repos.repositories.CustomerRepository;
+import com.continuum.tenant.repos.entity.Customer;
+import com.continuum.tenant.repos.repositories.CustomerRepository;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.OrderAddressDTO;
 import com.di.commons.dto.OrderDTO;

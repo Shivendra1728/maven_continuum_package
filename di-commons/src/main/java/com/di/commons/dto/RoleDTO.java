@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.continuum.repos.entity.Role;
+import com.continuum.tenant.repos.entity.Role;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

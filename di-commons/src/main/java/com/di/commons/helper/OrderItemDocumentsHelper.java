@@ -2,9 +2,10 @@ package com.di.commons.helper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.continuum.repos.entity.OrderItemDocuments;
-import com.continuum.repos.entity.ReturnOrderItem;
-import com.continuum.repos.repositories.OrderItemDocumentRepository;
+
+import com.continuum.tenant.repos.entity.OrderItemDocuments;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
+import com.continuum.tenant.repos.repositories.OrderItemDocumentRepository;
 
 @Component
 public class OrderItemDocumentsHelper {

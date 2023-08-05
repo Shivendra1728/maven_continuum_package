@@ -7,8 +7,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.continuum.repos.entity.ReturnOrder;
-import com.continuum.repos.entity.ReturnOrderItem;
+import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.di.commons.dto.ReturnOrderDTO;
 @Component
 public class ReturnOrderMapper {

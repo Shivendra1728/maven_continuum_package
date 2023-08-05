@@ -6,12 +6,13 @@ import java.util.Iterator;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.continuum.repos.entity.Orders;
-import com.continuum.repos.entity.ReasonCode;
-import com.continuum.repos.entity.Store;
-import com.continuum.repos.repositories.ReasonCodeRepository;
-import com.continuum.repos.repositories.StoreRepository;
+
 import com.continuum.service.ReasonCodeService;
+import com.continuum.tenant.repos.entity.Orders;
+import com.continuum.tenant.repos.entity.ReasonCode;
+import com.continuum.tenant.repos.entity.Store;
+import com.continuum.tenant.repos.repositories.ReasonCodeRepository;
+import com.continuum.tenant.repos.repositories.StoreRepository;
 import com.di.commons.dto.ReasonCodeDTO;
 import com.di.commons.mapper.ReasonCodeMapper;
 

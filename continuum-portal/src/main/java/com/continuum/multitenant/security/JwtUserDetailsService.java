@@ -10,8 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.continuum.repos.entity.User;
-import com.continuum.repos.repositories.UserRepository;
+import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repositories.UserRepository;
 
 /**
  * @author RK

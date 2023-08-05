@@ -12,10 +12,10 @@ import javax.persistence.OneToOne;
 
 import org.springframework.stereotype.Component;
 
-import com.continuum.repos.entity.Customer;
-import com.continuum.repos.entity.OrderAddress;
-import com.continuum.repos.entity.Orders;
-import com.continuum.repos.entity.ReturnOrderItem;
+import com.continuum.tenant.repos.entity.Customer;
+import com.continuum.tenant.repos.entity.OrderAddress;
+import com.continuum.tenant.repos.entity.Orders;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;

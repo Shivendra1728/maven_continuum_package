@@ -3,11 +3,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.continuum.repos.entity.Client;
-import com.continuum.repos.entity.ClientConfig;
-import com.continuum.repos.repositories.ClientConfigRepository;
-import com.continuum.repos.repositories.ClientRepository;
+
 import com.continuum.service.ClientService;
+import com.continuum.tenant.repos.entity.Client;
+import com.continuum.tenant.repos.entity.ClientConfig;
+import com.continuum.tenant.repos.repositories.ClientConfigRepository;
+import com.continuum.tenant.repos.repositories.ClientRepository;
 import com.di.commons.dto.ClientConfigDTO;
 import com.di.commons.dto.ClientDTO;
 import com.di.commons.mapper.ClientConfigMapper;

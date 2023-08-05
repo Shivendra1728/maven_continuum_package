@@ -23,10 +23,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.continuum.repos.entity.ClientConfig;
-import com.continuum.repos.entity.Customer;
-import com.continuum.repos.repositories.CustomerRepository;
-import com.continuum.repos.repositories.StoreRepository;
+import com.continuum.tenant.repos.entity.ClientConfig;
+import com.continuum.tenant.repos.entity.Customer;
+import com.continuum.tenant.repos.repositories.CustomerRepository;
+import com.continuum.tenant.repos.repositories.StoreRepository;
 import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.dto.StoreDTO;
 import com.di.commons.helper.OrderSearchParameters;

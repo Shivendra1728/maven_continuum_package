@@ -5,7 +5,8 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.continuum.repos.entity.ClientConfig;
+
+import com.continuum.tenant.repos.entity.ClientConfig;
 import com.di.commons.dto.ClientConfigDTO;
 
 @Component

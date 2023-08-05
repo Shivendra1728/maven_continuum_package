@@ -2,7 +2,7 @@ package com.di.commons.dto;
 
 import javax.persistence.Entity;
 
-import com.continuum.repos.entity.Contact;
+import com.continuum.tenant.repos.entity.Contact;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

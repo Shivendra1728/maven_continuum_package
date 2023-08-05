@@ -4,8 +4,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.continuum.repos.entity.ClientConfig;
+
 import com.continuum.service.ClientService;
+import com.continuum.tenant.repos.entity.ClientConfig;
 import com.di.commons.dto.ClientConfigDTO;
 import com.di.commons.dto.ClientDTO;
 

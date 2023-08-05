@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import com.continuum.repos.entity.ReturnOrderItem;
+
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 
 @Component
 public class FileUploadHelper {

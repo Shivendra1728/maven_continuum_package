@@ -4,7 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.continuum.repos.entity.Customer;
+import com.continuum.tenant.repos.entity.Customer;
 import com.di.commons.dto.CustomerDTO;
 @Component
 public class CustomerMapper {

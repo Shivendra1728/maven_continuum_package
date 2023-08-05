@@ -11,8 +11,8 @@ import java.math.RoundingMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.continuum.repos.entity.ClientConfig;
-import com.continuum.repos.entity.Customer;
+import com.continuum.tenant.repos.entity.ClientConfig;
+import com.continuum.tenant.repos.entity.Customer;
 import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.helper.P21OrderLineItem;

@@ -2,7 +2,7 @@ package com.di.commons.dto;
 
 import java.util.List;
 
-import com.continuum.repos.entity.Store;
+import com.continuum.tenant.repos.entity.Store;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

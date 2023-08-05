@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.continuum.repos.entity.StoreAddress;
+import com.continuum.tenant.repos.entity.StoreAddress;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
