@@ -23,22 +23,22 @@ public class Store extends BaseEntity{
 
 	 @Column(name = "store_name")
     private String storeName;
-	/*
-	 * private String StoreCode; private String description; private String URL;
-	 * 
-	 * @Builder.Default private boolean enabled= true;
-	 * 
-	 * private String storeType; private String contentEncoding; private Integer
-	 * noOfStores;
-	 * 
-	 * 
-	 * 
-	 * @Builder.Default
-	 * 
-	 * private boolean storeState = true; private String feeType;
-	 * 
-	 * private String reasonListing; private String category;
-	 */
+	
+	  private String StoreCode; private String description; private String URL;
+	  
+	  @Builder.Default private boolean enabled= true;
+	  
+	  private String storeType; private String contentEncoding; private Integer
+	  noOfStores;
+	  
+	  
+	  
+	  @Builder.Default
+	  
+	  private boolean storeState = true; private String feeType;
+	  
+	  private String reasonListing; private String category;
+	 
 
     @OneToOne
     @JoinColumn(name="storeLocaleId")

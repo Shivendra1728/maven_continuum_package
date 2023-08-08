@@ -48,6 +48,9 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl extends AbstractDa
                 dataSourcesMtApp.put(masterTenant.getDbName(), DataSourceUtil.createAndConfigureDataSource(masterTenant));
             }
         }
+        if( this.dataSourcesMtApp==null) {
+        	return null;
+        }
         return this.dataSourcesMtApp.values().iterator().next();
     }
 
