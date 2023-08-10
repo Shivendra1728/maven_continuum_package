@@ -6,11 +6,14 @@ import java.util.Map;
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.MultiTenancyStrategy;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
+import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -21,12 +24,11 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.continuum.multitenant.mastertenant.config.PhysicalNamingStrategyImpl;
 import com.continuum.tenant.repos.entity.ClientConfig;
 import com.continuum.tenant.repos.entity.Store;
-import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.ClientRepository;
 import com.continuum.tenant.repos.repositories.StoreRepository;
-import com.continuum.tenant.repos.repositories.UserRepository;
 
 /**
  * @author RK
@@ -91,8 +93,7 @@ public class TenantDatabaseConfig {
                     CurrentTenantIdentifierResolver tenantResolver) {
         LocalContainerEntityManagerFactoryBean emfBean = new LocalContainerEntityManagerFactoryBean();
         //All tenant related entities, repositories and service classes must be scanned
-        emfBean.setPackagesToScan(new String[] { Store.class.getPackage().getName(),ClientConfig.class.getPackage().getName(),
-                StoreRepository.class.getPackage().getName(),ClientRepository.class.getPackage().getName()
+        emfBean.setPackagesToScan(new String[] { "com.continuum.tenant.repos.repositories", "com.continuum.tenant.repos.entity"
                 });
         emfBean.setJpaVendorAdapter(jpaVendorAdapter());
         emfBean.setPersistenceUnitName("tenantdb-persistence-unit");
@@ -103,6 +104,9 @@ public class TenantDatabaseConfig {
         properties.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
         properties.put(Environment.SHOW_SQL, true);
         properties.put(Environment.FORMAT_SQL, true);
+       // properties.put(Environment.IMPLICIT_NAMING_STRATEGY, SpringImplicitNamingStrategy.class.getName());
+       // properties.put(Environment.PHYSICAL_NAMING_STRATEGY, PhysicalNamingStrategyStandardImpl.class.getName());
+        properties.put(Environment.PHYSICAL_NAMING_STRATEGY, PhysicalNamingStrategyImpl.class.getName());
         properties.put(Environment.HBM2DDL_AUTO, "update");
         emfBean.setJpaPropertyMap(properties);
         return emfBean;

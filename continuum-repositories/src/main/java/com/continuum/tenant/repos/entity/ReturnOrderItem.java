@@ -38,7 +38,7 @@ public class ReturnOrderItem extends BaseEntity {
 	@JoinColumn(name="billTo")
     private OrderAddress billTo;
 	
-	@OneToMany(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL})
+	@OneToMany(mappedBy = "returnOrderItem", fetch = FetchType.EAGER, cascade = { CascadeType.ALL})
     private List<OrderItemDocuments> orderItemDocuments;
 	
 	/*

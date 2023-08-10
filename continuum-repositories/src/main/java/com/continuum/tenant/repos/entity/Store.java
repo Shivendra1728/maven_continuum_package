@@ -23,12 +23,17 @@ public class Store extends BaseEntity{
 
 	 @Column(name = "store_name")
     private String storeName;
-	
-	  private String StoreCode; private String description; private String URL;
+	 
+	 @Column(name = "store_code")
+	  private String StoreCode; 
+	  private String description; 
+	  private String URL;
 	  
-	  @Builder.Default private boolean enabled= true;
-	  
-	  private String storeType; private String contentEncoding; private Integer
+	  @Builder.Default 
+	  private boolean enabled= true;
+	  @Column(name = "store_type")
+	  private String storeType; 
+	  private String contentEncoding; private Integer
 	  noOfStores;
 	  
 	  

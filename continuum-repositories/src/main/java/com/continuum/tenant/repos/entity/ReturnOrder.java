@@ -4,12 +4,14 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,18 +25,6 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-
-/*
- * @Getter
- * 
- * @Setter
- * 
- * @NoArgsConstructor
- * 
- * @Accessors(chain = true)
- * 
- * @Document(collection = "trip")
- */
 public class ReturnOrder extends BaseEntity {
 
 	private Long ORMOrder;
@@ -44,6 +34,7 @@ public class ReturnOrder extends BaseEntity {
 	private String PONumber;
 	private Date orderDate;
 	private Date requestedDate;
+	@Column(name = "status")
 	private String status;
 	private String currency;
 	private String orderNo;
@@ -56,7 +47,7 @@ public class ReturnOrder extends BaseEntity {
     @JoinColumn(name="customerId")
     private Customer customer;
 
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
 	@JoinColumn(name = "returnOrderId")
 	private List<ReturnOrderItem> returnOrderItem;
 

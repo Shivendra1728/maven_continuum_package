@@ -27,11 +27,11 @@ public abstract class BaseEntity {
 	private Long id;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@JsonIgnore
+	//@JsonIgnore
 	private Date createdDate;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@JsonIgnore
+	//@JsonIgnore
 	private Date updatedDate;
 
 	@PrePersist
