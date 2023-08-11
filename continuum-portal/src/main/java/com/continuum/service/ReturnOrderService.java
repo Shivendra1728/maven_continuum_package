@@ -11,6 +11,6 @@ import com.di.integration.p21.transaction.P21RMAResponse;
 public interface ReturnOrderService {
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception;
 	public List<ReturnOrderDTO> getReturnOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters);
-	@Async
+	//@Async
 	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO,P21RMAResponse p21RMARespo) throws MessagingException ;
 }

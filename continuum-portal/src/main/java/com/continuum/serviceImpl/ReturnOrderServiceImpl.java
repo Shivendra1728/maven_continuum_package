@@ -54,7 +54,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		logger.info("orderNo::: " + p21RMARespo.getRmaOrderNo() + " status: " + p21RMARespo.getStatus());
 		return p21RMARespo;
 	}
-	@Async
+	//@Async
 	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO,P21RMAResponse p21RMARespo) throws MessagingException {
 		returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
 		returnOrderDTO.setStatus(PortalConstants.UNDER_REVIEW);

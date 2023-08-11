@@ -10,7 +10,7 @@ import com.continuum.multitenant.mastertenant.config.DBContextHolder;
  */
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver {
 
-    private static final String DEFAULT_TENANT_ID = "client_tenant_1";
+    private static final String DEFAULT_TENANT_ID = "continuum";
 
     @Override
     public String resolveCurrentTenantIdentifier() {
