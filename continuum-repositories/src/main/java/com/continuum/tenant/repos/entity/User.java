@@ -41,7 +41,7 @@ public class User extends BaseEntity implements Serializable  {
 	private String gender;
 
     @Size(max = 50)
-    
+    @Column(name = "username",nullable = false)
     private String userName;
     @Size(max = 100)
     @Column(name = "password",nullable = false)
