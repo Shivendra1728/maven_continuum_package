@@ -20,7 +20,7 @@ import java.util.Map;
  * @author RK
  */
 @RestController
-@RequestMapping("/api/product/logout")
+@RequestMapping("/user")
 public class LogoutController implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(LogoutController.class);
 
