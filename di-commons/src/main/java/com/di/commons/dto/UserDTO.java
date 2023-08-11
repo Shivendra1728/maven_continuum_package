@@ -13,6 +13,7 @@ import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.entity.User_Address;
 import com.continuum.tenant.repos.entity.User_Contact;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -34,7 +35,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 	public UserDTO(User user) {
 		if (user != null) {
 			
-			this.username = user.getUserName();
+			this.userName = user.getUserName();
 			this.firstName = user.getFirstName();
 			this.lastName = user.getLastName();
 			this.email = user.getEmail();
@@ -56,7 +57,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 		}
 	}
 
-	private String username;
+	private String userName;
 	private String email;
 	private boolean status;
 	private String firstName;
@@ -65,6 +66,8 @@ public class UserDTO extends BaseEntity implements Serializable {
 	private Gender gender;
 	private boolean enabled;
 	private boolean secured;
+	private String fullName;
+	@JsonIgnore
 	private String uuid;
 
 	private User_Address user_Address;

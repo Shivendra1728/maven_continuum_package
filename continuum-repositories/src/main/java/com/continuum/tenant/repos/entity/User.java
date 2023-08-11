@@ -33,7 +33,7 @@ public class User extends BaseEntity implements Serializable  {
     private Integer id;*/
 
     @Size(max = 100)
-    @Column(name = "full_name",nullable = false)
+    
     private String fullName;
 
     @Size(max = 10)
@@ -41,7 +41,7 @@ public class User extends BaseEntity implements Serializable  {
 	private String gender;
 
     @Size(max = 50)
-    @Column(name = "user_name",nullable = false,unique = true)
+    
     private String userName;
     @Size(max = 100)
     @Column(name = "password",nullable = false)
@@ -52,9 +52,9 @@ public class User extends BaseEntity implements Serializable  {
     @Column(name = "email",nullable = false)
     private String email;
     
-    @Column(name = "first_name",nullable = false)
+    
     private String firstName;
-    @Column(name = "last_name",nullable = false)
+
 	private String lastName;
     
     
@@ -86,7 +86,7 @@ public class User extends BaseEntity implements Serializable  {
 //	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 //	private Set<Roles> roles = new HashSet<>();
 
-	@ManyToMany(fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinColumn(name = "user_role_id") // Change this to match your actual foreign key column name
 	private Set<Role> roles = new HashSet<>();
 

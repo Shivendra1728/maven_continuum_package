@@ -38,9 +38,9 @@ public class Store extends BaseEntity{
 	  
 	  
 	  
-	  @Builder.Default
-	  
-	  private boolean storeState = true; private String feeType;
+	  @Column(name="store_state")
+	  private boolean storeState;
+	  private String feeType;
 	  
 	  private String reasonListing; private String category;
 	 

@@ -20,8 +20,8 @@ public class StoreController {
 	StoreService service;
 
 	@PostMapping("/create")
-	public void createStore(@RequestBody StoreDTO storeDTO) {
-		service.createStore(storeDTO);
+	public String createStore(@RequestBody StoreDTO storeDTO) {
+		return service.createStore(storeDTO);
 	}
 	@GetMapping("/search")
 	public List<StoreDTO> getStoreBysearchCriteria(@RequestParam(required = false) String storeName) {

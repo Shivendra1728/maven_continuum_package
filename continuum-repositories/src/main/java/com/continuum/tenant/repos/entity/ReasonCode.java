@@ -48,7 +48,7 @@ public class ReasonCode extends BaseEntity {
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentReasonCode")
 	private List<ReasonCode> childReasonCodes;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "store")
 	// @JsonIgnore
 	private Store store;

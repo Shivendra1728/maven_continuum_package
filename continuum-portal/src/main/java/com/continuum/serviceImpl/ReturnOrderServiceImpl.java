@@ -72,7 +72,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrderDTO.setStatus(PortalConstants.FAILED);
 			 logger.info("Setting status to:: '{}'", PortalConstants.FAILED);
 		}
-
+		logger.info(returnOrderDTO.getCustomer().getCustomerId());
 		CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
 		if (customerDTO == null) {
 			customerDTO = new CustomerDTO();
