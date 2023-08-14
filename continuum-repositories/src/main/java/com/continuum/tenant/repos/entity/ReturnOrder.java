@@ -61,7 +61,7 @@ public class ReturnOrder extends BaseEntity {
     private OrderAddress billTo;
     
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-    @JoinColumn(name ="returnOrderId")
+    @JoinColumn(name ="con_Id")
     private Contact contact;
     
     private String rmaOrderNo;
