@@ -18,7 +18,6 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @NoArgsConstructor
 @ToString
-@Component
 public class ClientConfigDTO {
 
 	private Long id;
