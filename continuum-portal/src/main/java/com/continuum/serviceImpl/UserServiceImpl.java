@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import com.continuum.service.UserService;
@@ -30,6 +31,9 @@ public class UserServiceImpl implements UserService {
 		if (userRepository.existsByEmail(user.getEmail())) {
 			return "Email already exists. Cannot create user with the same email.";
 		}
+		String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+
+        user.setPassword(hashedPassword);
 		userRepository.save(user);
 		return "User Created Sucessfully";
 	}
@@ -44,6 +48,7 @@ public class UserServiceImpl implements UserService {
 			return userRepository.findAll();
 		}
 	}
+	
 
 	@Override
 	public String deleteUserById(Long id) {

@@ -2,7 +2,9 @@ package com.continuum.multitenant.controller;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,6 +34,9 @@ import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.service.MasterTenantService;
 import com.continuum.multitenant.security.UserTenantInformation;
 import com.continuum.multitenant.util.JwtTokenUtil;
+import com.continuum.tenant.repos.entity.Role;
+import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.AuthResponse;
 import com.di.commons.dto.UserLoginDTO;
 
@@ -41,65 +46,72 @@ import com.di.commons.dto.UserLoginDTO;
 @RestController
 public class AuthenticationController implements Serializable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationController.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationController.class);
 
-    private Map<String, String> mapValue = new HashMap<>();
-    private Map<String, String> userDbMap = new HashMap<>();
+	private Map<String, String> mapValue = new HashMap<>();
+	private Map<String, String> userDbMap = new HashMap<>();
 
+	@Autowired
+	private AuthenticationManager authenticationManager;
+	@Autowired
+	private JwtTokenUtil jwtTokenUtil;
+	@Autowired
+	MasterTenantService masterTenantService;
+	@Autowired
+	UserRepository userRepository;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-    @Autowired
-    MasterTenantService masterTenantService;
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	public ResponseEntity<?> userLogin(@RequestBody @NotNull UserLoginDTO userLoginDTO, HttpServletRequest request,
+			HttpServletResponse response) throws AuthenticationException {
+		LOGGER.info("userLogin() method call...");
+		if (null == userLoginDTO.getUserName() || userLoginDTO.getUserName().isEmpty()) {
+			return new ResponseEntity<>("User name is required", HttpStatus.BAD_REQUEST);
+		}
+		// set database parameter
 
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<?> userLogin(@RequestBody @NotNull UserLoginDTO userLoginDTO, HttpServletRequest request, HttpServletResponse response ) throws AuthenticationException {
-        LOGGER.info("userLogin() method call...");
-        if(null == userLoginDTO.getUserName() || userLoginDTO.getUserName().isEmpty()){
-            return new ResponseEntity<>("User name is required", HttpStatus.BAD_REQUEST);
-        }
-        //set database parameter
-        
-        String tenentId= request.getHeader("host").split("\\.")[0];
-        MasterTenant masterTenant = masterTenantService.findByDbName(tenentId);
-        if(null == masterTenant || masterTenant.getStatus().toUpperCase().equals(UserStatus.INACTIVE)){
-            throw new RuntimeException("Please contact service provider.");
-        }
-        //Entry Client Wise value dbName store into bean.
-        loadCurrentDatabaseInstance(masterTenant.getDbName(), userLoginDTO.getUserName());
-        final Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLoginDTO.getUserName(), userLoginDTO.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        final String token = jwtTokenUtil.generateToken(userDetails.getUsername(),tenentId);
-        //final String token = jwtTokenUtil.generateToken(userDetails.getUsername(),String.valueOf(userLoginDTO.getTenantOrClientId()));
-        //Map the value into applicationScope bean
-        setMetaDataAfterLogin();
-        return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(),token));
-    }
+		String tenentId = request.getHeader("host").split("\\.")[0];
+		MasterTenant masterTenant = masterTenantService.findByDbName(tenentId);
+		if (null == masterTenant || masterTenant.getStatus().toUpperCase().equals(UserStatus.INACTIVE)) {
+			throw new RuntimeException("Please contact service provider.");
+		}
+		// Entry Client Wise value dbName store into bean.
+		loadCurrentDatabaseInstance(masterTenant.getDbName(), userLoginDTO.getUserName());
+		final Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(userLoginDTO.getUserName(), userLoginDTO.getPassword()));
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+		final String token = jwtTokenUtil.generateToken(userDetails.getUsername(), tenentId);
+		User u = userRepository.findByUserName(userDetails.getUsername());
+		// Set<Role> role = u.getRoles();
 
-    private void loadCurrentDatabaseInstance(String databaseName, String userName) {
-        DBContextHolder.setCurrentDb(databaseName);
-        mapValue.put(userName, databaseName);
-    }
+		// final String token =
+		// jwtTokenUtil.generateToken(userDetails.getUsername(),String.valueOf(userLoginDTO.getTenantOrClientId()));
+		// Map the value into applicationScope bean
+		setMetaDataAfterLogin();
+		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), token, u.getRoles()));
+	}
 
-    @Bean(name = "userTenantInfo")
-    @ApplicationScope
-    public UserTenantInformation setMetaDataAfterLogin() {
-        UserTenantInformation tenantInformation = new UserTenantInformation();
-        if (mapValue.size() > 0) {
-            for (String key : mapValue.keySet()) {
-                if (null == userDbMap.get(key)) {
-                    //Here Assign putAll due to all time one come.
-                    userDbMap.putAll(mapValue);
-                } else {
-                    userDbMap.put(key, mapValue.get(key));
-                }
-            }
-            mapValue = new HashMap<>();
-        }
-        tenantInformation.setMap(userDbMap);
-        return tenantInformation;
-    }
+	private void loadCurrentDatabaseInstance(String databaseName, String userName) {
+		DBContextHolder.setCurrentDb(databaseName);
+		mapValue.put(userName, databaseName);
+	}
+
+	@Bean(name = "userTenantInfo")
+	@ApplicationScope
+	public UserTenantInformation setMetaDataAfterLogin() {
+		UserTenantInformation tenantInformation = new UserTenantInformation();
+		if (mapValue.size() > 0) {
+			for (String key : mapValue.keySet()) {
+				if (null == userDbMap.get(key)) {
+					// Here Assign putAll due to all time one come.
+					userDbMap.putAll(mapValue);
+				} else {
+					userDbMap.put(key, mapValue.get(key));
+				}
+			}
+			mapValue = new HashMap<>();
+		}
+		tenantInformation.setMap(userDbMap);
+		return tenantInformation;
+	}
 }
