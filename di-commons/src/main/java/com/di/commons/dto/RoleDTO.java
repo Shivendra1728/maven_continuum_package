@@ -17,6 +17,8 @@ public class RoleDTO implements Serializable {
 	private String role;
 
 	private List<PermissionDTO> permissions = new ArrayList<>();
+	private List<PageDTO> pages = new ArrayList<>();
+
 
 	public RoleDTO(Role role) {
 		this.id = role.getId();
@@ -24,6 +26,9 @@ public class RoleDTO implements Serializable {
 
 		// permissions
 		role.getPermissions().stream().forEach(e -> permissions.add(new PermissionDTO(e)));
+		//Pages
+		role.getPages().stream().forEach(e -> pages.add(new PageDTO(e)));
+
 	}
 
 	public RoleDTO(Long id, String role) {

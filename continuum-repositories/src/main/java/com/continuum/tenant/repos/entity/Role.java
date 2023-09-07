@@ -1,14 +1,26 @@
 package com.continuum.tenant.repos.entity;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+
 import org.hibernate.annotations.GenericGenerator;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "roles")
@@ -32,10 +44,14 @@ public class Role {
 		this.id = id;
 		this.role = role;
 	}
-	
-	@ManyToMany(fetch = FetchType.EAGER , cascade = CascadeType.ALL)
+
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinTable(name = "permissions_roles", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
 	private List<Permission> permissions = new ArrayList<>();
+
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "role_pages", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "page_id"))
+	private Set<Page> pages = new HashSet<>();
 
 	@Override
 	public boolean equals(Object o) {

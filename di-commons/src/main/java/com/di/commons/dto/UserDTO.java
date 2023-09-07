@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.continuum.tenant.repos.entity.BaseEntity;
 import com.continuum.tenant.repos.entity.Gender;
+import com.continuum.tenant.repos.entity.Page;
 import com.continuum.tenant.repos.entity.Permission;
 import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;
@@ -30,6 +31,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 	public UserDTO() {
 		roles = new ArrayList<>();
 		permissions = new ArrayList<>();
+		pages= new ArrayList<>();
 	}
 
 	public UserDTO(User user) {
@@ -53,6 +55,11 @@ public class UserDTO extends BaseEntity implements Serializable {
 						permissions.add(key);
 					}
 				}
+				
+				for (Page page : role.getPages()) {
+						pages.add(page.getAdmin().get(0).getName());
+					
+				}
 			}
 		}
 	}
@@ -75,4 +82,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 
 	private List<String> roles;
 	private List<String> permissions;
+	private List<String> pages;
+
+	
 }
