@@ -18,19 +18,19 @@ import com.di.integration.p21.transaction.P21RMAResponse;
 @RestController
 @RequestMapping("/returnOrder")
 public class ReturnOrderController {
-	
+
 	@Autowired
 	ReturnOrderService returnOrderService;
-	
+
 	@PostMapping("/create/v1")
 	public P21RMAResponse createReturnOrder(@RequestBody ReturnOrderDTO returnOrderDTO) throws Exception {
-		
-		 P21RMAResponse rmaResponse=  returnOrderService.createReturnOrder(returnOrderDTO);
-		 returnOrderService.crateReturnOrderInDB(returnOrderDTO, rmaResponse);
-		  return rmaResponse;
-		
+
+		P21RMAResponse rmaResponse = returnOrderService.createReturnOrder(returnOrderDTO);
+		returnOrderService.crateReturnOrderInDB(returnOrderDTO, rmaResponse);
+		return rmaResponse;
+
 	}
-	
+
 	@GetMapping("/search")
 	public List<ReturnOrderDTO> getReturnOrdersBySearchCriteria(@RequestParam(required = false) String zipcode,
 			@RequestParam(required = false) String poNo, @RequestParam(required = false) String customerId,
@@ -41,5 +41,15 @@ public class ReturnOrderController {
 		orderSearchParameters.setCustomerId(customerId);
 		orderSearchParameters.setInvoiceNo(invoiceNo);
 		return returnOrderService.getReturnOrdersBySearchCriteria(orderSearchParameters);
+	}
+
+	@GetMapping("/getReturnOrder")
+	public List<ReturnOrderDTO> getAllReturnOrder() {
+		return returnOrderService.getAllReturnOrder();
+	}
+
+	@GetMapping("/getByrmaorderNo")
+	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(@RequestParam String rmaOrderNo) throws Exception {
+		return returnOrderService.getAllReturnOrderByRmaNo(rmaOrderNo);
 	}
 }

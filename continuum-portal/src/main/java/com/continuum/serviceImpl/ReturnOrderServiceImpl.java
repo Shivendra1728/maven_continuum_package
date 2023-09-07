@@ -3,6 +3,7 @@ package com.continuum.serviceImpl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
 import javax.persistence.criteria.Join;
@@ -12,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.continuum.constants.PortalConstants;
@@ -54,8 +54,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		logger.info("orderNo::: " + p21RMARespo.getRmaOrderNo() + " status: " + p21RMARespo.getStatus());
 		return p21RMARespo;
 	}
-	//@Async
-	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO,P21RMAResponse p21RMARespo) throws MessagingException {
+
+	// @Async
+	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO, P21RMAResponse p21RMARespo)
+			throws MessagingException {
 		returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
 		returnOrderDTO.setStatus(PortalConstants.UNDER_REVIEW);
 		returnOrderDTO.setOrderDate(new Date());
@@ -66,11 +68,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String Status = p21RMARespo.getStatus();
 		if (Status.equals(PortalConstants.SUCCESS)) {
 			returnOrderDTO.setStatus(PortalConstants.UNDER_REVIEW);
-            logger.info("Setting status to:: '{}'", PortalConstants.UNDER_REVIEW);
+			logger.info("Setting status to:: '{}'", PortalConstants.UNDER_REVIEW);
 
 		} else {
 			returnOrderDTO.setStatus(PortalConstants.FAILED);
-			 logger.info("Setting status to:: '{}'", PortalConstants.FAILED);
+			logger.info("Setting status to:: '{}'", PortalConstants.FAILED);
 		}
 		logger.info(returnOrderDTO.getCustomer().getCustomerId());
 		CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
@@ -84,12 +86,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		repository.save(returnOrder);
 
-		
-		String recipient = PortalConstants.EMAIL_RECIPIENT; 
-		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : " + returnOrderDTO.getStatus();
+		String recipient = PortalConstants.EMAIL_RECIPIENT;
+		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : "
+				+ returnOrderDTO.getStatus();
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
-		sender.sendEmail(recipient, subject, body, returnOrderDTO , customerDTO);
+		sender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
 
 	}
 
@@ -139,6 +141,26 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	public boolean isNotNullAndNotEmpty(String str) {
 		return str != null && !str.trim().isEmpty();
+	}
+
+	@Override
+	public List<ReturnOrderDTO> getAllReturnOrder() {
+		List<ReturnOrder> returnOrderEntities = repository.findAll();
+
+		List<ReturnOrderDTO> returnOrderDTOs = returnOrderEntities.stream()
+				.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
+
+		return returnOrderDTOs;
+	}
+
+	@Override
+	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(String rmaOrderNo) {
+		List<ReturnOrder> returnOrder = repository.findByrmaOrderNo(rmaOrderNo);
+
+		List<ReturnOrderDTO> returnOrderDTO = returnOrder.stream().map(returnOrderMapper::returnOrderToReturnOrderDTO)
+				.collect(Collectors.toList());
+
+		return returnOrderDTO;
 	}
 
 }
