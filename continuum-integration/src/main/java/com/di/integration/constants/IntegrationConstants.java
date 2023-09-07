@@ -52,12 +52,14 @@ public final class IntegrationConstants {
     
     
     public static final String ERP_DATA_API_ORDER_VIEW = "${erp.data_api_order_view}";
+    public static final String ERP_DATA_API_INVOICE_VIEW="${erp.data_api_invoice_view}";
     public static final String ERP_ORDER_SELECT_FIELDS = "${erp.order_select_fields}";
     
 
     
     // Filter fields
     public static final String ORIGINAL_INVOICE_NO = "original_invoice_no";
+    public static final String INVOICE_NO = "invoice_no";
     public static final String EMAIL_ADDRESS = "email_address";
 
     // Filter condition operators
@@ -84,6 +86,8 @@ public final class IntegrationConstants {
     public static final String ERP_TOKEN_ENDPOINT = "${erp.token_end_point}";
     public static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded";
     public static final String ACCESS_TOKEN_ELEMENT = "AccessToken";
+    public static final String BILL_TO_POSTAL_CODE = "bill2_postal_code";
+
 
 
 

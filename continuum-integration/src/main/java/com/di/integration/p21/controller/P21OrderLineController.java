@@ -32,7 +32,7 @@ public class P21OrderLineController {
 		orderSearchParameters.setInvoiceNo(invoiceNo);
 		orderSearchParameters.setOrderNo(orderNo);
 		orderSearchParameters.setZipcode(zipcode);
-		return p21orderLineService.getordersLineBySearchcriteria(orderSearchParameters,-1);
+		return p21orderLineService.getordersLineBySearchcriteria(orderSearchParameters,-1,invoiceNo);
 
 	}
 

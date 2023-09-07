@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.continuum.tenant.repos.entity.ClientConfig;
-import com.continuum.tenant.repos.entity.Customer;
 import com.continuum.tenant.repos.repositories.ClientConfigRepository;
 import com.continuum.tenant.repos.repositories.CustomerRepository;
 import com.continuum.tenant.repos.repositories.StoreRepository;
@@ -33,6 +32,7 @@ import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.dto.StoreDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21ContactMapper;
+import com.di.commons.p21.mapper.P21InvoiceMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21OrderService;
@@ -87,17 +87,26 @@ public class P21OrderServiceImpl implements P21OrderService {
 	ClientConfigRepository clientConfigRepository;
 	
 	ClientConfig clientConfig;
+	
+	@Autowired
+	P21InvoiceMapper p21InvoiceMapper;
+	
+	@Autowired
+	P21InvoiceServiceImpl p21InvoiceServiceImpl;
 
 	@Override
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
 		List<OrderDTO> orderDTOList = new ArrayList<>();
 		List<OrderItemDTO> orderItemDTOList  = new ArrayList<>();
-		if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
-			int totalItem = 1; // fetching one item to get invoice no from item
-			 orderItemDTOList = p21OrderLineServiceImpl
-					.getordersLineBySearchcriteria(orderSearchParameters, totalItem);
-			if (orderItemDTOList.size() > 0) {
-				orderSearchParameters.setOrderNo(orderItemDTOList.get(0).getOrderNo());
+		if (!isNotNullAndNotEmpty(orderSearchParameters.getOrderNo()) && isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
+			int totalItem = 1;
+			List<OrderItemDTO> invoiceItemDTOList = p21InvoiceMapper
+					.mapP21InvoiceResponseToData(p21InvoiceServiceImpl.getInvoiceLineData(orderSearchParameters, totalItem)); // Invoice header
+			//int totalItem = 1; // fetching one item to get invoice no from item
+			// orderItemDTOList = p21OrderLineServiceImpl
+				//	.getordersLineBySearchcriteria(orderSearchParameters, totalItem,orderSearchParameters.getInvoiceNo());
+			if (invoiceItemDTOList.size() > 0) {
+				orderSearchParameters.setOrderNo(invoiceItemDTOList.get(0).getOrderNo());
 				orderDTOList = getAllOrdersBySearch(orderSearchParameters,orderItemDTOList);
 			}
 
@@ -123,7 +132,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 			orderSearchParams.setOrderNo(orderDTO.getOrderNo());
 			if(orderItemDTOList.size()==0) {
 				orderItemDTOList = p21OrderLineServiceImpl
-						.getordersLineBySearchcriteria(orderSearchParams, totalItem);
+						.getordersLineBySearchcriteria(orderSearchParams, totalItem,orderSearchParameters.getInvoiceNo());
 			}
 			
 			if(isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())){
@@ -240,7 +249,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 		StringBuilder filter = new StringBuilder();
 		if (!isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())
 				&& isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
-			filter.append("ship2_zip eq '" + orderSearchParameters.getZipcode() + "'");
+			filter.append("mail_postal_code_a eq '" + orderSearchParameters.getZipcode() + "'");
 
 		}
 		if (isNotNullAndNotEmpty(orderSearchParameters.getCustomerId())) {
