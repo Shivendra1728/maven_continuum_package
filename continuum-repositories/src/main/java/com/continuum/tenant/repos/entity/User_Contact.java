@@ -26,10 +26,6 @@ public class User_Contact extends BaseEntity {
 
 	private String email;
 	private String phone;
-	private String skype;
-	private String facebook;
-	private String linkedin;
-	private String website;
-	private String note;
+	private String alternativeNumber;
 
 }

@@ -2,9 +2,7 @@ package com.continuum.multitenant.controller;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,7 +32,6 @@ import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.service.MasterTenantService;
 import com.continuum.multitenant.security.UserTenantInformation;
 import com.continuum.multitenant.util.JwtTokenUtil;
-import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.AuthResponse;
@@ -82,13 +79,14 @@ public class AuthenticationController implements Serializable {
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 		final String token = jwtTokenUtil.generateToken(userDetails.getUsername(), tenentId);
 		User u = userRepository.findByUserName(userDetails.getUsername());
+		long userId=u.getId();
 		// Set<Role> role = u.getRoles();
 
 		// final String token =
 		// jwtTokenUtil.generateToken(userDetails.getUsername(),String.valueOf(userLoginDTO.getTenantOrClientId()));
 		// Map the value into applicationScope bean
 		setMetaDataAfterLogin();
-		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), token, u.getRoles()));
+		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), token, u.getRoles(),userId));
 	}
 
 	private void loadCurrentDatabaseInstance(String databaseName, String userName) {
