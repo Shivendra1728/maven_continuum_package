@@ -40,9 +40,11 @@ public class ReturnOrder extends BaseEntity {
 	private String orderNo;
 	private String invoiceNo;
 
+
 	@ManyToOne
-	@JoinColumn(name = "userId")
-	private User users;
+    @JoinColumn(name = "user_id")
+    private User user;
+	
     @ManyToOne
     @JoinColumn(name="customerId")
     private Customer customer;

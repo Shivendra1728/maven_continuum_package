@@ -9,7 +9,9 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import com.continuum.service.UserService;
+import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.UserDTO;
 import com.di.commons.mapper.UserMapper;
@@ -19,6 +21,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	UserRepository userRepository;
+
+	@Autowired
+	ReturnOrderRepository returnOrderRepository;
 
 	@Autowired
 	UserMapper usermaper;
@@ -33,7 +38,7 @@ public class UserServiceImpl implements UserService {
 		}
 		String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
 
-        user.setPassword(hashedPassword);
+		user.setPassword(hashedPassword);
 		userRepository.save(user);
 		return "User Created Sucessfully";
 	}
@@ -48,17 +53,28 @@ public class UserServiceImpl implements UserService {
 			return userRepository.findAll();
 		}
 	}
-	
 
 	@Override
-	public String deleteUserById(Long id) {
+	public String deleteUserById(Long id, String userName) {
 		Optional<User> optionalUser = userRepository.findById(id);
+		User assignUser = userRepository.findByUserName(userName);
 
-		if (optionalUser.isPresent()) {
+		if (optionalUser.isPresent() && assignUser != null) {
 			User user = optionalUser.get();
 			user.setStatus(false);
+			user.setFirstName(assignUser.getFirstName());
+			user.setLastName(assignUser.getLastName());
+			user.setEmail(assignUser.getEmail());
+			user.setRoles(assignUser.getRoles());
 			userRepository.save(user);
-			return "Status updated";
+
+			List<ReturnOrder> returnOrders = returnOrderRepository.findByUserId(id);
+			for (ReturnOrder returnOrder : returnOrders) {
+				returnOrder.setUser(assignUser);
+			}
+			returnOrderRepository.saveAll(returnOrders);
+
+			return "User updated";
 		} else {
 			return "User Not Found";
 		}

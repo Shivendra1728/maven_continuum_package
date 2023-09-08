@@ -13,4 +13,6 @@ public interface ReturnOrderRepository extends JpaRepository<ReturnOrder, Long>,
 
 	List<ReturnOrder> findByrmaOrderNo(String rmaOrderNo);
 
+	List<ReturnOrder> findByUserId(Long id);
+
 }

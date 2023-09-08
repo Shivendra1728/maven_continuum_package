@@ -33,8 +33,8 @@ public class UserController {
 	}
 
 	@DeleteMapping("/deleteById")
-	public String deleteById(@RequestParam("id") Long id) {
-		return userService.deleteUserById(id);
+	public String deleteById(@RequestParam("id") Long id,@RequestParam String userName) {
+		return userService.deleteUserById(id,userName);
 
 	}
 
