@@ -20,12 +20,12 @@ import lombok.experimental.Accessors;
 //@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ReturnOrderItemDTO {
-	
+
 	private Long id;
-    private OrderAddressDTO shipTo;
-    private OrderAddressDTO billTo;
-    private List<OrderItemDocumentsDTO> orderItemDocuments;
-    private String reasonCode;
+	private OrderAddressDTO shipTo;
+	private OrderAddressDTO billTo;
+	private List<OrderItemDocumentsDTO> orderItemDocuments;
+	private String reasonCode;
 	private String returnComments;
 	private int quanity;
 	private String itemName;
@@ -39,6 +39,8 @@ public class ReturnOrderItemDTO {
 	private int receivedQuantity;
 	private String receivedState;
 	private String status;
-	
-	
-	}
+
+	private String trackingUrl;
+	private Long trackingNumber;
+	private String courierName;
+}

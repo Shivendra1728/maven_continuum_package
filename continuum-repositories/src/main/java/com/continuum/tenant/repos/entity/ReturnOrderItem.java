@@ -26,21 +26,21 @@ import lombok.Setter;
 @Setter
 public class ReturnOrderItem extends BaseEntity {
 
-	@ManyToOne( cascade = CascadeType.ALL)
-	@JoinColumn(name="returnOrderId")
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "returnOrderId")
 	private ReturnOrder returnOrder;
-	
-	 @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-	@JoinColumn(name="shipTo")
-    private OrderAddress shipTo;
-	
-	 @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-	@JoinColumn(name="billTo")
-    private OrderAddress billTo;
-	
-	@OneToMany(mappedBy = "returnOrderItem", fetch = FetchType.EAGER, cascade = { CascadeType.ALL})
-    private List<OrderItemDocuments> orderItemDocuments;
-	
+
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "shipTo")
+	private OrderAddress shipTo;
+
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "billTo")
+	private OrderAddress billTo;
+
+	@OneToMany(mappedBy = "returnOrderItem", fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
+	private List<OrderItemDocuments> orderItemDocuments;
+
 	/*
 	 * @OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL}) private
 	 * ReasonCode reasonCode;
@@ -64,9 +64,9 @@ public class ReturnOrderItem extends BaseEntity {
 	private String receivedState;
 	private String status;
 	private String reasonCode;
-	
-	
-	
-	
-	
+
+	private String trackingUrl;
+	private Long trackingNumber;
+	private String courierName;
+
 }

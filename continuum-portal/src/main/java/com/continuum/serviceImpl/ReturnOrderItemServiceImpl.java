@@ -29,7 +29,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
              existingItem.setStatus(updatedItem.getStatus());
              existingItem.setProblemDesc(updatedItem.getProblemDesc());
              existingItem.setReasonCode(updatedItem.getReasonCode());
-	             returnOrderItemRepository.save(existingItem);
+             
+             existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
+             existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
+             existingItem.setCourierName(updatedItem.getCourierName());
+             
+            
+             returnOrderItemRepository.save(existingItem);
 	         return "List Item Details Updated Successfully.";
     	 } else {
              
