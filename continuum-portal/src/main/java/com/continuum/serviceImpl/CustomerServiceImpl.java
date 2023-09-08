@@ -1,5 +1,7 @@
 package com.continuum.serviceImpl;
 
+import javax.mail.MessagingException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,15 @@ public class CustomerServiceImpl implements CustomerService{
 	return customerMapper.cusotmerTocusotmerDTO(customer);
 	}
 	
-	public CustomerDTO createCustomer(CustomerDTO custDTO){
-		return customerMapper.cusotmerTocusotmerDTO(repo.save(customerMapper.cusotmerDTOTocusotmer(custDTO)));
+	public CustomerDTO createCustomer(CustomerDTO custDTO) throws MessagingException{
+		 
+		 if (repo.existsByEmail(custDTO.getEmail())) {
+			 throw new MessagingException("Email already exists.");
+	        }
+		 Customer customer = customerMapper.cusotmerDTOTocusotmer(custDTO);
+		 Customer savedCustomer=repo.save(customer);
+		 return customerMapper.cusotmerTocusotmerDTO(savedCustomer);
+		
+		
 	}
 }

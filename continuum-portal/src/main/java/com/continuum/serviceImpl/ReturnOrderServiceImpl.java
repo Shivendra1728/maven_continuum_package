@@ -79,7 +79,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		if (customerDTO == null) {
 			customerDTO = new CustomerDTO();
 			customerDTO.setCustomerId(returnOrderDTO.getCustomer().getCustomerId());
-			customerDTO = customerService.createCustomer(customerDTO);
+			try {
+				customerDTO = customerService.createCustomer(customerDTO);
+			} catch (Exception e) {
+				logger.error("Customer");
+			}
 		}
 		returnOrderDTO.setCustomer(customerDTO);
 

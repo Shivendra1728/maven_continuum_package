@@ -28,6 +28,8 @@ public class CustomerDTO {
 	private String lastname;
 	private String displayName;
 	private String phone;
+	private String password;
+    
 	
 	//private List<User> users;
 	
