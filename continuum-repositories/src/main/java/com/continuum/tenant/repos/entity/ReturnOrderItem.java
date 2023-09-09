@@ -68,5 +68,12 @@ public class ReturnOrderItem extends BaseEntity {
 	private String trackingUrl;
 	private Long trackingNumber;
 	private String courierName;
+	private String note;
+
+	@ManyToOne
+	@JoinColumn(name = "assignTo")
+	private User user;
+
+	private String followUpDate;
 
 }

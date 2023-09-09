@@ -1,9 +1,14 @@
 package com.continuum.controller;
 
-import com.di.commons.dto.ReturnOrderItemDTO;
-import com.continuum.service.ReturnOrderItemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.continuum.service.ReturnOrderItemService;
+import com.di.commons.dto.ReturnOrderItemDTO;
 
 @RestController
 @RequestMapping("/return_order_items")
@@ -19,6 +24,12 @@ public class ReturnOrderItemController {
     @PutMapping("/updatestatus")
     public String updateReturnOrderItem(@RequestParam Long id, @RequestBody ReturnOrderItemDTO updatedItem) {
         return returnOrderItemService.updateReturnOrderItem(id, updatedItem);
+    }
+    
+
+    @PutMapping("/update/note")
+    public String updateNote(@RequestParam long lineItemId , @RequestParam Long assignToId,@RequestBody ReturnOrderItemDTO updatedNote){
+    	return returnOrderItemService.updateNote(lineItemId,assignToId,updatedNote);
     }
 }
 

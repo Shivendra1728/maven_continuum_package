@@ -1,16 +1,8 @@
 package com.continuum.serviceImpl;
 
-import com.continuum.constants.PortalConstants;
-import com.continuum.service.ReturnOrderItemService;
-import com.di.commons.dto.ReturnOrderDTO;
-import com.di.commons.dto.ReturnOrderItemDTO;
-import com.continuum.tenant.repos.entity.*;
-import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
-import com.continuum.tenant.repos.repositories.UserRepository;
-
 import java.util.Optional;
 import java.util.Properties;
-import org.springframework.scheduling.annotation.Scheduled;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -23,7 +15,16 @@ import org.apache.velocity.VelocityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.continuum.constants.PortalConstants;
+import com.continuum.service.ReturnOrderItemService;
+import com.continuum.tenant.repos.entity.AuditLog;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
+import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repositories.AuditLogRepository;
+import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
+import com.di.commons.dto.ReturnOrderItemDTO;
 
 @Service
 public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
@@ -31,6 +32,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	ReturnOrderItemRepository returnOrderItemRepository;
 	@Autowired
 	UserRepository userRepository;
+	
+	@Autowired
+	AuditLogRepository auditLogRepository;
+	
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
 
@@ -76,6 +81,44 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		} else {
 
 			throw new EntityNotFoundException("ReturnOrderItem with ID " + id + " not found");
+		}
+
+	}
+	
+	@Override
+	public String updateNote(Long lineItemId, Long assignToId, ReturnOrderItemDTO updateNote) {
+		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(lineItemId);
+		Optional<User> auditUserDetails = userRepository.findById(optionalItem.get().getUser().getId());
+		User auditUser=auditUserDetails.get();
+		Optional<User> optionalUser = userRepository.findById(assignToId);
+		if (optionalItem.isPresent() && optionalUser.isPresent()) {
+			ReturnOrderItem existingItem = optionalItem.get();
+			User user = optionalUser.get();
+			user.setUserName(user.getUserName());
+			user.setFirstName(user.getFirstName());
+			user.setLastName(user.getLastName());
+			user.setEmail(user.getEmail());
+			user.setRoles(user.getRoles());
+			userRepository.save(user);
+			
+			existingItem.setFollowUpDate(updateNote.getFollowUpDate());
+			existingItem.setNote(updateNote.getNote());
+			existingItem.setUser(user);
+			returnOrderItemRepository.save(existingItem);
+			
+			AuditLog auditLog=new AuditLog();
+			auditLog.setTitle("Returned Activity");
+			auditLog.setDescription(auditUser.getFirstName()+" "+auditUser.getLastName()+" as added a new note in the ordered item - "+existingItem.getItemName());
+			auditLog.setHighlight("note");
+			auditLog.setStatus("Ordered Items");
+			auditLogRepository.save(auditLog);
+			
+			
+			return "Updated Note Details and capture in audit log";
+
+		} else {
+			return "Not Found";
+
 		}
 
 	}

@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.stereotype.Component;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
+import com.continuum.tenant.repos.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
@@ -46,4 +48,11 @@ public class ReturnOrderItemDTO {
 	private String trackingUrl;
 	private Long trackingNumber;
 	private String courierName;
+	private String note;
+
+	@ManyToOne
+	@JoinColumn(name = "assignTo")
+	private User user;
+
+	private String followUpDate;
 }
