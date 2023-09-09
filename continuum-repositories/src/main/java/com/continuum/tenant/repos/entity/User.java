@@ -93,6 +93,7 @@ public class User extends BaseEntity implements Serializable {
 
 	@Column(name = "note")
 	private String note;
+	private String url;
 
 	@Basic
 	private java.time.LocalDateTime updatedDt;
