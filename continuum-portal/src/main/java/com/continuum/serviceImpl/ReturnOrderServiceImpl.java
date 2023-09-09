@@ -3,9 +3,11 @@ package com.continuum.serviceImpl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 
@@ -20,9 +22,11 @@ import com.continuum.service.CustomerService;
 import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.ReturnOrderDTO;
+import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.mapper.ReturnOrderMapper;
 import com.di.integration.p21.service.P21ReturnOrderService;
@@ -165,6 +169,35 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				.collect(Collectors.toList());
 
 		return returnOrderDTO;
+	}
+
+	@Override
+	public String updateReturnOrder(Long id, String status) {
+		Optional<ReturnOrder> optionalItem = repository.findById(id);
+
+		if (optionalItem.isPresent()) {
+			ReturnOrder returnOrder = optionalItem.get();
+
+			returnOrder.setStatus(status);
+
+			repository.save(returnOrder);
+			
+			//send email to customer-RMA processor
+			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			 try {
+            	 
+                 sender.sendEmail2(recipient, returnOrder.getStatus());
+             } catch (MessagingException e) {
+                 e.printStackTrace();
+             }
+
+			return "RMA Status Updated Successfully.";
+
+		} else {
+
+			throw new EntityNotFoundException("ReturnOrder with ID " + id + " not found");
+		}
+
 	}
 
 }

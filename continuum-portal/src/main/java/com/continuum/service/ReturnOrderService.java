@@ -3,6 +3,8 @@ import java.util.List;
 import javax.mail.MessagingException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
@@ -16,4 +18,6 @@ public interface ReturnOrderService {
 	public List<ReturnOrderDTO> getAllReturnOrder();
 
 	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(String rmaOrderNo);
+	
+	public String updateReturnOrder(Long id, String status);
 }

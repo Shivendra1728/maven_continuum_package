@@ -16,8 +16,8 @@ public class ReturnOrderItemController {
         this.returnOrderItemService = returnOrderItemService;
     }
 
-    @PutMapping("/{id}")
-    public String updateReturnOrderItem(@PathVariable Long id, @RequestBody ReturnOrderItemDTO updatedItem) {
+    @PutMapping("/updatestatus")
+    public String updateReturnOrderItem(@RequestParam Long id, @RequestBody ReturnOrderItemDTO updatedItem) {
         return returnOrderItemService.updateReturnOrderItem(id, updatedItem);
     }
 }
