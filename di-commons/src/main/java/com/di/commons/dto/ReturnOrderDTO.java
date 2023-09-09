@@ -31,7 +31,7 @@ import lombok.experimental.Accessors;
 @ToString
 //@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Component
+
 public class ReturnOrderDTO {
 
 	//private Long id;

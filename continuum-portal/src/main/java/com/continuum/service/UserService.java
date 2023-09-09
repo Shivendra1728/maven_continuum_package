@@ -6,7 +6,7 @@ import com.continuum.tenant.repos.entity.User;
 
 public interface UserService {
 
-	String createUser(User user);
+	List<User> createUser(User user);
 
 	List<User> getUserById(Long id);
 

@@ -41,14 +41,6 @@ public class EmailSender {
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
 
-    @Autowired
-	ReturnOrderDTO returnOrderDTO;
-
-	@Autowired
-	public EmailSender(ReturnOrderDTO returnOrderDTO) {
-		this.returnOrderDTO = returnOrderDTO;
-	}
-
 	public void sendEmail(String recipient, String subject, String body, ReturnOrderDTO returnOrderDTO, CustomerDTO customerDTO)
 			throws MessagingException {
 		Properties props = new Properties();

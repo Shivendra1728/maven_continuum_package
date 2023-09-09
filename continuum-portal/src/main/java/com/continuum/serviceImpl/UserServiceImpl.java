@@ -1,5 +1,6 @@
 package com.continuum.serviceImpl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,19 +29,26 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	UserMapper usermaper;
 
-	@Autowired
-	UserDTO userDTO;
-
 	@Override
-	public String createUser(User user) {
-		if (userRepository.existsByEmail(user.getEmail())) {
-			return "Email already exists. Cannot create user with the same email.";
-		}
-		String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-
-		user.setPassword(hashedPassword);
-		userRepository.save(user);
-		return "User Created Sucessfully";
+	public List<User> createUser(User user) {
+		try {
+	        if (userRepository.existsByEmail(user.getEmail())) {
+	            throw new Exception("Email already exists. Cannot create user with the same email.");
+	        }
+	        
+	        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+	        user.setPassword(hashedPassword);
+	        userRepository.save(user);
+	        
+	        // If user creation is successful, return a list with the created user
+	        List<User> userList = new ArrayList<>();
+	        userList.add(user);
+	        return userList;
+	    } catch (Exception e) {
+	        // Handle the exception and return an empty list with the error message
+	        e.printStackTrace(); // You can log the exception if needed
+	        return Collections.emptyList(); // Return an empty list to indicate the error
+	    }
 	}
 
 	@Override

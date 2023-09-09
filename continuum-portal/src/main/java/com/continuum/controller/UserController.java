@@ -23,7 +23,7 @@ public class UserController {
 	private UserService userService;
 
 	@PostMapping
-	public String createUser(@RequestBody User user) {
+	public List<User> createUser(@RequestBody User user) {
 		return userService.createUser(user);
 	}
 

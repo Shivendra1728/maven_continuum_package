@@ -39,78 +39,48 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Value(PortalConstants.MAIL_USERNAME)
 	private String mailUsername;
-	
+
 	@Value(PortalConstants.EMAIL_RECIPIENT)
 	private String recipient;
 
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
-	
-	 @Autowired
-		ReturnOrderDTO returnOrderDTO;
-	 @Autowired
-	 ReturnOrderItemDTO returnOrderItemDTO;
-    @Override
-    public String updateReturnOrderItem(Long id, ReturnOrderItemDTO updatedItem) {
-    	 Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
-    	 
-    	 if (optionalItem.isPresent()) {
-             ReturnOrderItem existingItem = optionalItem.get();
-             String previousStatus = existingItem.getStatus();
-             
-             existingItem.setStatus(updatedItem.getStatus());
-             existingItem.setProblemDesc(updatedItem.getProblemDesc());
-             existingItem.setReasonCode(updatedItem.getReasonCode());
-             
-             existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
-             existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
-             existingItem.setCourierName(updatedItem.getCourierName());
-             
-            
-             returnOrderItemRepository.save(existingItem);
-             if (updatedItem.getStatus().equals("Approved_Awaiting_Transit")) {
-                 try {
-                	 
-                     sendEmail1(recipient, updatedItem.getStatus());
-                 } catch (MessagingException e) {
-                     e.printStackTrace();
-                 }
-             }
-	         return "List Item Details Updated Successfully.";
-	         
-	         
-	         
-	         
-    	 } else {
-             
-             throw new EntityNotFoundException("ReturnOrderItem with ID " + id + " not found");
-         }
-        
-        
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-   
-    public void sendEmail1(String email,String LineItemStatus) throws MessagingException {
+
+	@Override
+	public String updateReturnOrderItem(Long id, ReturnOrderItemDTO updatedItem) {
+		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
+
+		if (optionalItem.isPresent()) {
+			ReturnOrderItem existingItem = optionalItem.get();
+			String previousStatus = existingItem.getStatus();
+
+			existingItem.setStatus(updatedItem.getStatus());
+			existingItem.setProblemDesc(updatedItem.getProblemDesc());
+			existingItem.setReasonCode(updatedItem.getReasonCode());
+
+			existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
+			existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
+			existingItem.setCourierName(updatedItem.getCourierName());
+
+			returnOrderItemRepository.save(existingItem);
+			if (updatedItem.getStatus().equals("Approved_Awaiting_Transit")) {
+				try {
+
+					sendEmail1(recipient, updatedItem.getStatus());
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+			}
+			return "List Item Details Updated Successfully.";
+
+		} else {
+
+			throw new EntityNotFoundException("ReturnOrderItem with ID " + id + " not found");
+		}
+
+	}
+
+	public void sendEmail1(String email, String LineItemStatus) throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
 
 		Properties props = new Properties();
@@ -125,12 +95,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
 			}
 		});
-		
+
 		String templateFilePath = PortalConstants.FPasswordLink;
 		VelocityContext context = new VelocityContext();
-		
-		
-		context.put("LineItemStatus",LineItemStatus);
+
+		context.put("LineItemStatus", LineItemStatus);
 
 		String renderedBody = EmailTemplateRenderer.renderStatusChangeTemplate(context);
 
