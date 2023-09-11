@@ -246,6 +246,9 @@ public class EmailTemplateRenderer {
 	private static final String EMAIL_LINE_ITEM_STATUS_IN_TRANSIT = "<h3 class=\"gradient-text\">Your status has been changed to: ${LineItemStatus},Please Update Your Tracking Code Details.</h3>\"";
 
 	private static final String EMAIL_RMA_STATUS = "<h3 class=\"gradient-text\">Your RMA status has been changed to: ${rma_status},Please Check your RMA status.</h3>\"";
+	
+	private static final String EMAIL_NOTE_STATUS = "<h3 class=\"gradient-text\">${name} added a new note.</h3>\"";
+
 
 	public static String renderTemplate(VelocityContext context) {
 		VelocityEngine velocityEngine = new VelocityEngine();
@@ -299,6 +302,20 @@ public class EmailTemplateRenderer {
 		try {
 			StringWriter writer = new StringWriter();
 			velocityEngine.evaluate(context, writer, "EmailTemplate", EMAIL_RMA_STATUS);
+			return writer.toString();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return null;
+	}
+	public static String renderNoteStatusChangeTemplate(VelocityContext context) {
+		VelocityEngine velocityEngine = new VelocityEngine();
+		velocityEngine.init();
+
+		try {
+			StringWriter writer = new StringWriter();
+			velocityEngine.evaluate(context, writer, "EmailTemplate", EMAIL_NOTE_STATUS);
 			return writer.toString();
 		} catch (Exception ex) {
 			ex.printStackTrace();
