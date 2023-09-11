@@ -95,36 +95,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			returnOrderItemRepository.save(existingItem);
 			
-			//Audit log
 			AuditLog auditLog = new AuditLog();
-			auditLog.setTitle("ReturnOrderItem Updated");
+			auditLog.setTitle("Update Activity");
+			auditLog.setDescription(
+			    existingItem.getUser().getFullName() + " has updated " + existingItem.getItemName()
+			);
+			auditLog.setHighlight("Updated fields");
+			auditLog.setStatus("Ordered Items");
 
-			 if (!Objects.equals(previousStatus, updatedItem.getStatus())) {
-				 auditLog.setDescription(
-					 existingItem.getUser().getFullName() + " has changed status of " + existingItem.getItemName() +
-			       		" from " + previousStatus + " to " + updatedItem.getStatus()
-					 		);
-			 				auditLog.setHighlight("status");
-			 				auditLog.setStatus("Ordered Items");
-			 }
-			 else if (!Objects.equals(previousPD , updatedItem.getProblemDesc())) {
-				 		auditLog.setDescription(
-				 				existingItem.getUser().getFullName() + " has updated the problem description of " +
-				 						existingItem.getItemName()
-				 				);auditLog.setHighlight("problem description");
-			 	auditLog.setStatus("Ordered Items");
-			 }
-			 
-			 else if (!Objects.equals(previousRC, updatedItem.getReasonCode())) {
-				 	auditLog.setDescription(
-					 existingItem.getUser().getFullName() + " has updated the reason code of " +
-					 existingItem.getItemName()
-					 );
-			 	auditLog.setHighlight("reason code");
-			 auditLog.setStatus("Ordered Items");
-			 	}
-			
 			auditLogRepository.save(auditLog);
+			
+			
 		
 			 
 			if ("Approved_Awaiting_Transit".equals(updatedItem.getStatus())) {
