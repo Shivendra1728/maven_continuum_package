@@ -1,5 +1,6 @@
 package com.continuum.serviceImpl;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -12,6 +13,7 @@ import javax.mail.internet.MimeMessage;
 import javax.persistence.EntityNotFoundException;
 
 import org.apache.velocity.VelocityContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -64,31 +66,78 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		if (optionalItem.isPresent()) {
 			ReturnOrderItem existingItem = optionalItem.get();
 			String previousStatus = existingItem.getStatus();
+			String previousRC = existingItem.getReasonCode();
+			String previousPD = existingItem.getProblemDesc();
+			String TrackingUrl = existingItem.getTrackingUrl();
+			Long TrackingNumber =existingItem.getTrackingNumber();
+			String CourierName = existingItem.getCourierName();
 
-			existingItem.setStatus(updatedItem.getStatus());
-			existingItem.setProblemDesc(updatedItem.getProblemDesc());
-			existingItem.setReasonCode(updatedItem.getReasonCode());
+			// Update only the fields that are not null in updatedItem
+			if (updatedItem.getStatus() != null) {
+				existingItem.setStatus(updatedItem.getStatus());
+			}
+			if (updatedItem.getProblemDesc() != null) {
+				existingItem.setProblemDesc(updatedItem.getProblemDesc());
+			}
+			if (updatedItem.getReasonCode() != null) {
+				existingItem.setReasonCode(updatedItem.getReasonCode());
+			}
 
-			existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
-			existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
-			existingItem.setCourierName(updatedItem.getCourierName());
+			if (updatedItem.getTrackingUrl() != null) {
+				existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
+			}
+			if (updatedItem.getTrackingNumber() != null) {
+				existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
+			}
+			if (updatedItem.getCourierName() != null) {
+				existingItem.setCourierName(updatedItem.getCourierName());
+			}
 
 			returnOrderItemRepository.save(existingItem);
-			if (updatedItem.getStatus().equals("Approved_Awaiting_Transit")) {
-				try {
+			
+			//Audit log
+			AuditLog auditLog = new AuditLog();
+			auditLog.setTitle("ReturnOrderItem Updated");
 
+			 if (!Objects.equals(previousStatus, updatedItem.getStatus())) {
+				 auditLog.setDescription(
+					 existingItem.getUser().getFullName() + " has changed status of " + existingItem.getItemName() +
+			       		" from " + previousStatus + " to " + updatedItem.getStatus()
+					 		);
+			 				auditLog.setHighlight("status");
+			 				auditLog.setStatus("Ordered Items");
+			 }
+			 else if (!Objects.equals(previousPD , updatedItem.getProblemDesc())) {
+				 		auditLog.setDescription(
+				 				existingItem.getUser().getFullName() + " has updated the problem description of " +
+				 						existingItem.getItemName()
+				 				);auditLog.setHighlight("problem description");
+			 	auditLog.setStatus("Ordered Items");
+			 }
+			 
+			 else if (!Objects.equals(previousRC, updatedItem.getReasonCode())) {
+				 	auditLog.setDescription(
+					 existingItem.getUser().getFullName() + " has updated the reason code of " +
+					 existingItem.getItemName()
+					 );
+			 	auditLog.setHighlight("reason code");
+			 auditLog.setStatus("Ordered Items");
+			 	}
+			
+			auditLogRepository.save(auditLog);
+		
+			 
+			if ("Approved_Awaiting_Transit".equals(updatedItem.getStatus())) {
+				try {
 					sendEmail1(recipient, updatedItem.getStatus());
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
 			}
 			return "List Item Details Updated Successfully.";
-
 		} else {
-
 			throw new EntityNotFoundException("ReturnOrderItem with ID " + id + " not found");
 		}
-
 	}
 
 	@Override
@@ -226,14 +275,15 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnOrderItem.getShipTo().setPhoneNumber(orderAddress.getPhoneNumber());
 
 			returnOrderItemRepository.save(returnOrderItem);
-			
+
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
-			auditLog.setDescription("Retun order item  shipping id ="+returnOrderItem.getShipTo().getId()+", update the shipping information.");
-			auditLog.setHighlight("note");
+			auditLog.setDescription(returnOrderItem.getUser().getFullName() + "has updated shipping info for id: "
+					+ returnOrderItem.getShipTo().getId());
+			auditLog.setHighlight("shipping info");
 			auditLog.setStatus("Ordered Items");
 			auditLogRepository.save(auditLog);
-			
+
 			return "Shipping info update";
 		} else {
 			return "not found";
