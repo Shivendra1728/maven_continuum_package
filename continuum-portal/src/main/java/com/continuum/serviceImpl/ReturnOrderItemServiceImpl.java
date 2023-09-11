@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.continuum.constants.PortalConstants;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
+import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.ReturnRoom;
 import com.continuum.tenant.repos.entity.User;
@@ -37,7 +38,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	AuditLogRepository auditLogRepository;
-	
+
 	@Autowired
 	ReturnRoomRepository returnRoomRepository;
 
@@ -110,15 +111,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			existingItem.setNote(updateNote.getNote());
 			existingItem.setUser(user);
 			returnOrderItemRepository.save(existingItem);
-			
-			ReturnRoom returnRoom=new ReturnRoom();
+
+			ReturnRoom returnRoom = new ReturnRoom();
 			returnRoom.setName(auditUser.getFirstName() + " " + auditUser.getLastName());
 			returnRoom.setMessage(updateNote.getNote());
 			returnRoom.setAssignTo(user);
 			returnRoom.setFollowUpDate(updateNote.getFollowUpDate());
 			returnRoom.setStatus(updateNote.getStatus());
 			returnRoomRepository.save(returnRoom);
-			
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Returned Activity");
@@ -127,14 +127,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setHighlight("note");
 			auditLog.setStatus("Ordered Items");
 			auditLogRepository.save(auditLog);
-				try {
-					sendNoteEmail1(recipient,auditUser.getFirstName()+" "+ auditUser.getLastName());
+			try {
+				sendNoteEmail1(recipient, auditUser.getFirstName() + " " + auditUser.getLastName());
 
-				} catch (MessagingException e) {
-					e.printStackTrace();
-				}
-			
-			
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+
 			return "Updated Note Details and capture in return room and audit log";
 
 		} else {
@@ -143,7 +142,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		}
 
 	}
-
 
 	public void sendEmail1(String email, String LineItemStatus) throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
@@ -176,7 +174,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		Transport.send(message);
 
 	}
-	
+
 	public void sendNoteEmail1(String email, String name) throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
 
@@ -193,7 +191,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 		});
 
-		String templateFilePath =PortalConstants.NOTE_STATUS;
+		String templateFilePath = PortalConstants.NOTE_STATUS;
 		VelocityContext context = new VelocityContext();
 
 		context.put("name", name);
@@ -207,5 +205,38 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		message.setContent(renderedBody, "text/html");
 		Transport.send(message);
 
+	}
+
+	@Override
+	public String updateShipTo(Long rtnOrdId, OrderAddress orderAddress) {
+
+		Optional<ReturnOrderItem> ro = returnOrderItemRepository.findById(rtnOrdId);
+
+		if (ro.isPresent()) {
+			ReturnOrderItem returnOrderItem = ro.get();
+
+			returnOrderItem.getShipTo().setAddressType(orderAddress.getAddressType());
+			returnOrderItem.getShipTo().setFax(orderAddress.getFax());
+			returnOrderItem.getShipTo().setStreet1(orderAddress.getStreet1());
+			returnOrderItem.getShipTo().setStreet2(orderAddress.getStreet2());
+			returnOrderItem.getShipTo().setZipcode(orderAddress.getZipcode());
+			returnOrderItem.getShipTo().setCity(orderAddress.getCity());
+			returnOrderItem.getShipTo().setCountry(orderAddress.getCountry());
+			returnOrderItem.getShipTo().setProvince(orderAddress.getProvince());
+			returnOrderItem.getShipTo().setPhoneNumber(orderAddress.getPhoneNumber());
+
+			returnOrderItemRepository.save(returnOrderItem);
+			
+			AuditLog auditLog = new AuditLog();
+			auditLog.setTitle("Update Activity");
+			auditLog.setDescription("Retun order item  shipping id ="+returnOrderItem.getShipTo().getId()+", update the shipping information.");
+			auditLog.setHighlight("note");
+			auditLog.setStatus("Ordered Items");
+			auditLogRepository.save(auditLog);
+			
+			return "Shipping info update";
+		} else {
+			return "not found";
+		}
 	}
 }
