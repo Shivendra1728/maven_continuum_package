@@ -22,7 +22,9 @@ import com.continuum.service.CustomerService;
 import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
+import com.continuum.tenant.repos.repositories.AuditLogRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.ReturnOrderDTO;
@@ -39,6 +41,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	ReturnOrderRepository repository;
+	
+	@Autowired 
+	AuditLogRepository audrepo;
 
 	@Autowired
 	ReturnOrderMapper returnOrderMapper;
@@ -93,6 +98,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		repository.save(returnOrder);
+		
+		//audit log 
+		
+		AuditLog auditlog = new AuditLog();
+		auditlog.setHighlight("rma request");
+		String described=customerDTO.getDisplayName()+" submitted the new rma request. Order ID- TLD-"+returnOrderDTO.getRmaOrderNo();
+		auditlog.setDescription(described);
+		auditlog.setStatus("Inbox");
+		auditlog.setTitle("Return Order");
+		audrepo.save(auditlog);
 
 		String recipient = PortalConstants.EMAIL_RECIPIENT;
 		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : "
@@ -181,6 +196,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setStatus(status);
 
 			repository.save(returnOrder);
+			
+			//audit log saving
+			
+			AuditLog auditlog = new AuditLog();
+			auditlog.setHighlight("rma status");
+			String described=returnOrder.getUser().getFullName()+ " has changed rma status to "+returnOrder.getStatus();
+			auditlog.setDescription(described);
+			auditlog.setStatus("RMA");
+			auditlog.setTitle("Return Order");
+			audrepo.save(auditlog);
 			
 			//send email to customer-RMA processor
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
