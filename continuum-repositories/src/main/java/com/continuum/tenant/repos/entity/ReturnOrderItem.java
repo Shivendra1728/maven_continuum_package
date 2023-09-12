@@ -69,7 +69,7 @@ public class ReturnOrderItem extends BaseEntity {
 	private Long trackingNumber;
 	private String courierName;
 	private String note;
-	
+	private String Notes;
     private BigDecimal Amount;
 	@ManyToOne
 	@JoinColumn(name = "assignTo")

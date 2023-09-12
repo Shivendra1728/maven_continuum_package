@@ -12,5 +12,5 @@ public interface ReturnOrderItemService {
 
 	String updateShipTo(Long rtnOrdId, OrderAddress orderAddress);
 
-	String updateRestockingFee(Long id, BigDecimal reStockingAmount);
+	String updateRestockingFee(Long id, BigDecimal reStockingAmount, ReturnOrderItemDTO returnOrderItemDTO);
 }

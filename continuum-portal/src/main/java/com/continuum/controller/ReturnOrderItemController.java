@@ -42,8 +42,8 @@ public class ReturnOrderItemController {
 	}
 	
 	@PutMapping("/update/restocking")
-	public String updateRestockingFee(@RequestParam Long Id, @RequestParam BigDecimal reStockingAmount) {
-		return returnOrderItemService.updateRestockingFee(Id,reStockingAmount);
+	public String updateRestockingFee(@RequestParam Long Id, @RequestParam BigDecimal reStockingAmount,@RequestBody ReturnOrderItemDTO returnOrderItemDTO) {
+		return returnOrderItemService.updateRestockingFee(Id,reStockingAmount,returnOrderItemDTO);
 
 	}
 

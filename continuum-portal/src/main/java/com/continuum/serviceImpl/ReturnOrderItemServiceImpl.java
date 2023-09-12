@@ -291,7 +291,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String updateRestockingFee(Long id, BigDecimal reStockingAmount) {
+	public String updateRestockingFee(Long id, BigDecimal reStockingAmount,ReturnOrderItemDTO returnOrderItemDTO) {
 		Optional<ReturnOrderItem> returnorderitem = returnOrderItemRepository.findById(id);
 		if (returnorderitem.isPresent()) {
 			ReturnOrderItem roi = returnorderitem.get();
@@ -300,12 +300,18 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			roi.setReStockingAmount(reStockingAmount);
 			roi.setReturnAmount(newReturnAmoun);
+			
+			if (returnOrderItemDTO.getNotes() != null) {
+				roi.setNotes(returnOrderItemDTO.getNotes());
+			}
+			
+			//roi.setNotes(returnOrderItemDTO.getNotes());
 
 			returnOrderItemRepository.save(roi);
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(roi.getUser().getFullName() + "has updated restocking fee for item: "
-					+ roi.getItemName()+ " with id :"+roi.getShipTo().getId());
+					+ roi.getItemName() + " with id :" + roi.getShipTo().getId());
 			auditLog.setHighlight("restocking fee");
 			auditLog.setStatus("Ordered Items");
 			auditLogRepository.save(auditLog);

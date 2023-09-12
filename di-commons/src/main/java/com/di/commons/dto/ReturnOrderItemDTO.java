@@ -49,9 +49,9 @@ public class ReturnOrderItemDTO {
 	private Long trackingNumber;
 	private String courierName;
 	private String note;
+	private String Notes;
+	private BigDecimal Amount;
 
-    private BigDecimal Amount;
-		
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
 	private User user;
