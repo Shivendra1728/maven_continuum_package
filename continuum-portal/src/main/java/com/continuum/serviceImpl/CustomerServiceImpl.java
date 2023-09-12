@@ -72,6 +72,8 @@ public class CustomerServiceImpl implements CustomerService{
 		        }
 			 Customer customer = customerMapper.cusotmerDTOTocusotmer(custDTO);
 			 customer.setCustomerId(contactDTO.getCustId());
+			 customer.setPhone(contactDTO.getContactPhoneNo());
+			 customer.setDisplayName(contactDTO.getContactName());
 			 Customer savedCustomer=repo.save(customer);
 			 return customerMapper.cusotmerTocusotmerDTO(savedCustomer);
 		}
