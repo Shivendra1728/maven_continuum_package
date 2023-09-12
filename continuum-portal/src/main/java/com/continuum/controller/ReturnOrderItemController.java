@@ -1,5 +1,7 @@
 package com.continuum.controller;
 
+import java.math.BigDecimal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,4 +40,11 @@ public class ReturnOrderItemController {
 		return returnOrderItemService.updateShipTo(RtnOrdId, orderAddress);
 
 	}
+	
+	@PutMapping("/update/restocking")
+	public String updateRestockingFee(@RequestParam Long Id, @RequestParam BigDecimal reStockingAmount) {
+		return returnOrderItemService.updateRestockingFee(Id,reStockingAmount);
+
+	}
+
 }

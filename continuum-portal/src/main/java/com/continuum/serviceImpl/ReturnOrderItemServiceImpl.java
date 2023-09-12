@@ -1,5 +1,7 @@
 package com.continuum.serviceImpl;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -101,21 +103,21 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			if (updatedItem.getTrackingUrl() != null) {
 				existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
 				auditLog.setDescription(existingItem.getUser().getFullName() + " has Updated URL of "
-						+ existingItem.getItemName() + " to "+updatedItem.getTrackingUrl());
+						+ existingItem.getItemName() + " to " + updatedItem.getTrackingUrl());
 				auditLog.setHighlight("URL");
 				auditLog.setStatus("Ordered Items");
 			}
 			if (updatedItem.getTrackingNumber() != null) {
 				existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
 				auditLog.setDescription(existingItem.getUser().getFullName() + " has Updated Tracking Number of "
-						+ existingItem.getItemName() + " to "+ updatedItem.getTrackingNumber());
+						+ existingItem.getItemName() + " to " + updatedItem.getTrackingNumber());
 				auditLog.setHighlight("Tracking Number");
 				auditLog.setStatus("Ordered Items");
 			}
 			if (updatedItem.getCourierName() != null) {
 				existingItem.setCourierName(updatedItem.getCourierName());
 				auditLog.setDescription(existingItem.getUser().getFullName() + " has Updated Courier Name of "
-						+ existingItem.getItemName() + " to "+updatedItem.getCourierName());
+						+ existingItem.getItemName() + " to " + updatedItem.getCourierName());
 				auditLog.setHighlight("URL");
 				auditLog.setStatus("Ordered Items");
 			}
@@ -285,5 +287,21 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		} else {
 			return "not found";
 		}
+	}
+
+	@Override
+	public String updateRestockingFee(Long id, BigDecimal reStockingAmount) {
+		Optional<ReturnOrderItem> returnorderitem = returnOrderItemRepository.findById(id);
+		if (returnorderitem.isPresent()) {
+			ReturnOrderItem roi = returnorderitem.get();
+
+			BigDecimal newReturnAmoun = roi.getAmount().subtract(reStockingAmount);
+
+			roi.setReStockingAmount(reStockingAmount);
+			roi.setReturnAmount(newReturnAmoun);
+
+			returnOrderItemRepository.save(roi);
+		}
+		return "Restocking fee and return amount updated successfully";
 	}
 }

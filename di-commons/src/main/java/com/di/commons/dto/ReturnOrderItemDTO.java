@@ -50,6 +50,8 @@ public class ReturnOrderItemDTO {
 	private String courierName;
 	private String note;
 
+    private BigDecimal Amount;
+		
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
 	private User user;
