@@ -20,6 +20,7 @@ public class AuditLogDTO {
 	private String highlight;
 	
 	private String status;
+	private String rmaNo;
 
 	private User userProfile;
 

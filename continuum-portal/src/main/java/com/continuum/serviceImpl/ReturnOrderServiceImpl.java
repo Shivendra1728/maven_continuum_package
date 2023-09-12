@@ -103,6 +103,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		
 		AuditLog auditlog = new AuditLog();
 		auditlog.setHighlight("rma request");
+		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
 		String described=customerDTO.getDisplayName()+" submitted the new rma request. Order ID- TLD-"+returnOrderDTO.getRmaOrderNo();
 		auditlog.setDescription(described);
 		auditlog.setStatus("Inbox");

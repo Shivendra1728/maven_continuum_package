@@ -19,4 +19,9 @@ public class AuditLogServiceImpl implements AuditLogService{
 		List<AuditLog> auditLogs = auditLogRepository.findAll();
 		return auditLogs;
 	}
+	
+	@Override
+	 public List<AuditLog> getByRmaNo(String rmaNo) {
+        return auditLogRepository.findByRmaNo(rmaNo);
+    }
 }

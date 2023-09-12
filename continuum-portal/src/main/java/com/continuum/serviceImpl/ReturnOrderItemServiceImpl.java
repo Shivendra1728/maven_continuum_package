@@ -140,7 +140,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String updateNote(Long lineItemId, Long assignToId, ReturnOrderItemDTO updateNote) {
+	public String updateNote(Long lineItemId, Long assignToId,String rmaNo, ReturnOrderItemDTO updateNote) {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(lineItemId);
 		Optional<User> auditUserDetails = userRepository.findById(optionalItem.get().getUser().getId());
 		User auditUser = auditUserDetails.get();
@@ -175,6 +175,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					+ " as added a new note in the ordered item - " + existingItem.getItemName());
 			auditLog.setHighlight("note");
 			auditLog.setStatus("Ordered Items");
+			auditLog.setRmaNo(rmaNo);
 			auditLogRepository.save(auditLog);
 			try {
 				sendNoteEmail1(recipient, auditUser.getFirstName() + " " + auditUser.getLastName());

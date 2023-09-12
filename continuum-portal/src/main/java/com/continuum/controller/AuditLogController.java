@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.AuditLogService;
@@ -16,8 +17,9 @@ public class AuditLogController {
 	private AuditLogService auditLogService;
 	
 	@GetMapping("/auditLog/getAll")
-	public List<AuditLog> getAll() {
-		return auditLogService.getAll();
+	public List<AuditLog> getAuditLogsByRmaNo(@RequestParam("rmaNo") String rmaNo) {
+	   
+	    return auditLogService.getByRmaNo(rmaNo); 
 	}
 
 }

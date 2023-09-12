@@ -3,6 +3,7 @@ package com.continuum.controller;
 import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,9 +31,9 @@ public class ReturnOrderItemController {
 	}
 
 	@PutMapping("/update/note")
-	public String updateNote(@RequestParam long lineItemId, @RequestParam Long assignToId,
+	public String updateNote(@RequestParam long lineItemId, @RequestParam Long assignToId,@RequestParam String rmaNo,
 			@RequestBody ReturnOrderItemDTO updatedNote) {
-		return returnOrderItemService.updateNote(lineItemId, assignToId, updatedNote);
+		return returnOrderItemService.updateNote(lineItemId,assignToId,rmaNo, updatedNote);
 	}
 
 	@PutMapping("/UpdateShipTo")
@@ -40,11 +41,13 @@ public class ReturnOrderItemController {
 		return returnOrderItemService.updateShipTo(RtnOrdId, orderAddress);
 
 	}
+
 	
 	@PutMapping("/update/restocking")
 	public String updateRestockingFee(@RequestParam Long Id, @RequestParam BigDecimal reStockingAmount,@RequestBody ReturnOrderItemDTO returnOrderItemDTO) {
 		return returnOrderItemService.updateRestockingFee(Id,reStockingAmount,returnOrderItemDTO);
 
 	}
+
 
 }

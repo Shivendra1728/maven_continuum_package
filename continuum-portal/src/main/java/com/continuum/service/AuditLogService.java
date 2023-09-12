@@ -8,4 +8,6 @@ public interface AuditLogService {
 	
 	public List<AuditLog> getAll();
 
+	List<AuditLog> getByRmaNo(String rmaNo);
+
 }
