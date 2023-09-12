@@ -25,5 +25,7 @@ public class ReturnRoomDTO {
 	private Date followUpDate;
 
 	private User userProfile;
+	
+	private Long returnOrderItemId;
 
 }

@@ -166,7 +166,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnRoom.setAssignTo(user);
 			returnRoom.setFollowUpDate(updateNote.getFollowUpDate());
 			returnRoom.setStatus(updateNote.getStatus());
-			returnRoom.setReturnOrderItemId(existingItem);
+			returnRoom.setReturnOrderItemId(lineItemId);
 			returnRoomRepository.save(returnRoom);
 
 			AuditLog auditLog = new AuditLog();

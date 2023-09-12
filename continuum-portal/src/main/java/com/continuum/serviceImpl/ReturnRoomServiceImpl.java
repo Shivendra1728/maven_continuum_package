@@ -20,5 +20,13 @@ public class ReturnRoomServiceImpl implements ReturnRoomService{
 		List<ReturnRoom> returnRooms = returnRoomRepository.findAll();
 		return returnRooms;
 	}
+	
+	@Override
+	public List<ReturnRoom> getById(Long returnOrderItemId) {
+		List<ReturnRoom> returnRooms = returnRoomRepository.findByReturnOrderItemId(returnOrderItemId);
+		return returnRooms;
+	}
+	
+
 
 }

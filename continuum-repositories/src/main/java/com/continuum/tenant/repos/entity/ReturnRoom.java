@@ -44,8 +44,7 @@ public class ReturnRoom extends BaseEntity{
 	@JoinColumn(name = "assignTo")
 	private User assignTo;
 	
-	@ManyToOne
-	@JoinColumn(name = "returnOrderItemId")
-	private ReturnOrderItem returnOrderItemId;
+	
+	private Long returnOrderItemId;
 
 }

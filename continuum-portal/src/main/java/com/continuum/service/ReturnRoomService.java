@@ -6,6 +6,8 @@ import com.continuum.tenant.repos.entity.ReturnRoom;
 
 public interface ReturnRoomService {
 	public List<ReturnRoom> getAll();
+	public List<ReturnRoom> getById(Long returnOrderItemId) ;
+
 
 
 }

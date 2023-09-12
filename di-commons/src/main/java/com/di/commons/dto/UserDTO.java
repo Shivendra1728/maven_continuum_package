@@ -25,7 +25,6 @@ import lombok.experimental.Accessors;
 @Setter
 @Accessors(chain = true)
 @ToString
-@Component
 public class UserDTO extends BaseEntity implements Serializable {
 
 	public UserDTO() {
