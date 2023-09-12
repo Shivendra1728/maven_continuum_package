@@ -11,4 +11,5 @@ public class P21ContactData {
 	private String email_address;
 	private String contact_name;
 	private String direct_phone;
+	private String address_id;
 }

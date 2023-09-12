@@ -33,6 +33,7 @@ public class P21ContactMapper {
 			contactDTO.setContactEmailId(p21ContactData.getEmail_address());
 			contactDTO.setContactName(p21ContactData.getContact_name());
 			contactDTO.setContactPhoneNo(p21ContactData.getDirect_phone());
+			contactDTO.setCustId(p21ContactData.getAddress_id());
 		}
 		
 		return contactDTO;

@@ -29,4 +29,6 @@ public class ContactDTO {
 	private String website;
 	private String linkedin;
 	private String facebook;
+	
+	private String custId;
 }
