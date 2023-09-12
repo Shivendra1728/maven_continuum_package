@@ -75,6 +75,6 @@ public class ReturnOrderItem extends BaseEntity {
 	@JoinColumn(name = "assignTo")
 	private User user;
 
-	private String followUpDate;
+	private Date followUpDate;
 
 }

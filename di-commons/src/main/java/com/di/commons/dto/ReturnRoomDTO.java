@@ -22,7 +22,7 @@ public class ReturnRoomDTO {
 	
 	private String status;
 	
-	private String followUpDate;
+	private Date followUpDate;
 
 	private User userProfile;
 

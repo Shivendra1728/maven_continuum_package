@@ -38,10 +38,14 @@ public class ReturnRoom extends BaseEntity{
 	
 	private String status;
 	
-	private String followUpDate;
+	private Date followUpDate;
 
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
 	private User assignTo;
+	
+	@ManyToOne
+	@JoinColumn(name = "returnOrderItemId")
+	private ReturnOrderItem returnOrderItemId;
 
 }

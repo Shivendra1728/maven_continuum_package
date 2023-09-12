@@ -56,5 +56,5 @@ public class ReturnOrderItemDTO {
 	@JoinColumn(name = "assignTo")
 	private User user;
 
-	private String followUpDate;
+	private Date followUpDate;
 }
