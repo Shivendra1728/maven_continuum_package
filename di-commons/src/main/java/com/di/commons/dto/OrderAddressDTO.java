@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @ToString
 public class OrderAddressDTO {
-	
+
 	private String addressId;
 	private Date createdDate;
 	private Date updatedDate;
@@ -27,5 +27,8 @@ public class OrderAddressDTO {
 	private String city;
 	private String zipcode;
 	private String addressType;
-	
+
+	private String firstName;
+	private String lastName;
+	private String emailAddress;
 }

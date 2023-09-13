@@ -44,6 +44,7 @@ public class ReturnOrderDTO {
 	private String PONumber;
 	private Date orderDate;
 	private Date createdDate;
+	private Date updatedDate;
 	private Date requestedDate;
 	private String status;
 	private String currency;
