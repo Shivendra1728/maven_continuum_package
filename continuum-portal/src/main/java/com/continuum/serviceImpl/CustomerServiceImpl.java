@@ -30,34 +30,34 @@ import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
 import com.di.commons.dto.OrderDTO;
 
 @Service
-public class CustomerServiceImpl implements CustomerService{
+public class CustomerServiceImpl implements CustomerService {
 	private static final Logger logger = LoggerFactory.getLogger(CustomerServiceImpl.class);
 	@Autowired
 	RestTemplate restTemplate;
 	@Autowired
 	CustomerRepository repo;
-	
+
 	@Autowired
 	CustomerMapper customerMapper;
-	
+
 	@Autowired
 	P21ContactMapper p21ContactMapper;
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
-	
+
 	@Value(IntegrationConstants.ERP_DATA_API_BASE_URL)
 	String DATA_API_BASE_URL;
-	
+
 	@Value(IntegrationConstants.ERP_ORDER_FORMAT)
 	String ORDER_FORMAT;
-	
-	public CustomerDTO findbyCustomerId(String customerId){
-	Customer customer=	repo.findByCustomerId(customerId);
-	return customerMapper.cusotmerTocusotmerDTO(customer);
+
+	public CustomerDTO findbyCustomerId(String customerId) {
+		Customer customer = repo.findByCustomerId(customerId);
+		return customerMapper.cusotmerTocusotmerDTO(customer);
 	}
-	
-	public CustomerDTO createCustomer(CustomerDTO custDTO) throws MessagingException{
-		
+
+	public CustomerDTO createCustomer(CustomerDTO custDTO) throws MessagingException {
+
 		ContactDTO contactDTO = null;
 		try {
 			contactDTO = p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(custDTO.getEmail()));
@@ -65,27 +65,23 @@ public class CustomerServiceImpl implements CustomerService{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-			
+
 		if (contactDTO.getCustId() != null) {
-			 if (repo.existsByEmail(custDTO.getEmail())) {
-				 throw new MessagingException("Email already exists.");
-		        }
-			 Customer customer = customerMapper.cusotmerDTOTocusotmer(custDTO);
-			 customer.setCustomerId(contactDTO.getCustId());
-			 customer.setPhone(contactDTO.getContactPhoneNo());
-			 customer.setDisplayName(contactDTO.getContactName());
-			 Customer savedCustomer=repo.save(customer);
-			 return customerMapper.cusotmerTocusotmerDTO(savedCustomer);
-		}
-		else {
+			if (repo.existsByEmail(custDTO.getEmail())) {
+				throw new MessagingException("Email already exists.");
+			}
+			Customer customer = customerMapper.cusotmerDTOTocusotmer(custDTO);
+			customer.setCustomerId(contactDTO.getCustId());
+			customer.setPhone(contactDTO.getContactPhoneNo());
+			customer.setDisplayName(contactDTO.getContactName());
+			Customer savedCustomer = repo.save(customer);
+			return customerMapper.cusotmerTocusotmerDTO(savedCustomer);
+		} else {
 			throw new MessagingException("You haven't bought anything!");
 		}
-		    
-		
-		 
-		
-		
+
 	}
+
 	private String getContactData(String email) throws Exception {
 		// RestTemplate restTemplate = new RestTemplate();
 		// Add the Bearer token to the request headers
@@ -133,5 +129,18 @@ public class CustomerServiceImpl implements CustomerService{
 
 		}
 		return null;
+	}
+
+	public CustomerDTO customerLogin(String email, String password) {
+	    Customer customer = repo.findByEmail(email);
+
+	    if (customer != null && customer.getPassword().equals(password)) {
+	        CustomerDTO customerDTO = new CustomerDTO();
+	        customerDTO.setId(customer.getId());
+	        customerDTO.setEmail(customer.getEmail());
+	        return customerDTO; // Return customerDTO only if login is successful
+	    }
+
+	    return null; // Return null for failed login attempts
 	}
 }

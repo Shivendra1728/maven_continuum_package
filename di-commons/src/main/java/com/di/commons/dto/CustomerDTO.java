@@ -1,9 +1,5 @@
 package com.di.commons.dto;
 
-import java.util.Date;
-
-import org.springframework.stereotype.Component;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
