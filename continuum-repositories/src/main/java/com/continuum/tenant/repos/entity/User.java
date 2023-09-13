@@ -1,4 +1,4 @@
-	package com.continuum.tenant.repos.entity;
+package com.continuum.tenant.repos.entity;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -52,29 +52,27 @@ public class User extends BaseEntity implements Serializable {
 	@Size(max = 10)
 	@Column(name = "status")
 	private boolean status;
-	
+
 	@Column(name = "email", nullable = false)
 	private String email;
 
 	private String firstName;
 
 	private String lastName;
-	
+
 	private String gender;
-	
+
 	private String dob;
-	
+
 	private String age;
-	
+
 	private String bloodGroup;
-	
+
 	private String maritalStatus;
-	
+
 	private String nationality;
-	
+
 	private String profile;
-	
-	
 
 	// private String username;
 
@@ -105,13 +103,12 @@ public class User extends BaseEntity implements Serializable {
 //    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 //    private Set<Roles> roles = new HashSet<>();
 
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinColumn(name = "user_role_id") 
-	private Set<Role> roles = new HashSet<>();
-	
-	
-	
-	
+//	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+//	@JoinColumn(name = "user_role_id") 
+//	private Set<Role> roles = new HashSet<>();
 
-	
+	@ManyToOne
+	@JoinColumn(name = "role_id") // Adjust the column name accordingly
+	private Role roles;
+
 }

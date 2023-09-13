@@ -17,22 +17,22 @@ import com.continuum.tenant.repos.entity.User;
 public class AuthResponse implements Serializable {
 
 	private String userName;
-	
+
 	private Long userId;
 
 	private String token;
 
-	private Set<Role> role;
+	private Role role;
 
-	public AuthResponse(String userName, String token, Set<Role> role,long userId) {
+	public AuthResponse(String userName, String token, Role role, long userId) {
 
 		this.userName = userName;
 
 		this.token = token;
 
 		this.role = role;
-		
-		this.userId=userId;
+
+		this.userId = userId;
 
 	}
 
@@ -49,7 +49,7 @@ public class AuthResponse implements Serializable {
 		return this;
 
 	}
-	
+
 	public Long getUserId() {
 
 		return userId;
@@ -70,13 +70,13 @@ public class AuthResponse implements Serializable {
 
 	}
 
-	public Set<Role> getRole() {
+	public Role getRole() {
 
 		return role;
 
 	}
 
-	public void setRole(Set<Role> role) {
+	public void setRole(Role role) {
 
 		this.role = role;
 

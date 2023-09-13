@@ -30,25 +30,18 @@ public class UserServiceImpl implements UserService {
 	UserMapper usermaper;
 
 	@Override
-	public List<User> createUser(User user) {
-		try {
-	        if (userRepository.existsByEmail(user.getEmail())) {
-	            throw new Exception("Email already exists. Cannot create user with the same email.");
-	        }
-	        
-	        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-	        user.setPassword(hashedPassword);
-	        userRepository.save(user);
-	        
-	        // If user creation is successful, return a list with the created user
-	        List<User> userList = new ArrayList<>();
-	        userList.add(user);
-	        return userList;
-	    } catch (Exception e) {
-	        // Handle the exception and return an empty list with the error message
-	        e.printStackTrace(); // You can log the exception if needed
-	        return Collections.emptyList(); // Return an empty list to indicate the error
-	    }
+	public Long createUser(User user) throws Exception {
+
+		if (userRepository.existsByEmail(user.getEmail())) {
+			throw new Exception("Email already exists. Cannot create a user with the same email.");
+		} else {
+			String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+			user.setPassword(hashedPassword);
+			userRepository.save(user);
+		}
+		User u = userRepository.findByEmail(user.getEmail());
+		return u.getId();
+
 	}
 
 	@Override
