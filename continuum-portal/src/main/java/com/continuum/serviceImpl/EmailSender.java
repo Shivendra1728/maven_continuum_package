@@ -106,7 +106,7 @@ public class EmailSender {
 			}
 		});
 		
-		String templateFilePath = PortalConstants.FPasswordLink;
+		String templateFilePath = PortalConstants.RMAStatus;
 		VelocityContext context = new VelocityContext();
 		
 		

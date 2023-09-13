@@ -209,7 +209,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 		});
 
-		String templateFilePath = PortalConstants.FPasswordLink;
+		String templateFilePath = PortalConstants.ReturnOrderLineItemStatus;
 		VelocityContext context = new VelocityContext();
 
 		context.put("LineItemStatus", LineItemStatus);
