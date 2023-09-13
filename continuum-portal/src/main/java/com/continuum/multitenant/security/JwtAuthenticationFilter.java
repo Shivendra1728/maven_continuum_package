@@ -66,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch(SignatureException ex){
                 logger.error("Authentication Failed. Username or Password not valid.",ex);
             }
-        } else if( httpServletRequest.getRequestURI().contains("/forgetPassword")|| httpServletRequest.getRequestURI().contains("/signupCust")){
+        } else if( httpServletRequest.getRequestURI().contains("/forgetPassword")|| httpServletRequest.getRequestURI().contains("/signupCust") || httpServletRequest.getRequestURI().contains("/update/passwords")  ){
         	 String host= httpServletRequest.getHeader("host").split("\\.")[0];
             // MasterTenant masterTenant = masterTenantService.findByDbName((audience));
              //if(null == masterTenant){
