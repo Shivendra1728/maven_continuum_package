@@ -46,6 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = null;
         String audience = null; //tenantOrClientId
         String authToken = null;
+       String URL= httpServletRequest.getRequestURI();
         if (header != null && header.startsWith(JWTConstants.TOKEN_PREFIX)) {
             authToken = header.replace(JWTConstants.TOKEN_PREFIX,"");
             try {
@@ -65,7 +66,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch(SignatureException ex){
                 logger.error("Authentication Failed. Username or Password not valid.",ex);
             }
-        } else {
+        } else if( httpServletRequest.getRequestURI().contains("/forgetPassword")|| httpServletRequest.getRequestURI().contains("/signupCust")){
+        	 String host= httpServletRequest.getHeader("host").split("\\.")[0];
+            // MasterTenant masterTenant = masterTenantService.findByDbName((audience));
+             //if(null == masterTenant){
+               //  logger.error("An error during getting tenant name");
+                 //throw new BadCredentialsException("Invalid tenant and user.");
+             //}
+             DBContextHolder.setCurrentDb(host);
+        	
+        }else {
             logger.warn("Couldn't find bearer string, will ignore the header");
         }
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

@@ -23,7 +23,7 @@ import com.continuum.multitenant.tenant.config.TenantDatabaseConfig;
 //@EntityScan(basePackages = {"com.continuum.repos.entity"}) 
 @ComponentScan(basePackages = {"com.continuum","com.di"})
 @EnableJpaRepositories(basePackages = {"com.continuum.repos.repositories","com.continuum.serviceImpl","com.continuum.service"})
-@EnableAsync
+//@EnableAsync
 //@Import({MasterDatabaseConfig.class,TenantDatabaseConfig.class,DataSourceBasedMultiTenantConnectionProviderImpl.class})
 public class ContinuumConfig {
 
