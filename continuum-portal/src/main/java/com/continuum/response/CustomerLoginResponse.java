@@ -20,6 +20,7 @@ public class CustomerLoginResponse {
 	private String message;
     private String token;
     private Date expirationDate;
+    private String CustomerId;
        
 
 }
