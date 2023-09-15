@@ -22,6 +22,7 @@
 		<module>continuum-repositories</module>
 		<module>di-commons</module>
 		<module>continuum-integration</module>
+		<module>continuum-scheduler</module>
 		
 	</modules>
 

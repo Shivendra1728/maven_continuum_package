@@ -67,6 +67,11 @@ public class ReturnOrder extends BaseEntity {
     private Contact contact;
     
     private String rmaOrderNo;
+    
+    @OneToMany(mappedBy = "returnOrder", cascade = CascadeType.ALL)
+    private List<RmaInvoiceInfo> rmaInvoiceInfos;
+    
+    private boolean ISInvoiceLinked;
 
 
 }

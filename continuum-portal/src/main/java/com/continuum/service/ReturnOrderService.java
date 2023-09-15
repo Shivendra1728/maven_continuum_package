@@ -20,4 +20,5 @@ public interface ReturnOrderService {
 	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(String rmaOrderNo);
 	
 	public String updateReturnOrder(Long id, String status);
+	public String getSearchRmaInvoiceinfo() throws Exception;
 }

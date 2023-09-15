@@ -20,17 +20,20 @@ import org.springframework.stereotype.Service;
 import com.continuum.constants.PortalConstants;
 import com.continuum.service.CustomerService;
 import com.continuum.service.ReturnOrderService;
+import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrder;
-import com.continuum.tenant.repos.entity.AuditLog;
-import com.continuum.tenant.repos.entity.ReturnOrderItem;
+import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
+import com.continuum.tenant.repos.repositories.RmaInvoiceInfoRepository;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.ReturnOrderDTO;
-import com.di.commons.dto.ReturnOrderItemDTO;
+import com.di.commons.dto.RmaInvoiceInfoDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.mapper.ReturnOrderMapper;
+import com.di.commons.mapper.RmaInvoiceInfoMapper;
+import com.di.integration.p21.service.P21InvoiceService;
 import com.di.integration.p21.service.P21ReturnOrderService;
 import com.di.integration.p21.transaction.P21RMAResponse;
 
@@ -44,6 +47,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	
 	@Autowired 
 	AuditLogRepository audrepo;
+	
+	@Autowired
+	RmaInvoiceInfoMapper rmaInvoiceInfoMapper;
+	
+	@Autowired
+	RmaInvoiceInfoRepository rmaInvoiceInfoRepository;
+	
+	@Autowired
+	P21InvoiceService p21InvoiceService;
+
 
 	@Autowired
 	ReturnOrderMapper returnOrderMapper;
@@ -98,6 +111,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		repository.save(returnOrder);
+		
+		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
+
+		rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
+		rmaInvoiceInfo.setInvoiceLinked(false);
+		rmaInvoiceInfo.setDescription("none");
+		rmaInvoiceInfo.setRetryCount(0);
+		rmaInvoiceInfo.setReturnOrder(returnOrder);
+		rmaInvoiceInfoRepository.save(rmaInvoiceInfo);
+
 		
 		//audit log 
 		
@@ -224,6 +247,53 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			throw new EntityNotFoundException("ReturnOrder with ID " + id + " not found");
 		}
 
+	}
+	
+
+	@Override
+	public String getSearchRmaInvoiceinfo() throws Exception {
+		List<RmaInvoiceInfo> rma = rmaInvoiceInfoRepository.findAll();
+
+		List<RmaInvoiceInfoDTO> rmaDTOList = new ArrayList<>();
+
+		for (RmaInvoiceInfo rmaInvoiceInfo : rma) {
+			RmaInvoiceInfoDTO rmaInvoiceInfoDTO = new RmaInvoiceInfoDTO();
+
+			// Manually set properties of rmaInvoiceInfoDTO based on rmaInvoiceInfo
+			rmaInvoiceInfoDTO.setRmaOrderNo(rmaInvoiceInfo.getRmaOrderNo());
+			rmaInvoiceInfoDTO.setRetryCount(rmaInvoiceInfo.getRetryCount());
+			// Set other properties as needed
+
+			rmaDTOList.add(rmaInvoiceInfoDTO);
+
+			String rmaOrderNo = rmaInvoiceInfoDTO.getRmaOrderNo();
+			Integer retryCount = rmaInvoiceInfoDTO.getRetryCount();
+			if (retryCount < 3) {
+				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo);
+				if (bln) {
+					Optional<ReturnOrder> ro = repository.findById(rmaInvoiceInfo.getReturnOrder().getId());
+
+					if (ro.isPresent()) {
+						
+						ReturnOrder returnOrder = ro.get();
+						returnOrder.setISInvoiceLinked(true);
+						repository.save(returnOrder);
+						
+						
+						rmaInvoiceInfoRepository.delete(rmaInvoiceInfo);
+						// Here you can remove the corresponding DTO from the list
+						
+					}
+				} else {
+					rmaInvoiceInfoDTO.setRetryCount(rmaInvoiceInfoDTO.getRetryCount() + 1);
+					rmaInvoiceInfoDTO.setInvoiceLinked(false);
+
+					RmaInvoiceInfo rii = rmaInvoiceInfoMapper.RmaInvoiceInfoToRmaInvoiceInfoDTO(rmaInvoiceInfoDTO);
+					rmaInvoiceInfoRepository.save(rii);
+				}
+			}
+		}
+		return "Link Invoice API Ran";
 	}
 
 }

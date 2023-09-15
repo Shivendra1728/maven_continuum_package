@@ -64,4 +64,9 @@ public class ReturnOrderController {
 		String status = requestBody.get("status");
 		return returnOrderService.updateReturnOrder(id,status);
 	}
+	
+	@GetMapping("/rma/invoice/info")
+	public String getSearchRmaInvoiceInfo() throws Exception {
+		return returnOrderService.getSearchRmaInvoiceinfo();
+	}
 }

@@ -48,7 +48,8 @@ public class P21TokenServiceImpl implements P21TokenSerivce {
 	@Override
 	// @Cacheable(value = "accessTokenCache", key = "#accessToken")
 	public String getToken() throws Exception {
-		String accessToken = getAccessTokenFromCookie();
+		//String accessToken = getAccessTokenFromCookie();
+		String accessToken=null;
 		logger.info("getAccessTokenFromCookie::" + accessToken);
 		if (accessToken == null) {
 			CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -73,26 +74,32 @@ public class P21TokenServiceImpl implements P21TokenSerivce {
 			// Assuming the response is in JSON format
 			// Adjust the parsing logic based on the actual response format
 			accessToken = parseAccessToken(responseBody);
-			setAccessTokenCookie(accessToken);
+			//setAccessTokenCookie(accessToken);
 		}
 		return accessToken;
 	}
 
 	private String getAccessTokenFromCookie() {
-		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
-				.getRequest();
+		try {
+			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+					.getRequest();
 
-		Cookie[] cookies = request.getCookies();
+			Cookie[] cookies = request.getCookies();
 
-		if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				if (cookie.getName().equals("accessToken")) {
-					String accessToken = cookie.getValue();
+			if (cookies != null) {
+				for (Cookie cookie : cookies) {
+					if (cookie.getName().equals("accessToken")) {
+						String accessToken = cookie.getValue();
 
-					// Use the token as needed
-					return accessToken;
+						// Use the token as needed
+						return accessToken;
+					}
 				}
 			}
+			return null;
+		} catch (Exception e) {
+			logger.error("token not found in cookie");
+			e.printStackTrace();
 		}
 		return null;
 

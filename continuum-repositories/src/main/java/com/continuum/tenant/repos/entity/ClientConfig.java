@@ -44,6 +44,8 @@ public class ClientConfig extends BaseEntity {
 	private String emailTO;
 	private String erpCompanyId;
 	
+	private boolean questionsRequired;
+	
 	private String Host;
 	private String Port;
 	private String Username;
