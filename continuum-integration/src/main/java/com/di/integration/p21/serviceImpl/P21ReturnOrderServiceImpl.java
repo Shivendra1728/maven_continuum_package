@@ -156,4 +156,10 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		return rmaResponse;
 	}
 
+	@Override
+	public P21RMAResponse linkInvoice() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -13,6 +13,7 @@ public class RmaInvoiceInfoDTO {
 	
 	private String rmaOrderNo;
 	private boolean isInvoiceLinked;
+	private boolean isDocumentLinked;
 	private String description;
 	private Integer retryCount;
 

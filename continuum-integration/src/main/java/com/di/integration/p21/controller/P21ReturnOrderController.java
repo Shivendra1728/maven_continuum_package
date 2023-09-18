@@ -23,6 +23,12 @@ public class P21ReturnOrderController {
 		
 	}
 	
+	@PostMapping("/link/invoice")
+	public P21RMAResponse linkInvoice() throws Exception {
+		return p21Service.linkInvoice();
+		
+	}
+	
 	/*
 	 * @GetMapping("/search") public List<ReturnOrderDTO>
 	 * getReturnOrdersBySearchCriteria(@RequestParam(required = false) String

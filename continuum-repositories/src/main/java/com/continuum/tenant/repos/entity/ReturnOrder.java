@@ -72,6 +72,6 @@ public class ReturnOrder extends BaseEntity {
     private List<RmaInvoiceInfo> rmaInvoiceInfos;
     
     private boolean ISInvoiceLinked;
-
+    private boolean ISDocumentLinked;
 
 }

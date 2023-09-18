@@ -49,9 +49,6 @@ public class Role {
 	@JoinTable(name = "permissions_roles", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
 	private List<Permission> permissions = new ArrayList<>();
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "role_pages", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "page_id"))
-	private Set<Page> pages = new HashSet<>();
 
 	@Override
 	public boolean equals(Object o) {

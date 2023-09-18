@@ -33,8 +33,8 @@ public class Store extends BaseEntity{
 	  private boolean enabled= true;
 	  @Column(name = "store_type")
 	  private String storeType; 
-	  private String contentEncoding; private Integer
-	  noOfStores;
+	  private String contentEncoding; 
+	  private Integer noOfStores;
 	  
 	  
 	  
@@ -42,7 +42,8 @@ public class Store extends BaseEntity{
 	  private boolean storeState;
 	  private String feeType;
 	  
-	  private String reasonListing; private String category;
+	  private String reasonListing; 
+	  private String category;
 	 
 
     @OneToOne

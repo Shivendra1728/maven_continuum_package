@@ -44,19 +44,18 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	ReturnOrderRepository repository;
-	
-	@Autowired 
+
+	@Autowired
 	AuditLogRepository audrepo;
-	
+
 	@Autowired
 	RmaInvoiceInfoMapper rmaInvoiceInfoMapper;
-	
+
 	@Autowired
 	RmaInvoiceInfoRepository rmaInvoiceInfoRepository;
-	
+
 	@Autowired
 	P21InvoiceService p21InvoiceService;
-
 
 	@Autowired
 	ReturnOrderMapper returnOrderMapper;
@@ -69,6 +68,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	EmailSender sender;
+
+	ReturnOrder returnOrder;
 
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
@@ -111,23 +112,24 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		repository.save(returnOrder);
-		
+
 		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
 
 		rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
 		rmaInvoiceInfo.setInvoiceLinked(false);
 		rmaInvoiceInfo.setDescription("none");
 		rmaInvoiceInfo.setRetryCount(0);
+		rmaInvoiceInfo.setDocumentLinked(false);
 		rmaInvoiceInfo.setReturnOrder(returnOrder);
 		rmaInvoiceInfoRepository.save(rmaInvoiceInfo);
 
-		
-		//audit log 
-		
+		// audit log
+
 		AuditLog auditlog = new AuditLog();
 		auditlog.setHighlight("rma request");
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-		String described=customerDTO.getDisplayName()+" submitted the new rma request. Order ID- TLD-"+returnOrderDTO.getRmaOrderNo();
+		String described = customerDTO.getDisplayName() + " submitted the new rma request. Order ID- TLD-"
+				+ returnOrderDTO.getRmaOrderNo();
 		auditlog.setDescription(described);
 		auditlog.setStatus("Inbox");
 		auditlog.setTitle("Return Order");
@@ -220,25 +222,26 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setStatus(status);
 
 			repository.save(returnOrder);
-			
-			//audit log saving
-			
+
+			// audit log saving
+
 			AuditLog auditlog = new AuditLog();
 			auditlog.setHighlight("rma status");
-			String described=returnOrder.getUser().getFullName()+ " has changed rma status to "+returnOrder.getStatus();
+			String described = returnOrder.getUser().getFullName() + " has changed rma status to "
+					+ returnOrder.getStatus();
 			auditlog.setDescription(described);
 			auditlog.setStatus("RMA");
 			auditlog.setTitle("Return Order");
 			audrepo.save(auditlog);
-			
-			//send email to customer-RMA processor
+
+			// send email to customer-RMA processor
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
-			 try {
-            	 
-                 sender.sendEmail2(recipient, returnOrder.getStatus());
-             } catch (MessagingException e) {
-                 e.printStackTrace();
-             }
+			try {
+
+				sender.sendEmail2(recipient, returnOrder.getStatus());
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
 
 			return "RMA Status Updated Successfully.";
 
@@ -248,7 +251,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		}
 
 	}
-	
 
 	@Override
 	public String getSearchRmaInvoiceinfo() throws Exception {
@@ -274,15 +276,14 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 					Optional<ReturnOrder> ro = repository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 
 					if (ro.isPresent()) {
-						
+
 						ReturnOrder returnOrder = ro.get();
 						returnOrder.setISInvoiceLinked(true);
 						repository.save(returnOrder);
-						
-						
+
 						rmaInvoiceInfoRepository.delete(rmaInvoiceInfo);
 						// Here you can remove the corresponding DTO from the list
-						
+
 					}
 				} else {
 					rmaInvoiceInfoDTO.setRetryCount(rmaInvoiceInfoDTO.getRetryCount() + 1);

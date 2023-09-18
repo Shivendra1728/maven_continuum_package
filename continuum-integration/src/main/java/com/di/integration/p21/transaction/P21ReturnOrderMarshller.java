@@ -162,12 +162,16 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 		edit7.setName(IntegrationConstants.TAKER);
 		edit7.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getTaker());
 		
+		Edit edit8 = new Edit();
+		edit8.setName(IntegrationConstants.APPROVED);
+		edit8.setValue("OFF");
+		
 		//Edit edit8 = new Edit();
 		//edit8.setName("order_contact_first_name");
 		//edit8.setValue(p21ReturnOrderDataHelper.getP21OrderHeader().getOrder_contact_first_name());
 
 		// Add the Edit objects to the Row object
-		row1.setEdits(Arrays.asList(edit1, edit2, edit3, edit4, edit5, edit6, edit7));
+		row1.setEdits(Arrays.asList(edit1, edit2, edit3, edit4, edit5, edit6, edit7, edit8));
 
 		// Add the Row objects to the DataElement objects
 		dataElement1.setRows(Collections.singletonList(row1));

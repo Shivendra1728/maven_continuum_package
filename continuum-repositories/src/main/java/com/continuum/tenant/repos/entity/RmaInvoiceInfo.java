@@ -20,7 +20,8 @@ import lombok.Setter;
 public class RmaInvoiceInfo extends BaseEntity {
 	
 	private String rmaOrderNo;
-	private boolean isInvoiceLinked;
+	private boolean isInvoiceLinked=false;
+	private boolean isDocumentLinked=false;
 	private String description;
 	private Integer retryCount;
 	@ManyToOne

@@ -142,18 +142,5 @@ public class CustomerServiceImpl implements CustomerService {
 
 	}
 
-	public CustomerDTO customerLogin(String email, String password) {
-
-		Customer customer = repo.findByEmail(email);
-		if (customer != null && customer.getPassword().equals(password)) {
-			CustomerDTO customerDTO = new CustomerDTO();
-			customerDTO.setId(customer.getId());
-			customerDTO.setEmail(customer.getEmail());
-			return customerDTO; // Return customerDTO only if login is successful
-		}
-
-		return null; // Return null for failed login attempts
-
-	}
 
 }
