@@ -10,8 +10,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.continuum.multitenant.mastertenant.config.DBContextHolder;
 import com.continuum.multitenant.mastertenant.service.MasterTenantService;
+import com.di.commons.helper.DBContextHolder;
 
 import java.util.Map;
 

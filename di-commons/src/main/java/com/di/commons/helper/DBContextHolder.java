@@ -1,4 +1,4 @@
-package com.continuum.multitenant.mastertenant.config;
+package com.di.commons.helper;
 
 /**
  * @author RK

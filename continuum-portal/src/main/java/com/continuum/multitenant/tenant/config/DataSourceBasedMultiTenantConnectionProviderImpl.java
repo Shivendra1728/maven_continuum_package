@@ -14,10 +14,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import com.continuum.multitenant.mastertenant.config.DBContextHolder;
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.multitenant.util.DataSourceUtil;
+import com.di.commons.helper.DBContextHolder;
 
 /**
  * @author RK

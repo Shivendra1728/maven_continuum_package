@@ -19,10 +19,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.continuum.multitenant.constant.JWTConstants;
-import com.continuum.multitenant.mastertenant.config.DBContextHolder;
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.service.MasterTenantService;
 import com.continuum.multitenant.util.JwtTokenUtil;
+import com.di.commons.helper.DBContextHolder;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;

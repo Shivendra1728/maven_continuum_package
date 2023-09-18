@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.ApplicationScope;
 
 import com.continuum.multitenant.constant.UserStatus;
-import com.continuum.multitenant.mastertenant.config.DBContextHolder;
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.service.MasterTenantService;
 import com.continuum.multitenant.security.UserTenantInformation;
@@ -36,6 +35,7 @@ import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.AuthResponse;
 import com.di.commons.dto.UserLoginDTO;
+import com.di.commons.helper.DBContextHolder;
 
 /**
  * @author RK

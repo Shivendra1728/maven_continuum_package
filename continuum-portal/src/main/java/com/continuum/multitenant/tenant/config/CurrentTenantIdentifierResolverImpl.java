@@ -3,7 +3,7 @@ package com.continuum.multitenant.tenant.config;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 
-import com.continuum.multitenant.mastertenant.config.DBContextHolder;
+import com.di.commons.helper.DBContextHolder;
 
 /**
  * @author RK
