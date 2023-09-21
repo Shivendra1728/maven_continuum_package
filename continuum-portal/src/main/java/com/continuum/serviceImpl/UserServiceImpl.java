@@ -51,7 +51,8 @@ public class UserServiceImpl implements UserService {
 			List<User> userdto = userDTO.map(Collections::singletonList).orElse(Collections.emptyList());
 			return userdto;
 		} else {
-			return userRepository.findAll();
+			
+			return userRepository.findByStatus(true);
 		}
 	}
 
@@ -109,6 +110,27 @@ public class UserServiceImpl implements UserService {
 			}
 			if (user.getRoles() != null) {
 				eUser.setRoles(user.getRoles());
+			}
+			if (user.getDob() != null) {
+				eUser.setDob(user.getDob());
+			}
+			if (user.getAge() != null) {
+				eUser.setAge(user.getAge());
+			}
+			if (user.getBloodGroup() != null) {
+				eUser.setBloodGroup(user.getBloodGroup());
+			}
+			if (user.getMaritalStatus() != null) {
+				eUser.setMaritalStatus(user.getMaritalStatus());
+			}
+			if (user.getNationality() != null) {
+				eUser.setNationality(user.getNationality());
+			}
+			if (user.getProfile() != null) {
+				eUser.setProfile(user.getProfile());
+			}
+			if (user.getEmail() != null) {
+				eUser.setEmail(user.getEmail());
 			}
 			userRepository.save(eUser);
 			return "User updated";

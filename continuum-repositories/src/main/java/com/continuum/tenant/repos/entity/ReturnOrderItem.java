@@ -2,7 +2,9 @@ package com.continuum.tenant.repos.entity;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -41,6 +43,9 @@ public class ReturnOrderItem extends BaseEntity {
 	@OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
 	@JoinColumn(name = "returnOrderItemId")
 	private List<OrderItemDocuments> orderItemDocuments;
+	
+	@OneToMany(mappedBy = "returnOrderItem",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ReturnRoom> returnRooms = new HashSet<ReturnRoom>();
 
 	/*
 	 * @OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL}) private
@@ -75,6 +80,7 @@ public class ReturnOrderItem extends BaseEntity {
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
 	private User user;
+	private String itemDesc;
 
 	private Date followUpDate;
 

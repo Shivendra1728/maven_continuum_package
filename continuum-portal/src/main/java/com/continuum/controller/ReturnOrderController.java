@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,10 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.ReturnOrderService;
-import com.continuum.tenant.repos.entity.ReturnOrder;
-import com.continuum.tenant.repos.entity.User;
 import com.di.commons.dto.ReturnOrderDTO;
-import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.integration.p21.transaction.P21RMAResponse;
 
@@ -60,13 +56,19 @@ public class ReturnOrderController {
 	}
 	
 	@PutMapping("/updateRmaStatus")
-	public String updateReturnOrder(@RequestParam Long id, @RequestBody Map<String, String> requestBody) {
+	public String updateReturnOrder(@RequestParam String rmaNo,@RequestParam String updateBy, @RequestBody Map<String, String> requestBody) {
 		String status = requestBody.get("status");
-		return returnOrderService.updateReturnOrder(id,status);
+		return returnOrderService.updateReturnOrder(rmaNo,updateBy,status);
 	}
 	
 	@GetMapping("/rma/invoice/info")
 	public String getSearchRmaInvoiceInfo() throws Exception {
 		return returnOrderService.getSearchRmaInvoiceinfo();
 	}
+	
+	@PostMapping("/assignRMA")
+	public String assignRMA(@RequestParam String rmaNo , @RequestParam Long assigntoId ,@RequestParam String updateBy,@RequestBody ReturnOrderDTO note) throws Exception {
+		return returnOrderService.assignRMA(rmaNo,assigntoId,updateBy,note);
+	}
+	
 }

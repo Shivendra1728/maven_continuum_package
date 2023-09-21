@@ -74,4 +74,6 @@ public class ReturnOrder extends BaseEntity {
     private boolean ISInvoiceLinked;
     private boolean ISDocumentLinked;
 
+    private Date nextActivityDate;
+    private String note;
 }

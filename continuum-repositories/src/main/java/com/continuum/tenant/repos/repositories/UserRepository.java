@@ -1,5 +1,6 @@
 package com.continuum.tenant.repos.repositories;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,4 +20,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 		boolean existsByEmail(String email);
 
 		Optional<User> findById(Long id);
+		List<User> findByStatus(Boolean i);
 }

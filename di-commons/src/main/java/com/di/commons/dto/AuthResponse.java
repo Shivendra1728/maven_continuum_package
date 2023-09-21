@@ -2,11 +2,7 @@ package com.di.commons.dto;
 
 import java.io.Serializable;
 
-import java.util.Set;
-
 import com.continuum.tenant.repos.entity.Role;
-
-import com.continuum.tenant.repos.entity.User;
 
 /**
  * 
@@ -23,16 +19,20 @@ public class AuthResponse implements Serializable {
 	private String token;
 
 	private Role role;
+	private String customer;
+	private String name;
 
-	public AuthResponse(String userName, String token, Role role, long userId) {
+	public AuthResponse(String userName, String name, String token, Role role, long userId, String customer) {
 
 		this.userName = userName;
+		this.name = name;
 
 		this.token = token;
 
 		this.role = role;
 
 		this.userId = userId;
+		this.customer = customer;
 
 	}
 
@@ -45,6 +45,34 @@ public class AuthResponse implements Serializable {
 	public AuthResponse setUserName(String userName) {
 
 		this.userName = userName;
+
+		return this;
+
+	}
+
+	public String getName() {
+
+		return name;
+
+	}
+
+	public AuthResponse setName(String name) {
+
+		this.name = name;
+
+		return this;
+
+	}
+
+	public String getCustomer() {
+
+		return customer;
+
+	}
+
+	public AuthResponse setCustomer(String customer) {
+
+		this.customer = customer;
 
 		return this;
 

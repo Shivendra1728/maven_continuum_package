@@ -1,8 +1,6 @@
 package com.continuum.tenant.repos.entity;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -10,8 +8,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -110,5 +108,9 @@ public class User extends BaseEntity implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "role_id") // Adjust the column name accordingly
 	private Role roles;
+	
+	@OneToOne
+	@JoinColumn(name="customerId")
+	private Customer customer;
 
 }
