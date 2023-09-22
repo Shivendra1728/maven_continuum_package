@@ -1,6 +1,7 @@
 package com.continuum.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.continuum.service.AzureBlobService;
 import com.continuum.service.FileUploadService;
-import com.continuum.tenant.repos.entity.ReturnOrderItem;
 
 @RestController
 public class FileUploadController {
@@ -21,12 +21,11 @@ public class FileUploadController {
 	FileUploadService fileUploadService;
 
 	@PostMapping("/upload-file")
-	public String fileUploaders(MultipartFile[] data, @RequestParam("rmaNo") String rmaNo,
-			ReturnOrderItem returnOrderItemId) throws IOException {
+	public List<String> fileUploaders(MultipartFile[] data, @RequestParam("customerId") String customerId
+	) throws Exception {
 
-		azureBlobService.uploadFiles(data, rmaNo, returnOrderItemId);
-
-		return "File Upload Sucessfully";
+		List<String> url = azureBlobService.uploadFiles(data, customerId);
+		return url;
 	}
 
 	@PostMapping("/user-img")
