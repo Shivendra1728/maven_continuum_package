@@ -1,7 +1,8 @@
 package com.continuum.serviceImpl;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,9 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.continuum.tenant.repos.entity.*;
-import com.continuum.tenant.repos.repositories.OrderItemDocumentRepository;
 import com.continuum.service.AzureBlobService;
+import com.continuum.tenant.repos.repositories.OrderItemDocumentRepository;
 
 @Component
 
@@ -26,43 +26,39 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 	@Autowired
 	OrderItemDocumentRepository orderItemDocumentRepository;
 
-	public String uploadFiles(MultipartFile[] data, String rmaNo, ReturnOrderItem returnOrderItemid)
-			throws IOException {
-		boolean b = false;
+	public List<String> uploadFiles(MultipartFile[] data, String customerId) throws Exception {
+
 		BlobContainerClient containerClient = new BlobServiceClientBuilder().connectionString(connectionString)
-				.buildClient().getBlobContainerClient(containerName);
-		
-
+											 .buildClient().getBlobContainerClient(containerName);
+		List<String> url = new ArrayList<String>();
 		for (MultipartFile file : data) {
-
 			String fileName = file.getOriginalFilename();
 			String fileExtension = getFileExtension(fileName);
 
 			if (isValidFileType(fileExtension)) {
-				BlobClient blobClient = containerClient.getBlobClient(rmaNo + "/" + fileName);
+
+				BlobClient blobClient = containerClient.getBlobClient(customerId + "/" + fileName);
 				InputStream inputStream = file.getInputStream();
 				blobClient.upload(inputStream, file.getSize());
-				b = true;
-				if (b) {
-					OrderItemDocuments orderItemDocument = new OrderItemDocuments();
-					orderItemDocument.setURL(blobClient.getBlobUrl());
-					orderItemDocument.setType(fileExtension);
-					orderItemDocument.setReturnOrderItem(returnOrderItemid);
-					// Set other attributes of the OrderItemDocument if needed
-					orderItemDocumentRepository.save(orderItemDocument);
-				}
+				url.add(blobClient.getBlobUrl());
+
 			} else {
-				return "invalid file type !";
+				throw new Exception("Invalid file type!");
 			}
 		}
-		return "";
+		return url;
+
 	}
 
+	
+	
 	private boolean isValidFileType(String fileExtension) {
-		return fileExtension.equals("pdf") || fileExtension.equals("doc") || fileExtension.equals("jpg")
+				return fileExtension.equals("pdf") || fileExtension.equals("doc") || fileExtension.equals("jpg")
 				|| fileExtension.equals("jpeg") || fileExtension.equals("png");
 	}
 
+	
+	
 	private String getFileExtension(String fileName) {
 		int dotIndex = fileName.lastIndexOf(".");
 		if (dotIndex > -1 && dotIndex < fileName.length() - 1) {
@@ -70,5 +66,4 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 		}
 		return "";
 	}
-
 }

@@ -1,4 +1,4 @@
-package com.di.commons.dto;
+	package com.di.commons.dto;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -7,6 +7,7 @@ import java.util.List;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.continuum.tenant.repos.entity.BaseEntity;
 import com.continuum.tenant.repos.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -18,18 +19,18 @@ import lombok.experimental.Accessors;
 
 @Getter
 @Setter
-@Accessors(chain = true)
 @NoArgsConstructor
 @ToString
 //@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 
-public class ReturnOrderItemDTO {
+public class ReturnOrderItemDTO extends BaseEntity{
 
 	private Long id;
 	private OrderAddressDTO shipTo;
 	private OrderAddressDTO billTo;
 	private List<OrderItemDocumentsDTO> orderItemDocuments;
+    private List<ReturnRoomDTO> returnRooms;
 	private String reasonCode;
 	private String returnComments;
 	private int quanity;
@@ -57,4 +58,5 @@ public class ReturnOrderItemDTO {
 	private User user;
 
 	private Date followUpDate;
+	private String itemDesc;
 }

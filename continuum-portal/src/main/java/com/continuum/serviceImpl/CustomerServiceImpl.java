@@ -4,9 +4,11 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+
+import javax.mail.MessagingException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -14,19 +16,21 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 import com.continuum.service.CustomerService;
 import com.continuum.tenant.repos.entity.Customer;
+import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.CustomerRepository;
+import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ContactDTO;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.mapper.CustomerMapper;
 import com.di.commons.p21.mapper.P21ContactMapper;
 import com.di.integration.constants.IntegrationConstants;
-import com.di.integration.p21.serviceImpl.P21OrderServiceImpl;
 import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
-import com.di.commons.dto.OrderDTO;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -36,10 +40,13 @@ public class CustomerServiceImpl implements CustomerService {
 	RestTemplate restTemplate;
 
 	@Autowired
-	CustomerRepository repo;
+	CustomerRepository customerRepository;
 
 	@Autowired
 	CustomerMapper customerMapper;
+
+	@Autowired
+	UserRepository userRepository;
 
 	@Autowired
 	P21ContactMapper p21ContactMapper;
@@ -54,32 +61,42 @@ public class CustomerServiceImpl implements CustomerService {
 	String ORDER_FORMAT;
 
 	public CustomerDTO findbyCustomerId(String customerId) {
-		Customer customer = repo.findByCustomerId(customerId);
+		Customer customer = customerRepository.findByCustomerId(customerId);
 		return customerMapper.cusotmerTocusotmerDTO(customer);
 	}
 
 	public CustomerDTO createCustomer(CustomerDTO custDTO) throws MessagingException {
 
 		ContactDTO contactDTO = null;
+
 		try {
 			contactDTO = p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(custDTO.getEmail()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		if (contactDTO.getCustId() != null) {
-			if (repo.existsByEmail(custDTO.getEmail())) {
+			if (userRepository.existsByEmail(custDTO.getEmail())) {
 				throw new MessagingException("Email already exists.");
 			}
-
-			Customer customer = customerMapper.cusotmerDTOTocusotmer(custDTO);
+			
+			Customer customer = new Customer();
 			customer.setCustomerId(contactDTO.getCustId());
-			customer.setPhone(contactDTO.getContactPhoneNo());
-			customer.setDisplayName(contactDTO.getContactName());
-			Customer savedCustomer = repo.save(customer);
-			return customerMapper.cusotmerTocusotmerDTO(savedCustomer);
+			customerRepository.save(customer);
+
+			User user = new User();
+			user.setFirstName(custDTO.getFirstName());
+			user.setLastName(custDTO.getLastname());
+			String hashedPassword = BCrypt.hashpw(custDTO.getPassword(), BCrypt.gensalt());
+			user.setPassword(hashedPassword);
+			user.setUserName(custDTO.getEmail());
+			user.setEmail(custDTO.getEmail());
+			user.setCustomer(customer);
+			user.setFullName("None");
+			userRepository.save(user);
+			return customerMapper.cusotmerTocusotmerDTO(customer);
 
 		} else {
+
 			throw new MessagingException("You are not a customer of Us!");
 
 		}
@@ -141,6 +158,5 @@ public class CustomerServiceImpl implements CustomerService {
 		return null;
 
 	}
-
 
 }

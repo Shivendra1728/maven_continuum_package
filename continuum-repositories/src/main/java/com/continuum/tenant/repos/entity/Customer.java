@@ -3,8 +3,7 @@ package com.continuum.tenant.repos.entity;
  
 
 import java.util.List;
-
- 
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -54,8 +53,8 @@ public class Customer extends BaseEntity{
 //    @OneToMany(mappedBy = "customer")
 //    private List<User> users;
 
-    @OneToMany(mappedBy = "customer")
-    private List<Orders> orders;
+    @OneToMany(mappedBy = "customer",fetch = FetchType.EAGER)
+    private Set<Orders> orders;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
     @JoinColumn(name ="shipTo")

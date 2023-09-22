@@ -24,11 +24,14 @@ import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
+import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.RmaInvoiceInfoRepository;
+import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.ReturnOrderDTO;
+import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.commons.dto.RmaInvoiceInfoDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.mapper.ReturnOrderMapper;
@@ -47,6 +50,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	AuditLogRepository audrepo;
+	
+	@Autowired
+	UserRepository userRepository;
 
 	@Autowired
 	RmaInvoiceInfoMapper rmaInvoiceInfoMapper;
@@ -82,7 +88,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO, P21RMAResponse p21RMARespo)
 			throws MessagingException {
 		returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
-		returnOrderDTO.setStatus(PortalConstants.UNDER_REVIEW);
+		returnOrderDTO.setStatus(PortalConstants.RETURN_REQUESTED);
 		returnOrderDTO.setOrderDate(new Date());
 		returnOrderDTO.setCreatedDate(new Date());
 		returnOrderDTO.setRequestedDate(new Date());
@@ -90,8 +96,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		String Status = p21RMARespo.getStatus();
 		if (Status.equals(PortalConstants.SUCCESS)) {
-			returnOrderDTO.setStatus(PortalConstants.UNDER_REVIEW);
-			logger.info("Setting status to:: '{}'", PortalConstants.UNDER_REVIEW);
+			returnOrderDTO.setStatus(PortalConstants.RETURN_REQUESTED);
+			logger.info("Setting status to:: '{}'", PortalConstants.RETURN_REQUESTED);
 
 		} else {
 			returnOrderDTO.setStatus(PortalConstants.FAILED);
@@ -133,6 +139,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		auditlog.setDescription(described);
 		auditlog.setStatus("Inbox");
 		auditlog.setTitle("Return Order");
+		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
 		audrepo.save(auditlog);
 
 		String recipient = PortalConstants.EMAIL_RECIPIENT;
@@ -192,14 +199,82 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		return str != null && !str.trim().isEmpty();
 	}
 
+//	@Override
+//	public List<ReturnOrderDTO> getAllReturnOrder() {
+//		List<ReturnOrder> returnOrderEntities = repository.findAll();
+//
+//		List<ReturnOrderDTO> returnOrderDTOs = returnOrderEntities.stream()
+//				.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
+//
+//		return returnOrderDTOs;
+//	}
+
 	@Override
+
 	public List<ReturnOrderDTO> getAllReturnOrder() {
+
 		List<ReturnOrder> returnOrderEntities = repository.findAll();
 
+ 
+
 		List<ReturnOrderDTO> returnOrderDTOs = returnOrderEntities.stream()
+
 				.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
 
+ 
+
+//		List<ReturnOrderDTO> returnOrderDTOList = returnOrder.stream()
+
+//	            .map(returnOrderMapper::returnOrderToReturnOrderDTO)
+
+//	            .collect(Collectors.toList());
+
+ 
+
+	    for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
+
+	        List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
+
+	        
+
+	        if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
+
+	            Date currentDate = new Date(); // Current date
+
+	            
+
+	            // Extract follow-up dates from ReturnOrderItems and filter those after the current date
+
+	            List<Date> upcomingDates = returnOrderItems.stream()
+
+	                    .map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use ReturnOrderItemDTO
+
+	                    .filter(date -> date != null && date.after(currentDate))
+
+	                    .collect(Collectors.toList());
+
+	            // Sort the upcoming dates in ascending order
+
+	            upcomingDates.sort(Date::compareTo);
+
+	            
+
+	            // Set the first upcoming date (if it exists) as the nextActivityDate in the ReturnOrderDTO
+
+	            if (!upcomingDates.isEmpty()) {
+
+	                returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
+
+	            }
+
+	        }
+
+	    }
+
+ 
+
 		return returnOrderDTOs;
+
 	}
 
 	@Override
@@ -213,8 +288,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	}
 
 	@Override
-	public String updateReturnOrder(Long id, String status) {
-		Optional<ReturnOrder> optionalItem = repository.findById(id);
+	
+	public String updateReturnOrder(String rmaNo,String updateBy, String status) {
+		Optional<ReturnOrder> optionalItem=repository.findByRmaOrderNo(rmaNo);
 
 		if (optionalItem.isPresent()) {
 			ReturnOrder returnOrder = optionalItem.get();
@@ -227,11 +303,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditlog = new AuditLog();
 			auditlog.setHighlight("rma status");
-			String described = returnOrder.getUser().getFullName() + " has changed rma status to "
+			String described = updateBy + " has changed rma status to "
 					+ returnOrder.getStatus();
 			auditlog.setDescription(described);
 			auditlog.setStatus("RMA");
 			auditlog.setTitle("Return Order");
+			auditlog.setRmaNo(returnOrder.getRmaOrderNo());
 			audrepo.save(auditlog);
 
 			// send email to customer-RMA processor
@@ -247,7 +324,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		} else {
 
-			throw new EntityNotFoundException("ReturnOrder with ID " + id + " not found");
+			throw new EntityNotFoundException("ReturnOrder with rma  " + rmaNo  + " not found");
 		}
 
 	}
@@ -296,5 +373,34 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		}
 		return "Link Invoice API Ran";
 	}
+	
+	@Override
+	public String assignRMA(String rmaNo,Long assignToId,String updateBy,ReturnOrderDTO note) {
+		Optional<ReturnOrder> optionalReturnOrder=repository.findByRmaOrderNo(rmaNo);
+		Optional<User> optionalUser=userRepository.findById(assignToId);
+		if(optionalReturnOrder.isPresent()&& optionalUser.isPresent()) {
+			ReturnOrder returnOrder=optionalReturnOrder.get();
+			User user=optionalUser.get();
+			returnOrder.setUser(user);
+			returnOrder.setNote(note.getNote());
+			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
+			repository.save(returnOrder);
+			
+			AuditLog auditLog = new AuditLog();
+			auditLog.setTitle("Assign RMA");
+			auditLog.setDescription(
+					updateBy + " assign RMA to " +user.getFirstName()+" "+user.getLastName());
+			auditLog.setHighlight("assign");
+			auditLog.setStatus("RMA");
+			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
+			audrepo.save(auditLog);
+			
+			return "Assiged RMA to User";
+			
+		}
+		return "Invalid User";
+
+	}
+
 
 }

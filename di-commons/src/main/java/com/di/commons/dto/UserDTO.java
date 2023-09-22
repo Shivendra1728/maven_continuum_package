@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.continuum.tenant.repos.entity.BaseEntity;
+import com.continuum.tenant.repos.entity.Customer;
 import com.continuum.tenant.repos.entity.Gender;
 import com.continuum.tenant.repos.entity.Permission;
 import com.continuum.tenant.repos.entity.Role;
@@ -64,8 +65,8 @@ public class UserDTO extends BaseEntity implements Serializable {
 	private String lastName;
 	private String note;
 	private Gender gender;
-	private boolean enabled;
-	private boolean secured;
+//	private boolean enabled;
+//	private boolean secured;
 	private String fullName;
 	@JsonIgnore
 	private String uuid;
@@ -78,5 +79,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 	private List<String> permissions;
 
 	private Role role;
+	private Customer customer;
+
 
 }

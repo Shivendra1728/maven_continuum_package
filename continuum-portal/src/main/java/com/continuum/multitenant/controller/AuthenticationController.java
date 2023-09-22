@@ -31,7 +31,11 @@ import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.service.MasterTenantService;
 import com.continuum.multitenant.security.UserTenantInformation;
 import com.continuum.multitenant.util.JwtTokenUtil;
+import com.continuum.tenant.repos.entity.Customer;
+import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;
+import com.continuum.tenant.repos.repositories.CustomerRepository;
+import com.continuum.tenant.repos.repositories.RolesRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.AuthResponse;
 import com.di.commons.dto.UserLoginDTO;
@@ -57,6 +61,12 @@ public class AuthenticationController implements Serializable {
 	@Autowired
 	UserRepository userRepository;
 
+	@Autowired
+	RolesRepository rolesRepository;
+
+	@Autowired
+	CustomerRepository customerRepository;
+
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public ResponseEntity<?> userLogin(@RequestBody @NotNull UserLoginDTO userLoginDTO, HttpServletRequest request,
 			HttpServletResponse response) throws AuthenticationException {
@@ -79,14 +89,49 @@ public class AuthenticationController implements Serializable {
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 		final String token = jwtTokenUtil.generateToken(userDetails.getUsername(), tenentId);
 		User u = userRepository.findByUserName(userDetails.getUsername());
-		long userId=u.getId();
-		// Set<Role> role = u.getRoles();
+		String name = u.getFirstName() + " " + u.getLastName();
+		long userId = u.getId();
+
+		if (u.getCustomer() == null) {
+
+			Customer existingCustomer = customerRepository.findByCustomerId("");
+
+			if (existingCustomer != null) {
+
+				u.setCustomer(existingCustomer);
+
+			} else {
+				Customer newCustomer = new Customer();
+
+				newCustomer.setCustomerId("");
+
+				customerRepository.save(newCustomer);
+
+				u.setCustomer(newCustomer);
+
+			}
+			userRepository.save(u);
+		}
+		if (u.getCustomer() != null && !(u.getCustomer().getCustomerId().isEmpty())) {
+
+			Role role = rolesRepository.findById(4L).orElse(null);
+
+			if (role != null) {
+
+				u.setRoles(role);
+
+				userRepository.save(u);
+
+			}
+
+		} // Set<Role> role = u.getRoles();
 
 		// final String token =
 		// jwtTokenUtil.generateToken(userDetails.getUsername(),String.valueOf(userLoginDTO.getTenantOrClientId()));
 		// Map the value into applicationScope bean
 		setMetaDataAfterLogin();
-		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), token, u.getRoles(),userId));
+		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), name, token, u.getRoles(), userId,
+				u.getCustomer().getCustomerId()));
 	}
 
 	private void loadCurrentDatabaseInstance(String databaseName, String userName) {

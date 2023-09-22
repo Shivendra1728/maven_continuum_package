@@ -2,6 +2,7 @@ package com.di.commons.dto;
 
 import java.util.Date;
 
+import com.continuum.tenant.repos.entity.BaseEntity;
 import com.continuum.tenant.repos.entity.User;
 
 import lombok.AllArgsConstructor;
@@ -13,8 +14,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReturnRoomDTO {
-	
+public class ReturnRoomDTO extends BaseEntity{
+
+	private Long id;
 
 	private String name;
 
@@ -24,8 +26,6 @@ public class ReturnRoomDTO {
 	
 	private Date followUpDate;
 
-	private User userProfile;
-	
-	private Long returnOrderItemId;
+	private User assignTo;
 
 }

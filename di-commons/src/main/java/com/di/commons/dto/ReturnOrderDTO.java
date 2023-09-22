@@ -3,19 +3,7 @@ package com.di.commons.dto;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-
-import org.springframework.stereotype.Component;
-
-import com.continuum.tenant.repos.entity.Customer;
-import com.continuum.tenant.repos.entity.OrderAddress;
-import com.continuum.tenant.repos.entity.Orders;
-import com.continuum.tenant.repos.entity.ReturnOrderItem;
+import com.continuum.tenant.repos.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
@@ -61,5 +49,8 @@ public class ReturnOrderDTO {
 	private OrderAddressDTO billTo;
 	private String rmaOrderNo;
 
+	private Date nextActivityDate;
+	private String note;
+	private User user;
 //	private Orders orders;
 }

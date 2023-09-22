@@ -2,7 +2,6 @@ package com.continuum.serviceImpl;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -15,7 +14,6 @@ import javax.mail.internet.MimeMessage;
 import javax.persistence.EntityNotFoundException;
 
 import org.apache.velocity.VelocityContext;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,10 +24,12 @@ import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.ReturnRoom;
+import com.continuum.tenant.repos.entity.StatusConfig;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
+import com.continuum.tenant.repos.repositories.StatusConfigRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ReturnOrderItemDTO;
 
@@ -45,7 +45,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	ReturnRoomRepository returnRoomRepository;
-
+	@Autowired
+	StatusConfigRepository statusConfigRepository;
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
 
@@ -62,7 +63,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	private String mailPassword;
 
 	@Override
-	public String updateReturnOrderItem(Long id, ReturnOrderItemDTO updatedItem) {
+	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
 
 		if (optionalItem.isPresent()) {
@@ -79,47 +80,52 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			// Update only the fields that are not null in updatedItem
 			if (updatedItem.getStatus() != null) {
 				existingItem.setStatus(updatedItem.getStatus());
-				auditLog.setDescription(existingItem.getUser().getFullName() + " has changed status of "
-						+ existingItem.getItemName() + " from " + previousStatus + " to " + updatedItem.getStatus());
+				auditLog.setDescription(updateBy + " has changed status of " + existingItem.getItemName() + " from "
+						+ previousStatus + " to " + updatedItem.getStatus());
 				auditLog.setHighlight("status");
 				auditLog.setStatus("Ordered Items");
+				auditLog.setRmaNo(rmaNo);
 
 			}
 			if (updatedItem.getProblemDesc() != null) {
 				existingItem.setProblemDesc(updatedItem.getProblemDesc());
-				auditLog.setDescription(existingItem.getUser().getFullName()
-						+ " has updated the problem description of " + existingItem.getItemName());
+				auditLog.setDescription(
+						updateBy + " has updated the problem description of " + existingItem.getItemName());
 				auditLog.setHighlight("problem description");
 				auditLog.setStatus("Ordered Items");
+				auditLog.setRmaNo(rmaNo);
 			}
 			if (updatedItem.getReasonCode() != null) {
 				existingItem.setReasonCode(updatedItem.getReasonCode());
-				auditLog.setDescription(existingItem.getUser().getFullName() + " has updated the reason code of "
-						+ existingItem.getItemName());
+				auditLog.setDescription(updateBy + " has updated the reason code of " + existingItem.getItemName());
 				auditLog.setHighlight("reason code");
 				auditLog.setStatus("Ordered Items");
+				auditLog.setRmaNo(rmaNo);
 			}
 
 			if (updatedItem.getTrackingUrl() != null) {
 				existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
-				auditLog.setDescription(existingItem.getUser().getFullName() + " has Updated URL of "
-						+ existingItem.getItemName() + " to " + updatedItem.getTrackingUrl());
+				auditLog.setDescription(updateBy + " has Updated URL of " + existingItem.getItemName() + " to "
+						+ updatedItem.getTrackingUrl());
 				auditLog.setHighlight("URL");
 				auditLog.setStatus("Ordered Items");
+				auditLog.setRmaNo(rmaNo);
 			}
 			if (updatedItem.getTrackingNumber() != null) {
 				existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
-				auditLog.setDescription(existingItem.getUser().getFullName() + " has Updated Tracking Number of "
-						+ existingItem.getItemName() + " to " + updatedItem.getTrackingNumber());
+				auditLog.setDescription(updateBy + " has Updated Tracking Number of " + existingItem.getItemName()
+						+ " to " + updatedItem.getTrackingNumber());
 				auditLog.setHighlight("Tracking Number");
 				auditLog.setStatus("Ordered Items");
+				auditLog.setRmaNo(rmaNo);
 			}
 			if (updatedItem.getCourierName() != null) {
 				existingItem.setCourierName(updatedItem.getCourierName());
-				auditLog.setDescription(existingItem.getUser().getFullName() + " has Updated Courier Name of "
-						+ existingItem.getItemName() + " to " + updatedItem.getCourierName());
+				auditLog.setDescription(updateBy + " has Updated Courier Name of " + existingItem.getItemName() + " to "
+						+ updatedItem.getCourierName());
 				auditLog.setHighlight("URL");
 				auditLog.setStatus("Ordered Items");
+				auditLog.setRmaNo(rmaNo);
 			}
 
 			returnOrderItemRepository.save(existingItem);
@@ -140,10 +146,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String updateNote(Long lineItemId, Long assignToId,String rmaNo, ReturnOrderItemDTO updateNote) {
+	public String updateNote(Long lineItemId, Long assignToId, String rmaNo, String updateBy,
+			ReturnOrderItemDTO updateNote) {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(lineItemId);
-		Optional<User> auditUserDetails = userRepository.findById(optionalItem.get().getUser().getId());
-		User auditUser = auditUserDetails.get();
 		Optional<User> optionalUser = userRepository.findById(assignToId);
 		if (optionalItem.isPresent() && optionalUser.isPresent()) {
 			ReturnOrderItem existingItem = optionalItem.get();
@@ -161,24 +166,24 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnOrderItemRepository.save(existingItem);
 
 			ReturnRoom returnRoom = new ReturnRoom();
-			returnRoom.setName(auditUser.getFirstName() + " " + auditUser.getLastName());
+			returnRoom.setName(updateBy);
 			returnRoom.setMessage(updateNote.getNote());
 			returnRoom.setAssignTo(user);
 			returnRoom.setFollowUpDate(updateNote.getFollowUpDate());
 			returnRoom.setStatus(updateNote.getStatus());
-			returnRoom.setReturnOrderItemId(lineItemId);
+			returnRoom.setReturnOrderItem(existingItem);
 			returnRoomRepository.save(returnRoom);
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Returned Activity");
-			auditLog.setDescription(auditUser.getFirstName() + " " + auditUser.getLastName()
-					+ " as added a new note in the ordered item - " + existingItem.getItemName());
+			auditLog.setDescription(
+					updateBy + " as added a new note in the ordered item - " + existingItem.getItemName());
 			auditLog.setHighlight("note");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLogRepository.save(auditLog);
 			try {
-				sendNoteEmail1(recipient, auditUser.getFirstName() + " " + auditUser.getLastName());
+				sendNoteEmail(recipient, updateBy);
 
 			} catch (MessagingException e) {
 				e.printStackTrace();
@@ -225,7 +230,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	}
 
-	public void sendNoteEmail1(String email, String name) throws MessagingException {
+	public void sendNoteEmail(String email, String name) throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
 
 		Properties props = new Properties();
@@ -258,7 +263,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String updateShipTo(Long rtnOrdId, OrderAddress orderAddress) {
+	public String updateShipTo(Long rtnOrdId, String rmaNo, String updateBy, OrderAddress orderAddress) {
 
 		Optional<ReturnOrderItem> ro = returnOrderItemRepository.findById(rtnOrdId);
 
@@ -274,15 +279,19 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnOrderItem.getShipTo().setCountry(orderAddress.getCountry());
 			returnOrderItem.getShipTo().setProvince(orderAddress.getProvince());
 			returnOrderItem.getShipTo().setPhoneNumber(orderAddress.getPhoneNumber());
+			returnOrderItem.getShipTo().setFirstName(orderAddress.getFirstName());
+			returnOrderItem.getShipTo().setLastName(orderAddress.getLastName());
+			returnOrderItem.getShipTo().setEmailAddress(orderAddress.getEmailAddress());
 
 			returnOrderItemRepository.save(returnOrderItem);
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
-			auditLog.setDescription(returnOrderItem.getUser().getFullName() + "has updated shipping info for id: "
-					+ returnOrderItem.getShipTo().getId());
+			auditLog.setDescription(
+					updateBy + "has updated shipping info for id: " + returnOrderItem.getShipTo().getId());
 			auditLog.setHighlight("shipping info");
 			auditLog.setStatus("Ordered Items");
+			auditLog.setRmaNo(rmaNo);
 			auditLogRepository.save(auditLog);
 
 			return "Shipping info update";
@@ -292,7 +301,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String updateRestockingFee(Long id, BigDecimal reStockingAmount,ReturnOrderItemDTO returnOrderItemDTO) {
+	public String updateRestockingFee(Long id, String rmaNo, String updateBy, BigDecimal reStockingAmount,
+			ReturnOrderItemDTO returnOrderItemDTO) {
 		Optional<ReturnOrderItem> returnorderitem = returnOrderItemRepository.findById(id);
 		if (returnorderitem.isPresent()) {
 			ReturnOrderItem roi = returnorderitem.get();
@@ -301,22 +311,30 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			roi.setReStockingAmount(reStockingAmount);
 			roi.setReturnAmount(newReturnAmoun);
-			
+
 			if (returnOrderItemDTO.getNotes() != null) {
 				roi.setNotes(returnOrderItemDTO.getNotes());
 			}
-			
-			//roi.setNotes(returnOrderItemDTO.getNotes());
+
+			// roi.setNotes(returnOrderItemDTO.getNotes());
 
 			returnOrderItemRepository.save(roi);
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
-			auditLog.setDescription(roi.getUser().getFullName() + "has updated restocking fee for item: "
-					+ roi.getItemName() + " with id :" + roi.getShipTo().getId());
+			auditLog.setDescription(updateBy + " has updated restocking fee for item: " + roi.getItemName()
+					+ " with id :" + roi.getShipTo().getId());
 			auditLog.setHighlight("restocking fee");
 			auditLog.setStatus("Ordered Items");
+			auditLog.setRmaNo(rmaNo);
 			auditLogRepository.save(auditLog);
 		}
 		return "Restocking fee and return amount updated successfully";
 	}
+
+	@Override
+	public List<StatusConfig> getAllStatus() {
+		return statusConfigRepository.findAll();
+
+	}
+
 }

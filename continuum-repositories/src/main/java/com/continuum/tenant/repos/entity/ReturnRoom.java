@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -45,6 +46,7 @@ public class ReturnRoom extends BaseEntity{
 	private User assignTo;
 	
 	
-	private Long returnOrderItemId;
-
+	@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "return_order_item_id")
+    private ReturnOrderItem returnOrderItem;
 }
