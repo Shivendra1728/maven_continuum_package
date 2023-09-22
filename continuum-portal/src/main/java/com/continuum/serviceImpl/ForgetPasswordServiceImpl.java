@@ -1,5 +1,6 @@
 package com.continuum.serviceImpl;
 
+import java.net.URL;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -9,6 +10,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.velocity.VelocityContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +44,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 	private String recipient;
 
 	@Override
-	public String forgetPassword(String email) {
+	public String forgetPassword(String email, HttpServletRequest request) {
 		String uuid = UUID.randomUUID().toString();
 
 		User existingUser = userRepository.findByEmail(email);
@@ -51,7 +53,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 			userRepository.save(existingUser);
 		}
 		try {
-			this.sendEmail(email, uuid);
+			this.sendEmail(email, uuid, request);
 
 		} catch (MessagingException me) {
 			me.printStackTrace();
@@ -60,7 +62,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 		return uuid;
 	}
 
-	public void sendEmail(String email, String uuid) throws MessagingException {
+	public void sendEmail(String email, String uuid, HttpServletRequest request) throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
 
 		Properties props = new Properties();
@@ -75,21 +77,36 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
 			}
 		});
-		String resetUrl = "http://localhost:8080/continuum/update/passwords?token=" + uuid;
-		String templateFilePath = PortalConstants.FPasswordLink;
-		VelocityContext context = new VelocityContext();
-		context.put("user_name", existingUser.getFirstName().toUpperCase());
-		context.put("uuid", uuid);
-		context.put("resetUrl", resetUrl);
+		String fullUrl = request.getRequestURL().toString();
 
-		String renderedBody = EmailTemplateRenderer.renderFPasswordTemplate(context);
+		System.err.println(fullUrl);
+		try {
+			URL url = new URL(fullUrl);
+			String host = url.getHost();
+			String scheme = request.getScheme();
+			String link = scheme + "://" + host + "/updatepassword";
 
-		Message message = new MimeMessage(session);
-		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
-		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-		message.setSubject(templateFilePath);
-		message.setContent(renderedBody, "text/html");
-		Transport.send(message);
+			System.out.println("Host: " + host);
+			System.out.println("Link: " + link);
+			System.out.println("scheme: " + scheme);
+
+			String templateFilePath = PortalConstants.FPasswordLink;
+			VelocityContext context = new VelocityContext();
+			context.put("user_name", existingUser.getFirstName().toUpperCase());
+			context.put("uuid", uuid);
+			context.put("resetUrl", link);
+
+			String renderedBody = EmailTemplateRenderer.renderFPasswordTemplate(context);
+
+			Message message = new MimeMessage(session);
+			message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
+			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+			message.setSubject(templateFilePath);
+			message.setContent(renderedBody, "text/html");
+			Transport.send(message);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
