@@ -46,8 +46,8 @@ public class ReturnOrderController {
 	}
 
 	@GetMapping("/getReturnOrder")
-	public List<ReturnOrderDTO> getAllReturnOrder() {
-		return returnOrderService.getAllReturnOrder();
+	public List<ReturnOrderDTO> getAllReturnOrder(@RequestParam Long userId) {
+		return returnOrderService.getAllReturnOrder(userId);
 	}
 
 	@GetMapping("/getByrmaorderNo")
