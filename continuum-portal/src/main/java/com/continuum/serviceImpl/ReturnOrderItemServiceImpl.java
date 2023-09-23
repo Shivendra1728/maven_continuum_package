@@ -47,11 +47,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	ReturnRoomRepository returnRoomRepository;
+
 	@Autowired
 	StatusConfigRepository statusConfigRepository;
 
 	@Autowired
 	ReturnOrderRepository returnOrderRepository;
+
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
 
@@ -135,15 +137,18 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnOrderItemRepository.save(existingItem);
 			auditLogRepository.save(auditLog);
 
+
 			// Handle Status Configurations
 			boolean hasUnderReview = false;
 			boolean hasRequiresMoreCustomerInfo = false;
 			boolean allDenied = true;
 			boolean allAuthorized = true;
 
+
 			Optional<ReturnOrder> returnOrderOptional = returnOrderRepository.findByRmaOrderNo(rmaNo);
 
 			if (returnOrderOptional.isPresent()) {
+
 				ReturnOrder returnOrderEntity = returnOrderOptional.get();
 				Long returnOrderId = returnOrderEntity.getId();
 				List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository.findByReturnOrderId(returnOrderId);
@@ -181,6 +186,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			}
 			// update customer to put tracking code.
+
 			if ("Approved_Awaiting_Transit".equals(updatedItem.getStatus())) {
 				try {
 					sendEmail1(recipient, updatedItem.getStatus());

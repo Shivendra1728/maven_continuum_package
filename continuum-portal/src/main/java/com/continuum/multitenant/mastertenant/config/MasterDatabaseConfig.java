@@ -103,7 +103,7 @@ public class MasterDatabaseConfig {
         properties.put(org.hibernate.cfg.Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
         properties.put(org.hibernate.cfg.Environment.SHOW_SQL, true);
         properties.put(org.hibernate.cfg.Environment.FORMAT_SQL, true);
-        properties.put(org.hibernate.cfg.Environment.HBM2DDL_AUTO, "update");
+        properties.put(org.hibernate.cfg.Environment.HBM2DDL_AUTO, "none");
        // properties.put(Environment.IMPLICIT_NAMING_STRATEGY, SpringImplicitNamingStrategy.class.getName());
         properties.put(Environment.PHYSICAL_NAMING_STRATEGY, PhysicalNamingStrategyImpl.class.getName());
         return properties;

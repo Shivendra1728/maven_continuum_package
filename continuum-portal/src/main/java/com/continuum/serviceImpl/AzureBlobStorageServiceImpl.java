@@ -7,12 +7,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
@@ -20,7 +18,6 @@ import com.continuum.service.AzureBlobService;
 import com.continuum.tenant.repos.repositories.OrderItemDocumentRepository;
 
 @Component
-
 public class AzureBlobStorageServiceImpl implements AzureBlobService {
 
 	@Value("${azure.storage.connection-string-value}")
@@ -32,27 +29,15 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 
 	public List<Map<String, String>> uploadFiles(MultipartFile[] data, String customerId) throws Exception {
 
-		 
-
 		BlobContainerClient containerClient = new BlobServiceClientBuilder().connectionString(connectionString)
-
-											 .buildClient().getBlobContainerClient(containerName);
-
-		
+				.buildClient().getBlobContainerClient(containerName);
 
 		OffsetDateTime now = OffsetDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
-	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-
-	    
-
-	    List<Map<String, String>> list = new ArrayList<>();
-
-	   
+		List<Map<String, String>> list = new ArrayList<>();
 
 		for (MultipartFile file : data) {
-
-			
 
 			Map<String, String> fileUrl = new HashMap<String, String>();
 
@@ -60,27 +45,19 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 
 			String fileExtension = getFileExtension(fileName);
 
- 
-
 			if (isValidFileType(fileExtension)) {
 
- 
-
-				BlobClient blobClient = containerClient.getBlobClient(customerId +formatter.format(now)+ "/" + fileName);
+				BlobClient blobClient = containerClient
+						.getBlobClient(customerId + formatter.format(now) + "/" + fileName);
 
 				InputStream inputStream = file.getInputStream();
 
 				blobClient.upload(inputStream, file.getSize());
 
-				fileUrl.put("image",fileName);
-
-				fileUrl.put("url",blobClient.getBlobUrl());
-
-				
+				fileUrl.put("image", fileName);
+				fileUrl.put("url", blobClient.getBlobUrl());
 
 				list.add(fileUrl);
-
- 
 
 			} else {
 
@@ -92,9 +69,8 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 
 		return list;
 
- 
-
 	}
+
 	private boolean isValidFileType(String fileExtension) {
 		return fileExtension.equals("pdf") || fileExtension.equals("doc") || fileExtension.equals("jpg")
 				|| fileExtension.equals("jpeg") || fileExtension.equals("png");
