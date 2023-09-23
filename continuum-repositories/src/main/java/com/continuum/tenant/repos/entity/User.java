@@ -108,9 +108,20 @@ public class User extends BaseEntity implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "role_id") // Adjust the column name accordingly
 	private Role roles;
-	
+
 	@OneToOne
-	@JoinColumn(name="customerId")
+	@JoinColumn(name = "customerId")
 	private Customer customer;
+
+	public boolean getStatus() {
+
+		return status;
+	}
+
+	public void setStatus(boolean status) {
+
+		this.status = status;
+
+	}
 
 }
