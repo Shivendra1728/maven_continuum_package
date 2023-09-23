@@ -88,17 +88,22 @@ public class AuthenticationController implements Serializable {
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 		final String token = jwtTokenUtil.generateToken(userDetails.getUsername(), tenentId);
-		User u = userRepository.findByUserName(userDetails.getUsername());
-		String name = u.getFirstName() + " " + u.getLastName();
-		long userId = u.getId();
+		User user = userRepository.findByUserName(userDetails.getUsername());
+		
+		if (!user.getStatus()) {
+			throw new RuntimeException("User account is inactive.");
+		}
+		
+		String name = user.getFirstName() + " " + user.getLastName();
+		long userId = user.getId();
 
-		if (u.getCustomer() == null) {
+		if (user.getCustomer() == null) {
 
 			Customer existingCustomer = customerRepository.findByCustomerId("");
 
 			if (existingCustomer != null) {
 
-				u.setCustomer(existingCustomer);
+				user.setCustomer(existingCustomer);
 
 			} else {
 				Customer newCustomer = new Customer();
@@ -107,20 +112,20 @@ public class AuthenticationController implements Serializable {
 
 				customerRepository.save(newCustomer);
 
-				u.setCustomer(newCustomer);
+				user.setCustomer(newCustomer);
 
 			}
-			userRepository.save(u);
+			userRepository.save(user);
 		}
-		if (u.getCustomer() != null && !(u.getCustomer().getCustomerId().isEmpty())) {
+		if (user.getCustomer() != null && !(user.getCustomer().getCustomerId().isEmpty())) {
 
 			Role role = rolesRepository.findById(4L).orElse(null);
 
 			if (role != null) {
 
-				u.setRoles(role);
+				user.setRoles(role);
 
-				userRepository.save(u);
+				userRepository.save(user);
 
 			}
 
@@ -130,8 +135,8 @@ public class AuthenticationController implements Serializable {
 		// jwtTokenUtil.generateToken(userDetails.getUsername(),String.valueOf(userLoginDTO.getTenantOrClientId()));
 		// Map the value into applicationScope bean
 		setMetaDataAfterLogin();
-		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), name, token, u.getRoles(), userId,
-				u.getCustomer().getCustomerId()));
+		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), name, token, user.getRoles(), userId,
+				user.getCustomer().getCustomerId()));
 	}
 
 	private void loadCurrentDatabaseInstance(String databaseName, String userName) {

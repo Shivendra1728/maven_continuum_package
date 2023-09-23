@@ -23,9 +23,11 @@ import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
+import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.RmaInvoiceInfoRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
@@ -47,6 +49,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	ReturnOrderRepository repository;
+	
+	@Autowired
+	ReturnOrderItemRepository returnOrderItemRepository;
 
 	@Autowired
 	AuditLogRepository audrepo;
@@ -381,6 +386,13 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		if(optionalReturnOrder.isPresent()&& optionalUser.isPresent()) {
 			ReturnOrder returnOrder=optionalReturnOrder.get();
 			User user=optionalUser.get();
+			List<ReturnOrderItem> returnOrderItemList = returnOrder.getReturnOrderItem();
+			for(ReturnOrderItem returnOrderItem : returnOrderItemList) {
+				if(returnOrderItem.getUser() == null) {
+					returnOrderItem.setUser(user);
+					returnOrderItemRepository.save(returnOrderItem);
+				}
+			}
 			returnOrder.setUser(user);
 			returnOrder.setNote(note.getNote());
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
