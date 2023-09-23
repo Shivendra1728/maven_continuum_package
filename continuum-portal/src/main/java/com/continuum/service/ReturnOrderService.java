@@ -15,7 +15,7 @@ public interface ReturnOrderService {
 	public List<ReturnOrderDTO> getReturnOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters);
 	//@Async
 	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO,P21RMAResponse p21RMARespo) throws MessagingException ;
-	public List<ReturnOrderDTO> getAllReturnOrder();
+	public List<ReturnOrderDTO> getAllReturnOrder(Long userId);
 
 	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(String rmaOrderNo);
 	
