@@ -8,8 +8,9 @@ import com.continuum.tenant.repos.entity.ReturnOrderItem;
 
 public interface ReturnOrderItemRepository extends JpaRepository<ReturnOrderItem, Long> {
 
-	List<ReturnOrderItem> findAllById(Long id);
+	List<ReturnOrderItem> findByReturnOrderId(Object returnOrder);
+	 List<ReturnOrderItem> findAllById(Long id);
+	 List<ReturnOrderItem> findByIdIn(List<Long> ids);
 
-	List<ReturnOrderItem> findByReturnOrderId(Long returnOrderId);
 
 }

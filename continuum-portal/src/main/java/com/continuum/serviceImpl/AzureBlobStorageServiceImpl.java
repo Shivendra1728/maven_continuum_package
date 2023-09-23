@@ -18,7 +18,6 @@ import com.continuum.service.AzureBlobService;
 import com.continuum.tenant.repos.repositories.OrderItemDocumentRepository;
 
 @Component
-
 public class AzureBlobStorageServiceImpl implements AzureBlobService {
 
 	@Value("${azure.storage.connection-string-value}")
@@ -41,24 +40,33 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 		for (MultipartFile file : data) {
 
 			Map<String, String> fileUrl = new HashMap<String, String>();
+
 			String fileName = file.getOriginalFilename();
+
 			String fileExtension = getFileExtension(fileName);
 
 			if (isValidFileType(fileExtension)) {
 
 				BlobClient blobClient = containerClient
 						.getBlobClient(customerId + formatter.format(now) + "/" + fileName);
+
 				InputStream inputStream = file.getInputStream();
+
 				blobClient.upload(inputStream, file.getSize());
+
 				fileUrl.put("image", fileName);
 				fileUrl.put("url", blobClient.getBlobUrl());
 
 				list.add(fileUrl);
 
 			} else {
+
 				throw new Exception("Invalid file type!");
+
 			}
+
 		}
+
 		return list;
 
 	}
