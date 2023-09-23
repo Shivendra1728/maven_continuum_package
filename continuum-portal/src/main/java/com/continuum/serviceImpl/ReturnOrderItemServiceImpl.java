@@ -22,12 +22,14 @@ import com.continuum.constants.PortalConstants;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
+import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.ReturnRoom;
 import com.continuum.tenant.repos.entity.StatusConfig;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
+import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
 import com.continuum.tenant.repos.repositories.StatusConfigRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
@@ -47,6 +49,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	ReturnRoomRepository returnRoomRepository;
 	@Autowired
 	StatusConfigRepository statusConfigRepository;
+
+	@Autowired
+	ReturnOrderRepository returnOrderRepository;
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
 
@@ -85,7 +90,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setHighlight("status");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
-
 			}
 			if (updatedItem.getProblemDesc() != null) {
 				existingItem.setProblemDesc(updatedItem.getProblemDesc());
@@ -129,9 +133,54 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 
 			returnOrderItemRepository.save(existingItem);
-
 			auditLogRepository.save(auditLog);
 
+			// Handle Status Configurations
+			boolean hasUnderReview = false;
+			boolean hasRequiresMoreCustomerInfo = false;
+			boolean allDenied = true;
+			boolean allAuthorized = true;
+
+			Optional<ReturnOrder> returnOrderOptional = returnOrderRepository.findByRmaOrderNo(rmaNo);
+
+			if (returnOrderOptional.isPresent()) {
+				ReturnOrder returnOrderEntity = returnOrderOptional.get();
+				Long returnOrderId = returnOrderEntity.getId();
+				List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository.findByReturnOrderId(returnOrderId);
+
+				for (ReturnOrderItem returnOrderItem : returnOrderItems) {
+					if ("Requires More Customer Information".equalsIgnoreCase(returnOrderItem.getStatus())) {
+						hasRequiresMoreCustomerInfo = true;
+						// If any item requires more customer information, break the loop
+						break;
+					} else if ("Under Review".equalsIgnoreCase(returnOrderItem.getStatus())) {
+						hasUnderReview = true;
+					} else if (!"RMA Denied".equalsIgnoreCase(returnOrderItem.getStatus())) {
+						// If any item is not Denied, set allDenied to false
+						allDenied = false;
+					}
+
+					if (!("Authorized in Transit".equalsIgnoreCase(returnOrderItem.getStatus())
+							|| "Authorized Awaiting Transit".equalsIgnoreCase(returnOrderItem.getStatus()))) {
+						// If any item is not Authorized, set allAuthorized to false
+						allAuthorized = false;
+					}
+				}
+
+				if (hasRequiresMoreCustomerInfo) {
+			        returnOrderEntity.setStatus("Requires More Customer Information");
+			    } else if (allDenied) {
+			        returnOrderEntity.setStatus("Denied");
+			    } else if (allAuthorized) {
+			        returnOrderEntity.setStatus("Authorized");
+			    } else if (hasUnderReview) {
+			        returnOrderEntity.setStatus("Under Review");
+			    }
+
+			    returnOrderRepository.save(returnOrderEntity);
+
+			}
+			// update customer to put tracking code.
 			if ("Approved_Awaiting_Transit".equals(updatedItem.getStatus())) {
 				try {
 					sendEmail1(recipient, updatedItem.getStatus());
@@ -139,10 +188,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					e.printStackTrace();
 				}
 			}
+
 			return "List Item Details Updated Successfully.";
 		} else {
 			throw new EntityNotFoundException("ReturnOrderItem with ID " + id + " not found");
 		}
+
 	}
 
 	@Override
