@@ -30,8 +30,8 @@ VALUES ('Item Damaged In Transit', 'RMA - DAMAGED IN TRANSIT', 1, 0),
 INSERT INTO roles
         (role, created_date, updated_date)
 		VALUES
-            ('Admin', NOW(), NOW()),
-            ('Super_admin', NOW(), NOW()),
+            ('ADMIN', NOW(), NOW()),
+            ('ADMIN', NOW(), NOW()),
             ('Return_Processor', NOW(), NOW()),
             ('End_User', NOW(), NOW());
 
