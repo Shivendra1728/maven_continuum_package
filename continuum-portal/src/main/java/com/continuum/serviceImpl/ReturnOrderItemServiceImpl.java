@@ -22,12 +22,14 @@ import com.continuum.constants.PortalConstants;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
+import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.ReturnRoom;
 import com.continuum.tenant.repos.entity.StatusConfig;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
+import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
 import com.continuum.tenant.repos.repositories.StatusConfigRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
@@ -45,8 +47,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	ReturnRoomRepository returnRoomRepository;
+
 	@Autowired
 	StatusConfigRepository statusConfigRepository;
+
+	@Autowired
+	ReturnOrderRepository returnOrderRepository;
+
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
 
@@ -132,6 +139,54 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			auditLogRepository.save(auditLog);
 
+			boolean hasUnderReview = false;
+
+			boolean hasRequiresMoreCustomerInfo = false;
+			
+			boolean hasAuthorize = false;
+			
+			boolean hasDenied = false;
+			
+
+			Optional<ReturnOrder> returnOrderOptional = returnOrderRepository.findByRmaOrderNo(rmaNo);
+
+			if (returnOrderOptional.isPresent()) {
+
+				ReturnOrder returnOrderEntity = returnOrderOptional.get();
+
+				Long returnOrderId = returnOrderEntity.getId();
+
+				List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository.findByReturnOrderId(returnOrderId);
+
+				for (ReturnOrderItem returnOrderItem : returnOrderItems) {
+
+					if ("Requires More Customer Information".equalsIgnoreCase(returnOrderItem.getStatus())) {
+
+						hasRequiresMoreCustomerInfo = true;
+
+						// break the loop here
+
+					} else if ("Under Review".equalsIgnoreCase(returnOrderItem.getStatus())) {
+
+						hasUnderReview = true;
+
+					}
+
+				}
+
+				if (hasRequiresMoreCustomerInfo) {
+
+					returnOrderEntity.setStatus("Requires More Customer Information");
+
+				} else if (hasUnderReview) {
+
+					returnOrderEntity.setStatus("Under Review");
+
+				}
+
+				returnOrderRepository.save(returnOrderEntity);
+
+			}
 			if ("Approved_Awaiting_Transit".equals(updatedItem.getStatus())) {
 				try {
 					sendEmail1(recipient, updatedItem.getStatus());
