@@ -109,27 +109,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setRmaNo(rmaNo);
 			}
 
-			if (updatedItem.getTrackingUrl() != null) {
+			if (updatedItem.getTrackingUrl() != null || updatedItem.getTrackingNumber() != null
+					|| updatedItem.getCourierName() != null) {
 				existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
-				auditLog.setDescription(updateBy + " has Updated URL of " + existingItem.getItemName() + " to "
-						+ updatedItem.getTrackingUrl());
-				auditLog.setHighlight("URL");
-				auditLog.setStatus("Ordered Items");
-				auditLog.setRmaNo(rmaNo);
-			}
-			if (updatedItem.getTrackingNumber() != null) {
 				existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
-				auditLog.setDescription(updateBy + " has Updated Tracking Number of " + existingItem.getItemName()
-						+ " to " + updatedItem.getTrackingNumber());
-				auditLog.setHighlight("Tracking Number");
-				auditLog.setStatus("Ordered Items");
-				auditLog.setRmaNo(rmaNo);
-			}
-			if (updatedItem.getCourierName() != null) {
 				existingItem.setCourierName(updatedItem.getCourierName());
-				auditLog.setDescription(updateBy + " has Updated Courier Name of " + existingItem.getItemName() + " to "
-						+ updatedItem.getCourierName());
-				auditLog.setHighlight("URL");
+				auditLog.setDescription(updateBy + " has Updated Tracking Code of " + existingItem.getItemName());
+				auditLog.setHighlight("Tracking Code");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
 			}
@@ -137,13 +123,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnOrderItemRepository.save(existingItem);
 			auditLogRepository.save(auditLog);
 
-
 			// Handle Status Configurations
 			boolean hasUnderReview = false;
 			boolean hasRequiresMoreCustomerInfo = false;
 			boolean allDenied = true;
 			boolean allAuthorized = true;
-
 
 			Optional<ReturnOrder> returnOrderOptional = returnOrderRepository.findByRmaOrderNo(rmaNo);
 
@@ -173,16 +157,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				}
 
 				if (hasRequiresMoreCustomerInfo) {
-			        returnOrderEntity.setStatus("Requires More Customer Information");
-			    } else if (allDenied) {
-			        returnOrderEntity.setStatus("Denied");
-			    } else if (allAuthorized) {
-			        returnOrderEntity.setStatus("Authorized");
-			    } else if (hasUnderReview) {
-			        returnOrderEntity.setStatus("Under Review");
-			    }
+					returnOrderEntity.setStatus("Requires More Customer Information");
+				} else if (allDenied) {
+					returnOrderEntity.setStatus("Denied");
+				} else if (allAuthorized) {
+					returnOrderEntity.setStatus("Authorized");
+				} else if (hasUnderReview) {
+					returnOrderEntity.setStatus("Under Review");
+				}
 
-			    returnOrderRepository.save(returnOrderEntity);
+				returnOrderRepository.save(returnOrderEntity);
 
 			}
 			// update customer to put tracking code.
