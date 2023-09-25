@@ -62,4 +62,6 @@ public class ReasonCode extends BaseEntity {
 	 * @JoinColumn(name = "customer") //@JsonIgnore private Customer customer;
 	 */
 
+	private boolean isPopUp;
+	private String popUpDetails;
 }
