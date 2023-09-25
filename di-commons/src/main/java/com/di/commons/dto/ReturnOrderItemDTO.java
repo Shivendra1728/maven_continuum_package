@@ -59,4 +59,12 @@ public class ReturnOrderItemDTO extends BaseEntity{
 
 	private Date followUpDate;
 	private String itemDesc;
+	
+	private boolean ProductSterile;
+	private boolean InteriorPackagingIntact;
+	private boolean hasAccessories;
+	private boolean Resalable;
+	private boolean hasOriginalPackaging;
+	private boolean withinReturnGuideline;
+	private boolean Chemical;
 }

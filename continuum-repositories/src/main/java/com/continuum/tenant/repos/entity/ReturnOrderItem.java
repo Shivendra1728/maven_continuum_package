@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -43,9 +44,9 @@ public class ReturnOrderItem extends BaseEntity {
 	@OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
 	@JoinColumn(name = "returnOrderItemId")
 	private List<OrderItemDocuments> orderItemDocuments;
-	
-	@OneToMany(mappedBy = "returnOrderItem",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ReturnRoom> returnRooms = new HashSet<ReturnRoom>();
+
+	@OneToMany(mappedBy = "returnOrderItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ReturnRoom> returnRooms = new HashSet<ReturnRoom>();
 
 	/*
 	 * @OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL}) private
@@ -76,12 +77,33 @@ public class ReturnOrderItem extends BaseEntity {
 	private String courierName;
 	private String note;
 	private String Notes;
-    private BigDecimal Amount;
+	private BigDecimal Amount;
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
 	private User user;
 	private String itemDesc;
 
 	private Date followUpDate;
+
+	@Column(name = "isProductSterile", columnDefinition = "BIT")
+	private boolean ProductSterile;
+
+	@Column(name = "isInteriorPackagingIntact", columnDefinition = "BIT")
+	private boolean InteriorPackagingIntact;
+
+	@Column(name = "hasAccessories", columnDefinition = "BIT")
+	private boolean hasAccessories;
+
+	@Column(name = "isResalable", columnDefinition = "BIT")
+	private boolean Resalable;
+
+	@Column(name = "hasOriginalPackaging", columnDefinition = "BIT")
+	private boolean hasOriginalPackaging;
+
+	@Column(name = "withinReturnGuideline", columnDefinition = "BIT")
+	private boolean withinReturnGuideline;
+
+	@Column(name = "isChemical", columnDefinition = "BIT")
+	private boolean Chemical;
 
 }
