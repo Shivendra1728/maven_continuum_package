@@ -35,10 +35,10 @@ public class AuditLog extends BaseEntity {
 	private String description;
 
 	private String highlight;
-	
+
 	private String status;
 	private String rmaNo;
-
+	private String userName;
 	@ManyToOne
 	@JoinColumn(name = "user")
 	private User userProfile;

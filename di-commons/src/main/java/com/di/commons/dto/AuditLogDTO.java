@@ -18,10 +18,10 @@ public class AuditLogDTO {
 	private String description;
 
 	private String highlight;
-	
+
 	private String status;
 	private String rmaNo;
 
 	private User userProfile;
-
+	private String userName;
 }

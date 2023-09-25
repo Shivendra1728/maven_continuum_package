@@ -102,6 +102,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String Status = p21RMARespo.getStatus();
 		if (Status.equals(PortalConstants.SUCCESS)) {
 			returnOrderDTO.setStatus(PortalConstants.RETURN_REQUESTED);
+
 			logger.info("Setting status to:: '{}'", PortalConstants.RETURN_REQUESTED);
 
 		} else {
@@ -124,6 +125,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		repository.save(returnOrder);
 
+		
+		
 		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
 
 		rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
@@ -145,6 +148,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		auditlog.setStatus("Inbox");
 		auditlog.setTitle("Return Order");
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
+		auditlog.setUserName(customerDTO.getDisplayName());
 		audrepo.save(auditlog);
 
 		String recipient = PortalConstants.EMAIL_RECIPIENT;
@@ -215,7 +219,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 //	}
 
 	@Override
-
 	public List<ReturnOrderDTO> getAllReturnOrder(Long userId) {
 
 		Optional<User> optionalUser = userRepository.findById(userId);
@@ -225,7 +228,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			if (user.getRoles().getId() == 1 || user.getRoles().getId() == 2) {
 				List<ReturnOrder> returnOrderEntities = repository.findAll();
 
-				 returnOrderDTOs = returnOrderEntities.stream()
+				returnOrderDTOs = returnOrderEntities.stream()
 
 						.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
 
@@ -243,9 +246,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 						Date currentDate = new Date(); // Current date
 
-						// Extract follow-up dates from ReturnOrderItems and filter those after the
-						// current date
-
 						List<Date> upcomingDates = returnOrderItems.stream()
 
 								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
@@ -255,12 +255,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 								.collect(Collectors.toList());
 
-						// Sort the upcoming dates in ascending order
-
-						upcomingDates.sort(Date::compareTo);
-
-						// Set the first upcoming date (if it exists) as the nextActivityDate in the
-						// ReturnOrderDTO
+						upcomingDates.sort(Date::compareTo);						
 
 						if (!upcomingDates.isEmpty()) {
 
@@ -271,9 +266,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 					}
 
 				}
-			}else {
-				List<ReturnOrder> returnOrder=repository.findByUserId(userId);
-				 returnOrderDTOs = returnOrder.stream()
+			} else {
+				List<ReturnOrder> returnOrder = repository.findByUserId(userId);
+				returnOrderDTOs = returnOrder.stream()
 
 						.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
 
@@ -294,12 +289,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 								.collect(Collectors.toList());
 
-						// Sort the upcoming dates in ascending order
-
 						upcomingDates.sort(Date::compareTo);
 
-						// Set the first upcoming date (if it exists) as the nextActivityDate in the
-						// ReturnOrderDTO
 
 						if (!upcomingDates.isEmpty()) {
 
@@ -310,9 +301,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 					}
 
 				}
-					
+
 			}
-			
+
 		}
 		return returnOrderDTOs;
 
@@ -349,6 +340,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditlog.setStatus("RMA");
 			auditlog.setTitle("Return Order");
 			auditlog.setRmaNo(returnOrder.getRmaOrderNo());
+			auditlog.setUserName(updateBy);
 			audrepo.save(auditlog);
 
 			// send email to customer-RMA processor
@@ -439,6 +431,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditLog.setHighlight("assign");
 			auditLog.setStatus("RMA");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
+			auditLog.setUserName(updateBy);
 			audrepo.save(auditLog);
 
 			return "Assiged RMA to User";
