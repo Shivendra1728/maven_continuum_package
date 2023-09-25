@@ -92,6 +92,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setHighlight("status");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
+				auditLog.setUserName(updateBy);
 			}
 			if (updatedItem.getProblemDesc() != null) {
 				existingItem.setProblemDesc(updatedItem.getProblemDesc());
@@ -100,6 +101,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setHighlight("problem description");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
+				auditLog.setUserName(updateBy);
 			}
 			if (updatedItem.getReasonCode() != null) {
 				existingItem.setReasonCode(updatedItem.getReasonCode());
@@ -107,6 +109,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setHighlight("reason code");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
+				auditLog.setUserName(updateBy);
 			}
 
 			if (updatedItem.getTrackingUrl() != null || updatedItem.getTrackingNumber() != null
@@ -118,6 +121,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setHighlight("Tracking Code");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
+				auditLog.setUserName(updateBy);
 			}
 
 			returnOrderItemRepository.save(existingItem);
@@ -159,7 +163,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				if (hasRequiresMoreCustomerInfo) {
 					returnOrderEntity.setStatus("Requires More Customer Information");
 				} else if (allDenied) {
-					returnOrderEntity.setStatus("Denied");
+					returnOrderEntity.setStatus("RMA Denied");
 				} else if (allAuthorized) {
 					returnOrderEntity.setStatus("Authorized");
 				} else if (hasUnderReview) {
@@ -222,6 +226,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setHighlight("note");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
+			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
 			try {
 				sendNoteEmail(recipient, updateBy);
@@ -333,6 +338,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setHighlight("shipping info");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
+			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
 
 			return "Shipping info update";
@@ -367,6 +373,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setHighlight("restocking fee");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
+			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
 		}
 		return "Restocking fee and return amount updated successfully";

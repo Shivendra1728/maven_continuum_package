@@ -39,6 +39,10 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 
 		for (MultipartFile file : data) {
 
+			if (file == null || file.isEmpty()) {
+				continue; // Skip this file and continue with the next one
+			}
+
 			Map<String, String> fileUrl = new HashMap<String, String>();
 
 			String fileName = file.getOriginalFilename();
