@@ -90,6 +90,7 @@ public class CustomerServiceImpl implements CustomerService {
 			user.setPassword(hashedPassword);
 			user.setUserName(custDTO.getEmail());
 			user.setEmail(custDTO.getEmail());
+			user.setStatus(true);
 			user.setCustomer(customer);
 			user.setFullName("None");
 			userRepository.save(user);
