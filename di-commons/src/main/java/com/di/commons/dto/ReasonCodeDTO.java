@@ -29,5 +29,8 @@ public class ReasonCodeDTO {
 	private String description;
 	private StoreDTO store;
 	private boolean img_mandatory;
+	private boolean isPopUp;
+	private String popUpDetails;
+	
 	//private String status;
 }
