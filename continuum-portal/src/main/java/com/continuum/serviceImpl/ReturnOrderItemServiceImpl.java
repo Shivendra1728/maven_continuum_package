@@ -146,9 +146,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						hasRequiresMoreCustomerInfo = true;
 						// If any item requires more customer information, break the loop
 						break;
-					} else if ("Under Review".equalsIgnoreCase(returnOrderItem.getStatus())) {
+					}  if ("Under Review".equalsIgnoreCase(returnOrderItem.getStatus())) {
 						hasUnderReview = true;
-					} else if (!"RMA Denied".equalsIgnoreCase(returnOrderItem.getStatus())) {
+					}  if (!"RMA Denied".equalsIgnoreCase(returnOrderItem.getStatus())) {
 						// If any item is not Denied, set allDenied to false
 						allDenied = false;
 					}
