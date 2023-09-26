@@ -22,4 +22,5 @@ public class StatusConfig extends BaseEntity {
 	private String backgroundColor;
 	private boolean isTrackingAvl;
 	private boolean isEmailsend;
+	private boolean isInitial;
 }
