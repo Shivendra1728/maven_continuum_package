@@ -334,7 +334,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(
-					updateBy + "has updated shipping info for id: " + returnOrderItem.getShipTo().getId());
+					updateBy + "has updated shipping info for ordered item "+returnOrderItem.getItemName());
 			auditLog.setHighlight("shipping info");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
@@ -364,12 +364,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 
 			// roi.setNotes(returnOrderItemDTO.getNotes());
-
+ 
 			returnOrderItemRepository.save(roi);
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
-			auditLog.setDescription(updateBy + " has updated restocking fee for item: " + roi.getItemName()
-					+ " with id :" + roi.getShipTo().getId());
+			auditLog.setDescription(updateBy + " has updated restocking fee for ordered item: " + roi.getItemName());
 			auditLog.setHighlight("restocking fee");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);

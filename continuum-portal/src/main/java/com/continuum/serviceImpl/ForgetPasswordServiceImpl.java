@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.velocity.VelocityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import com.continuum.constants.PortalConstants;
@@ -84,14 +85,11 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 			URL url = new URL(fullUrl);
 			String host = url.getHost();
 			String scheme = request.getScheme();
-			String link = scheme + "://" + host + "/updatepassword";
-
-			System.out.println("Host: " + host);
-			System.out.println("Link: " + link);
-			System.out.println("scheme: " + scheme);
-
+			String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
+//			String link = "http://midland.localhost:3000/updatepassword?token=" + uuid;
 			String templateFilePath = PortalConstants.FPasswordLink;
 			VelocityContext context = new VelocityContext();
+			
 			context.put("user_name", existingUser.getFirstName().toUpperCase());
 			context.put("uuid", uuid);
 			context.put("resetUrl", link);
@@ -113,7 +111,9 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 	public String updatePassword(String uuid, String password) {
 		User user = userRepository.findByUuid(uuid);
 		if (user != null) {
-			user.setPassword(password);
+			String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+			user.setPassword(hashedPassword);
+			user.setUuid(null);
 			userRepository.save(user);
 			return "Password Updated Successfully";
 		} else {
