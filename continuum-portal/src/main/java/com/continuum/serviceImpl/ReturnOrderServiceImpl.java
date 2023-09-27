@@ -268,6 +268,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				}
 			} else {
 				List<ReturnOrder> returnOrder = repository.findByUserId(userId);
+				List<ReturnOrder> returnOrder1 = repository.findAll();
+				for(ReturnOrder ro : returnOrder1) {
+					if(ro.getUser() == null) {
+						returnOrder.add(ro);
+					}
+				}
 				returnOrderDTOs = returnOrder.stream()
 
 						.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
