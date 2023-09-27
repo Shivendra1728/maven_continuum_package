@@ -48,7 +48,7 @@ public class ReturnOrderItem extends BaseEntity {
     private Set<ReturnRoom> returnRooms = new HashSet<ReturnRoom>();
 	
 	
-	@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.PERSIST,fetch = FetchType.EAGER)
 	@JoinColumn(name = "returnOrderItemId")
 	private Set<QuestionMap> questionMap;
 	/*
@@ -87,5 +87,6 @@ public class ReturnOrderItem extends BaseEntity {
 	private String itemDesc;
 
 	private Date followUpDate;
+
 
 }

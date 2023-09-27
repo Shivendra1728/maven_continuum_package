@@ -3,11 +3,15 @@
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import com.continuum.tenant.repos.entity.BaseEntity;
+import com.continuum.tenant.repos.entity.QuestionMap;
 import com.continuum.tenant.repos.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -60,4 +64,8 @@ public class ReturnOrderItemDTO extends BaseEntity{
 
 	private Date followUpDate;
 	private String itemDesc;
+	
+	@OneToMany
+	@JoinColumn(name = "returnOrderItemId")
+	Set<QuestionMap> questionMap;
 }

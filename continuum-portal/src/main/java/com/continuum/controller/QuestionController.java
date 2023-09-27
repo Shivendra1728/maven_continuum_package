@@ -21,7 +21,6 @@ public class QuestionController {
 	@Autowired
 	QuestionService questionService;
 
-	
 
 	@GetMapping("/get")
 	public List<QuestionConfig> getQuetions(@RequestParam List<QuestionMap> questionMapList) {

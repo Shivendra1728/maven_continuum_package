@@ -13,6 +13,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,29 +29,22 @@ import lombok.Setter;
 @NoArgsConstructor
 
 @Table(name = "question_map")
-
 public class QuestionMap {
 
 	@Id
-
 	@GeneratedValue(strategy = GenerationType.AUTO)
-
 	private Long id;
 
-	@Column(name = "rmaNo")
 
-	private Long rmaNo;
-
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "returnOrderItemId")
+	@JsonIgnore
 	private ReturnOrderItem returnOrderItem;
 
 	@Column(name = "question_id")
-
 	private Long questionId;
 
 	@Column(name = "answer")
-
 	private String answer;
 
 	@OneToMany(mappedBy = "questionMap", cascade = CascadeType.ALL)
