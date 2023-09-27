@@ -46,7 +46,11 @@ public class ReturnOrderItem extends BaseEntity {
 	
 	@OneToMany(mappedBy = "returnOrderItem",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ReturnRoom> returnRooms = new HashSet<ReturnRoom>();
-
+	
+	
+	@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+	@JoinColumn(name = "returnOrderItemId")
+	private Set<QuestionMap> questionMap;
 	/*
 	 * @OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL}) private
 	 * ReasonCode reasonCode;

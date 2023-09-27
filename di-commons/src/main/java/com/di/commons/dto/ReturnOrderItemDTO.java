@@ -31,6 +31,7 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	private OrderAddressDTO billTo;
 	private List<OrderItemDocumentsDTO> orderItemDocuments;
     private List<ReturnRoomDTO> returnRooms;
+    
 	private String reasonCode;
 	private String returnComments;
 	private int quanity;

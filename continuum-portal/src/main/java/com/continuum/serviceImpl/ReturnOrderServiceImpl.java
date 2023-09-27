@@ -11,6 +11,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,13 @@ import com.continuum.service.CustomerService;
 import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
+import com.continuum.tenant.repos.entity.QuestionMap;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
+import com.continuum.tenant.repos.repositories.QuestionRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.RmaInvoiceInfoRepository;
@@ -51,6 +54,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	ReturnOrderRepository repository;
 
 	@Autowired
+	private ModelMapper modelMapper;
+
+	@Autowired
 	ReturnOrderItemRepository returnOrderItemRepository;
 
 	@Autowired
@@ -58,6 +64,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	UserRepository userRepository;
+	
+	@Autowired
+	QuestionRepository questionRepository;
 
 	@Autowired
 	RmaInvoiceInfoMapper rmaInvoiceInfoMapper;
@@ -122,11 +131,20 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		}
 		returnOrderDTO.setCustomer(customerDTO);
 
+		
+		List<ReturnOrderItem> returnOrderItemList = this.returnOrderItemDTOToReturnOrderItem(returnOrderDTO.getReturnOrderItem());
+		if (returnOrderItemList != null) {
+		    for (ReturnOrderItem returnOrderItem : returnOrderItemList) {
+		        QuestionMap questionMap = new QuestionMap();
+		        questionMap.setReturnOrderItem(returnOrderItem);
+		        questionRepository.save(questionMap);		        ;
+		    }
+		
+		
+		
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		repository.save(returnOrder);
 
-		
-		
 		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
 
 		rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
@@ -157,6 +175,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
 		sender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
+		}
 
 	}
 
@@ -255,7 +274,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 								.collect(Collectors.toList());
 
-						upcomingDates.sort(Date::compareTo);						
+						upcomingDates.sort(Date::compareTo);
 
 						if (!upcomingDates.isEmpty()) {
 
@@ -269,8 +288,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			} else {
 				List<ReturnOrder> returnOrder = repository.findByUserId(userId);
 				List<ReturnOrder> returnOrder1 = repository.findAll();
-				for(ReturnOrder ro : returnOrder1) {
-					if(ro.getUser() == null) {
+				for (ReturnOrder ro : returnOrder1) {
+					if (ro.getUser() == null) {
 						returnOrder.add(ro);
 					}
 				}
@@ -296,7 +315,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 								.collect(Collectors.toList());
 
 						upcomingDates.sort(Date::compareTo);
-
 
 						if (!upcomingDates.isEmpty()) {
 
@@ -447,4 +465,14 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	}
 
+	public List<ReturnOrderItem> returnOrderItemDTOToReturnOrderItem(List<ReturnOrderItemDTO> returnOrderItemDTOList) {
+		List<ReturnOrderItem> returnOrderItemList = new ArrayList<>();
+
+		for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
+			ReturnOrderItem returnOrderItem = modelMapper.map(returnOrderItemDTO, ReturnOrderItem.class);
+			returnOrderItemList.add(returnOrderItem);
+		}
+
+		return returnOrderItemList;
+	}
 }
