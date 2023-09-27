@@ -236,10 +236,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 					}
 				}
 				returnOrderDTOs = findNextActivityDate(returnOrder);
-			} 
-      
 			}
-
 		}
 		return returnOrderDTOs;
 
