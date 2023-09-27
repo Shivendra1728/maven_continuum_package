@@ -59,4 +59,5 @@ public class ReturnOrderItemDTO extends BaseEntity{
 
 	private Date followUpDate;
 	private String itemDesc;
+	private Long reasonCodeId;
 }

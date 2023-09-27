@@ -23,7 +23,7 @@ public class ForgetPasswordController {
 		return forgetPasswordService.forgetPassword(email, request);
 	}
 
-	@PutMapping("/update/password")
+	@PutMapping("/updatePassword")
 	public String updatePassword(@RequestParam("UUID") String uuid, @RequestParam String password) {
 		return forgetPasswordService.updatePassword(uuid, password);
 
