@@ -52,6 +52,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 		if (existingUser != null) {
 			existingUser.setUuid(uuid);
 			userRepository.save(existingUser);
+			return uuid;
 		}
 		try {
 			this.sendEmail(email, uuid, request);
@@ -59,8 +60,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 		} catch (MessagingException me) {
 			me.printStackTrace();
 		}
-
-		return uuid;
+		return "Email not found";
 	}
 
 	public void sendEmail(String email, String uuid, HttpServletRequest request) throws MessagingException {
