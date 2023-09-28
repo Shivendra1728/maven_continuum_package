@@ -1473,6 +1473,11 @@ public class EmailTemplateRenderer {
 			+ "			</tr>\r\n" + "		</tbody>\r\n" + "	</table><!-- End -->\n" +
 
 			"</body>\n" + "</html>";
+	
+	private static final String REQ_MORE_CUST_INFO= "<html>\n";
+	private static final String  DENIED_TEMPLATE= "<html>xxxxxxxxxxxxxx\n";
+	private static final String  RMA_AUTHORIZED_TEMPLATE= "<html>\n";
+	
 
 
 	public static String renderTemplate(VelocityContext context) {
@@ -1555,6 +1560,49 @@ public class EmailTemplateRenderer {
 		try {
 			StringWriter writer = new StringWriter();
 			velocityEngine.evaluate(context, writer, "EmailTemplate", UNDER_REVIEW_TEMPLATE_CONTENT);
+			return writer.toString();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return null;
+	}
+	public static String renderRMCITemplate(VelocityContext context) {
+		VelocityEngine velocityEngine = new VelocityEngine();
+		velocityEngine.init();
+
+		try {
+			StringWriter writer = new StringWriter();
+			velocityEngine.evaluate(context, writer, "EmailTemplate", REQ_MORE_CUST_INFO);
+			return writer.toString();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return null;
+	}
+	
+	public static String renderDeniedTemplate(VelocityContext context) {
+		VelocityEngine velocityEngine = new VelocityEngine();
+		velocityEngine.init();
+
+		try {
+			StringWriter writer = new StringWriter();
+			velocityEngine.evaluate(context, writer, "EmailTemplate",DENIED_TEMPLATE);
+			return writer.toString();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return null;
+	}
+	public static String renderRMAAuthorized(VelocityContext context) {
+		VelocityEngine velocityEngine = new VelocityEngine();
+		velocityEngine.init();
+
+		try {
+			StringWriter writer = new StringWriter();
+			velocityEngine.evaluate(context, writer, "EmailTemplate",RMA_AUTHORIZED_TEMPLATE);
 			return writer.toString();
 		} catch (Exception ex) {
 			ex.printStackTrace();

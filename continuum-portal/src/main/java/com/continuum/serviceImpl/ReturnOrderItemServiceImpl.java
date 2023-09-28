@@ -193,6 +193,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					
 				} else if (allAuthorized) {
 					returnOrderEntity.setStatus("Authorized");
+					try {
+						sender.sendEmail6(recipient,returnOrderEntity.getCustomer().getDisplayName(),returnOrderEntity.getStatus());
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
 				} else if (hasUnderReview) {
 					returnOrderEntity.setStatus("Under Review");
 				}
@@ -202,7 +207,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 			// update customer to put tracking code.
 
-			if ("Approved_Awaiting_Transit".equals(updatedItem.getStatus())) {
+			if ("Authorized Awaiting Transit".equals(updatedItem.getStatus())) {
 				try {
 					sendEmail1(recipient, updatedItem.getStatus());
 				} catch (MessagingException e) {

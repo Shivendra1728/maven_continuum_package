@@ -185,12 +185,12 @@ public class EmailSender {
 		
 		
 
-		String renderedBody = EmailTemplateRenderer.renderUnderReviewTemplate(context);
+		String renderedBody = EmailTemplateRenderer.renderRMCITemplate(context);
 
 		Message message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
 		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-		message.setSubject(templateFilePath);
+		message.setSubject("WE NEED MORE INFORMATION");
 		message.setContent(renderedBody, "text/html");
 		Transport.send(message);
 
@@ -221,12 +221,49 @@ public class EmailSender {
 		
 		
 
-		String renderedBody = EmailTemplateRenderer.renderUnderReviewTemplate(context);
+		String renderedBody = EmailTemplateRenderer.renderDeniedTemplate(context);
 
 		Message message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
 		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-		message.setSubject(templateFilePath);
+		message.setSubject("WE ARE SORRY , YOUR RMA IS DENIED.");
+		message.setContent(renderedBody, "text/html");
+		Transport.send(message);
+
+	}
+	
+	
+	public void sendEmail6(String email,String orderContactName,String status) throws MessagingException {
+		User existingUser = userRepository.findByEmail(email);
+
+		Properties props = new Properties();
+
+		props.put(PortalConstants.SMTP_HOST, mailHost);
+		props.put(PortalConstants.SMTP_PORT, mailPort);
+		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
+		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
+
+		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
+			}
+		});
+		
+		String templateFilePath = PortalConstants.RMAStatus;
+		VelocityContext context = new VelocityContext();
+		
+		
+		context.put("order_contact_name",orderContactName);
+		context.put("status", status);
+		
+		
+
+		String renderedBody = EmailTemplateRenderer.renderRMAAuthorized(context);
+
+		Message message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
+		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+		message.setSubject("WE ARE SORRY , YOUR RMA IS DENIED.");
 		message.setContent(renderedBody, "text/html");
 		Transport.send(message);
 
