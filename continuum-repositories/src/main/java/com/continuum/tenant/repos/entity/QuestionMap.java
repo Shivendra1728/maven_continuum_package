@@ -35,15 +35,14 @@ public class QuestionMap {
 	@JsonIgnore
 	private ReturnOrderItem returnOrderItem;
 
-	@Column(name = "question_id")
-	private Long questionId;
-
+	
 	@Column(name = "answer")
 	private String answer;
 
-	@OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinColumn(name="question_id")
-	private Set<QuestionConfig> questionConfigs;
+	@ManyToOne(cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "questionId")
+	@JsonIgnore
+	private QuestionConfig questionConfig;
 	
 
 }
