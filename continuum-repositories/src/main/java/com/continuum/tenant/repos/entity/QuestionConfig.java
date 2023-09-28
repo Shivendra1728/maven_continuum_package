@@ -3,26 +3,22 @@ package com.continuum.tenant.repos.entity;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-
+@NoArgsConstructor
+@Entity
 public class QuestionConfig extends BaseEntity {
 
 	private String title;
 	private String dataType;
 	private String valueJson;
 	private boolean isImgMendatory;
-
-	@ManyToOne
-	@JoinColumn(name = "question_id", referencedColumnName = "id")
-	private QuestionMap questionMap;
-
 }
+

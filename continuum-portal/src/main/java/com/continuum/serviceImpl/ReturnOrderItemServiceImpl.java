@@ -22,12 +22,17 @@ import com.continuum.constants.PortalConstants;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
+
 import com.continuum.tenant.repos.entity.ReturnOrder;
+
+import com.continuum.tenant.repos.entity.QuestionConfig;
+
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.ReturnRoom;
 import com.continuum.tenant.repos.entity.StatusConfig;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
+import com.continuum.tenant.repos.repositories.QuestionConfigRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
@@ -44,6 +49,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	AuditLogRepository auditLogRepository;
+	@Autowired
+	QuestionConfigRepository questionConfigRepository;
 
 	@Autowired
 	ReturnRoomRepository returnRoomRepository;
@@ -382,6 +389,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	public List<StatusConfig> getAllStatus() {
 		return statusConfigRepository.findAll();
 
+	}
+
+	@Override
+	public List<QuestionConfig> getQuestions() {
+		return questionConfigRepository.findAll();
 	}
 
 }
