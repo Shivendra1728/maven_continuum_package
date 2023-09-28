@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -29,19 +30,20 @@ public class QuestionMap {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
+	
+	@Column(name = "questionId")
+	private Long questionId;
 
 	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "returnOrderItemId")
 	@JsonIgnore
 	private ReturnOrderItem returnOrderItem;
 
-	
 	@Column(name = "answer")
 	private String answer;
 
-	@ManyToOne(cascade = CascadeType.PERSIST)
-	@JoinColumn(name = "questionId")
-	@JsonIgnore
+	@OneToOne(cascade = CascadeType.ALL,fetch=FetchType.EAGER)
+	@JoinColumn(name = "questionId",referencedColumnName="id",insertable=false, updatable=false)
 	private QuestionConfig questionConfig;
 	
 
