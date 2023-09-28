@@ -58,7 +58,7 @@ public class EmailSender {
 
 		VelocityContext context = new VelocityContext();
 		
-		if(returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
+		if(returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
 			context.put("status", returnOrderDTO.getStatus());
 			context.put("rma_order_no", returnOrderDTO.getRmaOrderNo());	
 		}
