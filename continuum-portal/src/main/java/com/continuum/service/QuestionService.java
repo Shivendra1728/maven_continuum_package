@@ -6,12 +6,11 @@ import org.springframework.stereotype.Service;
 
 import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.QuestionMap;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 
 @Service
 public interface QuestionService{
 	
-	
-
-	List<QuestionConfig> getQuestions(List<QuestionMap> questionMapList);
+	List<QuestionMap> getQuestions(ReturnOrderItem returnOrderItem);
 
 }

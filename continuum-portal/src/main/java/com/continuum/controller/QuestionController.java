@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.continuum.service.QuestionService;
 import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.QuestionMap;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 
 @RestController
 @RequestMapping("/question")
@@ -23,8 +24,8 @@ public class QuestionController {
 
 
 	@GetMapping("/get")
-	public List<QuestionConfig> getQuetions(@RequestParam List<QuestionMap> questionMapList) {
-		return questionService.getQuestions(questionMapList);
+	public List<QuestionMap> getQuetions(@RequestParam ReturnOrderItem returnOrderItem) {
+		return questionService.getQuestions(returnOrderItem);
 
 	}
 

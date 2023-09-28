@@ -1,10 +1,8 @@
 package com.continuum.tenant.repos.entity;
 
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +22,7 @@ public class QuestionConfig extends BaseEntity {
 	private boolean isImgMendatory;
 
 	@ManyToOne
-	@JsonIgnore
-	QuestionMap questionMap;
+	@JoinColumn(name = "question_id", referencedColumnName = "id")
+	private QuestionMap questionMap;
 
 }

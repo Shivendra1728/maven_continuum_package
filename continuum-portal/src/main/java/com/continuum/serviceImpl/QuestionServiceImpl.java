@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.continuum.service.QuestionService;
 import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.QuestionMap;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.repositories.QuestionConfigRepository;
 import com.continuum.tenant.repos.repositories.QuestionRepository;
 
@@ -23,16 +24,22 @@ public class QuestionServiceImpl implements QuestionService {
 
 	
 	@Override
-	public List<QuestionConfig> getQuestions(List<QuestionMap> questionMapList) {
+	public List<QuestionMap> getQuestions(ReturnOrderItem returnOrderItemId) {
 		// TODO Auto-generated method stub
-		List<QuestionConfig> questionConfigList = new ArrayList<QuestionConfig>();
+		//List<QuestionConfig> questionConfigList = new ArrayList<QuestionConfig>();
+		
+		
+		questionRepository.findQuestionMapByReturnOrderItem(returnOrderItemId);
+		
+		
+		return null;
 
-		for (QuestionMap map : questionMapList) {
-			QuestionConfig questionConfig = new QuestionConfig();
-			questionConfigList.add(questionConfig);
-		}
-
-		return questionConfigList;
+//		for (QuestionMap map : questionMapList) {
+//			QuestionConfig questionConfig = new QuestionConfig();
+//			questionConfigList.add(questionConfig);
+//		}
+//
+//		return questionConfigList;
 	}
 
 
