@@ -60,6 +60,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	ReturnOrderRepository returnOrderRepository;
+	
+	@Autowired
+	EmailSender sender;
 
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
@@ -169,8 +172,25 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (hasRequiresMoreCustomerInfo) {
 					returnOrderEntity.setStatus("Requires More Customer Information");
+				//	apply email functionality.
+					String recipient = PortalConstants.EMAIL_RECIPIENT;
+					try {
+
+						sender.sendEmail4(recipient,returnOrderEntity.getCustomer().getDisplayName(),returnOrderEntity.getStatus());
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
 				} else if (allDenied) {
 					returnOrderEntity.setStatus("RMA Denied");
+//					apply email functionality.
+					String recipient = PortalConstants.EMAIL_RECIPIENT;
+					try {
+
+						sender.sendEmail5(recipient,returnOrderEntity.getCustomer().getDisplayName(),returnOrderEntity.getStatus());
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
+					
 				} else if (allAuthorized) {
 					returnOrderEntity.setStatus("Authorized");
 				} else if (hasUnderReview) {

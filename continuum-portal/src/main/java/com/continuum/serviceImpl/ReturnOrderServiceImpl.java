@@ -445,7 +445,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
 			try {
 
-				sender.sendEmail3(recipient, returnOrder.getStatus());
+				sender.sendEmail3(recipient, returnOrder.getStatus(),returnOrder.getCustomer().getDisplayName(),returnOrder.getRmaOrderNo());
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
