@@ -55,9 +55,6 @@ public class ReturnOrderItem extends BaseEntity {
 	private Set<QuestionMap> questionMap;
 
 
-	
-
-
 	/*
 	 * @OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL}) private
 	 * ReasonCode reasonCode;
