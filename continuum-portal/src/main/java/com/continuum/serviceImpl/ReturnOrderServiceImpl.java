@@ -132,44 +132,41 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			}
 		}
 		returnOrderDTO.setCustomer(customerDTO);
-		
 
-			ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
-			repository.save(returnOrder);
+		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
+		repository.save(returnOrder);
 
-			RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
+		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
 
-			rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
-			rmaInvoiceInfo.setInvoiceLinked(false);
-			rmaInvoiceInfo.setDescription("none");
-			rmaInvoiceInfo.setRetryCount(0);
-			rmaInvoiceInfo.setDocumentLinked(false);
-			rmaInvoiceInfo.setReturnOrder(returnOrder);
-			rmaInvoiceInfoRepository.save(rmaInvoiceInfo);
+		rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
+		rmaInvoiceInfo.setInvoiceLinked(false);
+		rmaInvoiceInfo.setDescription("none");
+		rmaInvoiceInfo.setRetryCount(0);
+		rmaInvoiceInfo.setDocumentLinked(false);
+		rmaInvoiceInfo.setReturnOrder(returnOrder);
+		rmaInvoiceInfoRepository.save(rmaInvoiceInfo);
 
-			// audit log
+		// audit log
 
-			AuditLog auditlog = new AuditLog();
-			auditlog.setHighlight("rma request");
-			auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-			String described = customerDTO.getDisplayName() + " submitted the new rma request. Order ID- TLD-"
-					+ returnOrderDTO.getRmaOrderNo();
-			auditlog.setDescription(described);
-			auditlog.setStatus("Inbox");
-			auditlog.setTitle("Return Order");
-			auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-			auditlog.setUserName(customerDTO.getDisplayName());
-			audrepo.save(auditlog);
+		AuditLog auditlog = new AuditLog();
+		auditlog.setHighlight("rma request");
+		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
+		String described = customerDTO.getDisplayName() + " submitted the new rma request. Order ID- TLD-"
+				+ returnOrderDTO.getRmaOrderNo();
+		auditlog.setDescription(described);
+		auditlog.setStatus("Inbox");
+		auditlog.setTitle("Return Order");
+		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
+		auditlog.setUserName(customerDTO.getDisplayName());
+		audrepo.save(auditlog);
 
-			String recipient = PortalConstants.EMAIL_RECIPIENT;
-			String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : "
-					+ returnOrderDTO.getStatus();
-			String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
+		String recipient = PortalConstants.EMAIL_RECIPIENT;
+		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : "
+				+ returnOrderDTO.getStatus();
+		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
-			sender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
-		}
-
-	
+		sender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
+	}
 
 	@Override
 	public List<ReturnOrderDTO> getReturnOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) {
@@ -440,12 +437,13 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setNote(note.getNote());
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
 			repository.save(returnOrder);
-			
+
 //			apply email functionality.
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
 			try {
 
-				sender.sendEmail3(recipient, returnOrder.getStatus(),returnOrder.getCustomer().getDisplayName(),returnOrder.getRmaOrderNo());
+				sender.sendEmail3(recipient, returnOrder.getStatus(), returnOrder.getCustomer().getDisplayName(),
+						returnOrder.getRmaOrderNo());
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}

@@ -60,7 +60,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	ReturnOrderRepository returnOrderRepository;
-	
+
 	@Autowired
 	EmailSender sender;
 
@@ -156,9 +156,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						hasRequiresMoreCustomerInfo = true;
 						// If any item requires more customer information, break the loop
 						break;
-					}  if ("Under Review".equalsIgnoreCase(returnOrderItem.getStatus())) {
+					}
+					if ("Under Review".equalsIgnoreCase(returnOrderItem.getStatus())) {
 						hasUnderReview = true;
-					}  if (!"RMA Denied".equalsIgnoreCase(returnOrderItem.getStatus())) {
+					}
+					if (!"RMA Denied".equalsIgnoreCase(returnOrderItem.getStatus())) {
 						// If any item is not Denied, set allDenied to false
 						allDenied = false;
 					}
@@ -172,11 +174,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (hasRequiresMoreCustomerInfo) {
 					returnOrderEntity.setStatus("Requires More Customer Information");
-				//	apply email functionality.
+					// apply email functionality.
 					String recipient = PortalConstants.EMAIL_RECIPIENT;
 					try {
 
-						sender.sendEmail4(recipient,returnOrderEntity.getCustomer().getDisplayName(),returnOrderEntity.getStatus());
+						sender.sendEmail4(recipient, returnOrderEntity.getCustomer().getDisplayName(),
+								returnOrderEntity.getStatus());
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
@@ -186,15 +189,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					String recipient = PortalConstants.EMAIL_RECIPIENT;
 					try {
 
-						sender.sendEmail5(recipient,returnOrderEntity.getCustomer().getDisplayName(),returnOrderEntity.getStatus());
+						sender.sendEmail5(recipient, returnOrderEntity.getCustomer().getDisplayName(),
+								returnOrderEntity.getStatus());
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
-					
+
 				} else if (allAuthorized) {
 					returnOrderEntity.setStatus("Authorized");
 					try {
-						sender.sendEmail6(recipient,returnOrderEntity.getCustomer().getDisplayName(),returnOrderEntity.getStatus());
+						sender.sendEmail6(recipient, returnOrderEntity.getCustomer().getDisplayName(),
+								returnOrderEntity.getStatus());
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
@@ -366,7 +371,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(
-					updateBy + "has updated shipping info for ordered item "+returnOrderItem.getItemName());
+					updateBy + "has updated shipping info for ordered item " + returnOrderItem.getItemName());
 			auditLog.setHighlight("shipping info");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
@@ -396,7 +401,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 
 			// roi.setNotes(returnOrderItemDTO.getNotes());
- 
+
 			returnOrderItemRepository.save(roi);
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");

@@ -22,13 +22,11 @@ import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.helper.P21OrderData;
 
-
 @Component
 public class EmailSender {
 	@Autowired
 	UserRepository userRepository;
 
-	
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
 
@@ -41,8 +39,8 @@ public class EmailSender {
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
 
-	public void sendEmail(String recipient, String subject, String body, ReturnOrderDTO returnOrderDTO, CustomerDTO customerDTO)
-			throws MessagingException {
+	public void sendEmail(String recipient, String subject, String body, ReturnOrderDTO returnOrderDTO,
+			CustomerDTO customerDTO) throws MessagingException {
 		Properties props = new Properties();
 
 		props.put(PortalConstants.SMTP_HOST, mailHost);
@@ -57,22 +55,20 @@ public class EmailSender {
 		});
 
 		VelocityContext context = new VelocityContext();
-		
-		if(returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
+
+		if (returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
 			context.put("status", returnOrderDTO.getStatus());
-			context.put("rma_order_no", returnOrderDTO.getRmaOrderNo());	
-		}
-		else {
+			context.put("rma_order_no", returnOrderDTO.getRmaOrderNo());
+		} else {
 			context.put("status", returnOrderDTO.getStatus());
 			context.put("rma_order_no", "null");
 		}
-		
-		context.put("order_contact_name",customerDTO.getDisplayName());
+
+		context.put("order_contact_name", customerDTO.getDisplayName());
 		context.put("order_no", returnOrderDTO.getOrderNo());
 
 		String templateFilePath = PortalConstants.EMAIL_TEMPLATE_FILE_PATH;
 		String renderedBody = EmailTemplateRenderer.renderTemplate(context);
-
 
 		Message message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
@@ -80,17 +76,14 @@ public class EmailSender {
 		message.setSubject(subject);
 		message.setContent(renderedBody, "text/html");
 
-	//	System.out.println(renderedBody);
+		// System.out.println(renderedBody);
 
 		Transport.send(message);
 	}
-	
-	
-	
-	
-	//RMA STATUS CHANGE RENDERRING
-	
-	public void sendEmail2(String email,String updatedRMAStatus) throws MessagingException {
+
+	// RMA STATUS CHANGE RENDERRING
+
+	public void sendEmail2(String email, String updatedRMAStatus) throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
 
 		Properties props = new Properties();
@@ -105,12 +98,11 @@ public class EmailSender {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
 			}
 		});
-		
+
 		String templateFilePath = PortalConstants.RMAStatus;
 		VelocityContext context = new VelocityContext();
-		
-		
-		context.put("rma_status",updatedRMAStatus);
+
+		context.put("rma_status", updatedRMAStatus);
 
 		String renderedBody = EmailTemplateRenderer.renderRMAStatusChangeTemplate(context);
 
@@ -122,8 +114,9 @@ public class EmailSender {
 		Transport.send(message);
 
 	}
-	
-	public void sendEmail3(String email,String updatedRMAStatus,String orderContactName,String rmaNo) throws MessagingException {
+
+	public void sendEmail3(String email, String updatedRMAStatus, String orderContactName, String rmaNo)
+			throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
 
 		Properties props = new Properties();
@@ -138,16 +131,13 @@ public class EmailSender {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
 			}
 		});
-		
+
 		String templateFilePath = PortalConstants.RMAStatus;
 		VelocityContext context = new VelocityContext();
-		
-		
-		context.put("StatusUnderReview",updatedRMAStatus);
-		context.put("order_contact_name",orderContactName);
+
+		context.put("StatusUnderReview", updatedRMAStatus);
+		context.put("order_contact_name", orderContactName);
 		context.put("rma_order_no", rmaNo);
-		
-		
 
 		String renderedBody = EmailTemplateRenderer.renderUnderReviewTemplate(context);
 
@@ -159,8 +149,8 @@ public class EmailSender {
 		Transport.send(message);
 
 	}
-	
-	public void sendEmail4(String email,String orderContactName,String status) throws MessagingException {
+
+	public void sendEmail4(String email, String orderContactName, String status) throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
 
 		Properties props = new Properties();
@@ -175,15 +165,12 @@ public class EmailSender {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
 			}
 		});
-		
+
 		String templateFilePath = PortalConstants.RMAStatus;
 		VelocityContext context = new VelocityContext();
-		
-		
-		context.put("order_contact_name",orderContactName);
+
+		context.put("order_contact_name", orderContactName);
 		context.put("status", status);
-		
-		
 
 		String renderedBody = EmailTemplateRenderer.renderRMCITemplate(context);
 
@@ -195,8 +182,8 @@ public class EmailSender {
 		Transport.send(message);
 
 	}
-	
-	public void sendEmail5(String email,String orderContactName,String status) throws MessagingException {
+
+	public void sendEmail5(String email, String orderContactName, String status) throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
 
 		Properties props = new Properties();
@@ -211,15 +198,12 @@ public class EmailSender {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
 			}
 		});
-		
+
 		String templateFilePath = PortalConstants.RMAStatus;
 		VelocityContext context = new VelocityContext();
-		
-		
-		context.put("order_contact_name",orderContactName);
+
+		context.put("order_contact_name", orderContactName);
 		context.put("status", status);
-		
-		
 
 		String renderedBody = EmailTemplateRenderer.renderDeniedTemplate(context);
 
@@ -231,9 +215,8 @@ public class EmailSender {
 		Transport.send(message);
 
 	}
-	
-	
-	public void sendEmail6(String email,String orderContactName,String status) throws MessagingException {
+
+	public void sendEmail6(String email, String orderContactName, String status) throws MessagingException {
 		User existingUser = userRepository.findByEmail(email);
 
 		Properties props = new Properties();
@@ -248,15 +231,12 @@ public class EmailSender {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
 			}
 		});
-		
+
 		String templateFilePath = PortalConstants.RMAStatus;
 		VelocityContext context = new VelocityContext();
-		
-		
-		context.put("order_contact_name",orderContactName);
+
+		context.put("order_contact_name", orderContactName);
 		context.put("status", status);
-		
-		
 
 		String renderedBody = EmailTemplateRenderer.renderRMAAuthorized(context);
 
@@ -268,6 +248,5 @@ public class EmailSender {
 		Transport.send(message);
 
 	}
-	
-	
+
 }
