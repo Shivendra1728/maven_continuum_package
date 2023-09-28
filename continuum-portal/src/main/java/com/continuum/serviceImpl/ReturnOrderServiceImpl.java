@@ -440,6 +440,15 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setNote(note.getNote());
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
 			repository.save(returnOrder);
+			
+//			apply email functionality.
+			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			try {
+
+				sender.sendEmail3(recipient, returnOrder.getStatus());
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Assign RMA");

@@ -122,4 +122,38 @@ public class EmailSender {
 		Transport.send(message);
 
 	}
+	
+	public void sendEmail3(String email,String updatedRMAStatus) throws MessagingException {
+		User existingUser = userRepository.findByEmail(email);
+
+		Properties props = new Properties();
+
+		props.put(PortalConstants.SMTP_HOST, mailHost);
+		props.put(PortalConstants.SMTP_PORT, mailPort);
+		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
+		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
+
+		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
+			}
+		});
+		
+		String templateFilePath = PortalConstants.RMAStatus;
+		VelocityContext context = new VelocityContext();
+		
+		
+		context.put("StatusUnderReview",updatedRMAStatus);
+		
+
+		String renderedBody = EmailTemplateRenderer.renderUnderReviewTemplate(context);
+
+		Message message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
+		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+		message.setSubject(templateFilePath);
+		message.setContent(renderedBody, "text/html");
+		Transport.send(message);
+
+	}
 }
