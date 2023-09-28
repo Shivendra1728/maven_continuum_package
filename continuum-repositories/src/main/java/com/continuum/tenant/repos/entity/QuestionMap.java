@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -41,8 +42,7 @@ public class QuestionMap {
 	@Column(name = "answer")
 	private String answer;
 
-	@OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinColumn(name="question_id")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Set<QuestionConfig> questionConfigs;
 	
 
