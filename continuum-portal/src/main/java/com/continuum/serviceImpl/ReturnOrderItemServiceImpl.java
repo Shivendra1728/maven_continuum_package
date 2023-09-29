@@ -194,9 +194,25 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
-
+					//audit logs 
+					auditLog.setDescription(updateBy + " has changed status of " + existingItem.getItemName() + " from "
+							+ previousStatus + " to " + updatedItem.getStatus()+ " and therefore RMA " + returnOrderEntity.getRmaOrderNo()+ " has been denied." );
+					auditLog.setHighlight("denied");
+					auditLog.setStatus("RMA Header");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+					
 				} else if (allAuthorized) {
 					returnOrderEntity.setStatus("Authorized");
+					//audit logs
+					auditLog.setDescription(updateBy + " has changed status of " + existingItem.getItemName() + " from "
+							+ previousStatus + " to " + updatedItem.getStatus()+ " and therefore RMA " + returnOrderEntity.getRmaOrderNo() + " has been Authorized.");
+					auditLog.setHighlight("Authorized");
+					auditLog.setStatus("RMA Header");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
 					try {
 						sender.sendEmail6(recipient, returnOrderEntity.getCustomer().getDisplayName(),
 								returnOrderEntity.getStatus());
