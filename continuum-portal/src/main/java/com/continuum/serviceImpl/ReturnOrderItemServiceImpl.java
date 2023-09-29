@@ -174,6 +174,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (hasRequiresMoreCustomerInfo) {
 					returnOrderEntity.setStatus("Requires More Customer Information");
+					//audit logs
+					auditLog.setDescription(returnOrderEntity.getRmaOrderNo()+ " has been updated to 'Requires More Customer Information'.Awaiting more information with customer.");
+					auditLog.setHighlight("Requires More Customer Information");
+					auditLog.setStatus("RMA Header");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
 					// apply email functionality.
 					String recipient = PortalConstants.EMAIL_RECIPIENT;
 					try {
@@ -183,6 +190,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
+					
 				} else if (allDenied) {
 					returnOrderEntity.setStatus("RMA Denied");
 //					apply email functionality.
@@ -195,9 +203,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						e.printStackTrace();
 					}
 					//audit logs 
-					auditLog.setDescription(updateBy + " has changed status of " + existingItem.getItemName() + " from "
-							+ previousStatus + " to " + updatedItem.getStatus()+ " and therefore RMA " + returnOrderEntity.getRmaOrderNo()+ " has been denied." );
-					auditLog.setHighlight("denied");
+					
+					auditLog.setDescription(returnOrderEntity.getRmaOrderNo()+ " has been updated to 'RMA DENIED'.");
+					auditLog.setHighlight("RMA DENIED");
 					auditLog.setStatus("RMA Header");
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
@@ -206,9 +214,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				} else if (allAuthorized) {
 					returnOrderEntity.setStatus("Authorized");
 					//audit logs
-					auditLog.setDescription(updateBy + " has changed status of " + existingItem.getItemName() + " from "
-							+ previousStatus + " to " + updatedItem.getStatus()+ " and therefore RMA " + returnOrderEntity.getRmaOrderNo() + " has been Authorized.");
-					auditLog.setHighlight("Authorized");
+					auditLog.setDescription(returnOrderEntity.getRmaOrderNo()+ " has been updated to 'AUTHORIZED'.The return is approved,Please proceed with the necessary steps");
+					auditLog.setHighlight("AUTHORIZED");
 					auditLog.setStatus("RMA Header");
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
