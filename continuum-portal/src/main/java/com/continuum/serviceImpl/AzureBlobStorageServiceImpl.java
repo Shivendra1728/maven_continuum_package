@@ -1,5 +1,6 @@
 package com.continuum.serviceImpl;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,7 +28,7 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 	@Autowired
 	OrderItemDocumentRepository orderItemDocumentRepository;
 
-	public List<Map<String, String>> uploadFiles(MultipartFile[] data, String customerId) throws Exception {
+	public List<Map<String, String>> uploadFiles(List<MultipartFile> data, String customerId) throws Exception {
 
 		BlobContainerClient containerClient = new BlobServiceClientBuilder().connectionString(connectionString)
 				.buildClient().getBlobContainerClient(containerName);
@@ -87,4 +88,6 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 		}
 		return "";
 	}
+
+	
 }

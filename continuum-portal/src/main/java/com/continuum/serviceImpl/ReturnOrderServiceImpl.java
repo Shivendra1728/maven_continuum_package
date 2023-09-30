@@ -53,7 +53,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	private static final Logger logger = LoggerFactory.getLogger(ReturnOrderServiceImpl.class);
 
 	@Autowired
-	ReturnOrderRepository repository;
+	ReturnOrderRepository returnOrderRepository;
 
 	@Autowired
 	private ModelMapper modelMapper;
@@ -62,7 +62,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	ReturnOrderItemRepository returnOrderItemRepository;
 
 	@Autowired
-	AuditLogRepository audrepo;
+	AuditLogRepository auditLogRepository;
 
 	@Autowired
 	UserRepository userRepository;
@@ -83,19 +83,19 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	ReturnOrderMapper returnOrderMapper;
 
 	@Autowired
-	P21ReturnOrderService p21Service;
+	P21ReturnOrderService p21ReturnOrderService;
 
 	@Autowired
 	CustomerService customerService;
 
 	@Autowired
-	EmailSender sender;
+	EmailSender emailSender;
 
 	ReturnOrder returnOrder;
 
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
-		P21RMAResponse p21RMARespo = p21Service.createReturnOrder(returnOrderDTO);
+		P21RMAResponse p21RMARespo =  p21ReturnOrderService.createReturnOrder(returnOrderDTO);
 		logger.info("orderNo::: " + p21RMARespo.getRmaOrderNo() + " status: " + p21RMARespo.getStatus());
 		return p21RMARespo;
 	}
@@ -134,7 +134,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		returnOrderDTO.setCustomer(customerDTO);
 
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
-		repository.save(returnOrder);
+		returnOrderRepository.save(returnOrder);
 
 		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
 
@@ -158,14 +158,14 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		auditlog.setTitle("Return Order");
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
 		auditlog.setUserName(customerDTO.getDisplayName());
-		audrepo.save(auditlog);
+		auditLogRepository.save(auditlog);
 
 		String recipient = PortalConstants.EMAIL_RECIPIENT;
 		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : "
 				+ returnOrderDTO.getStatus();
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
-		sender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
+		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
 	}
 
 	@Override
@@ -204,7 +204,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			spec = spec.and(poNoSpec);
 		}
 
-		List<ReturnOrder> poList = repository.findAll(spec);
+		List<ReturnOrder> poList = returnOrderRepository.findAll(spec);
 		List<ReturnOrderDTO> poDTOList = new ArrayList<>();
 		poList.forEach(returnOrder -> {
 			poDTOList.add(returnOrderMapper.returnOrderToReturnOrderDTO(returnOrder));
@@ -234,7 +234,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		if (optionalUser.isPresent()) {
 			User user = optionalUser.get();
 			if (user.getRoles().getId() == 1 || user.getRoles().getId() == 2) {
-				List<ReturnOrder> returnOrderEntities = repository.findAll();
+				List<ReturnOrder> returnOrderEntities = returnOrderRepository.findAll();
 
 				returnOrderDTOs = returnOrderEntities.stream()
 
@@ -275,8 +275,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 				}
 			} else {
-				List<ReturnOrder> returnOrder = repository.findByUserId(userId);
-				List<ReturnOrder> returnOrder1 = repository.findAll();
+				List<ReturnOrder> returnOrder = returnOrderRepository.findByUserId(userId);
+				List<ReturnOrder> returnOrder1 = returnOrderRepository.findAll();
 				for (ReturnOrder ro : returnOrder1) {
 					if (ro.getUser() == null) {
 						returnOrder.add(ro);
@@ -324,7 +324,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Override
 	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(String rmaOrderNo) {
-		List<ReturnOrder> returnOrder = repository.findByrmaOrderNo(rmaOrderNo);
+		List<ReturnOrder> returnOrder = returnOrderRepository.findByrmaOrderNo(rmaOrderNo);
 
 		List<ReturnOrderDTO> returnOrderDTO = returnOrder.stream().map(returnOrderMapper::returnOrderToReturnOrderDTO)
 				.collect(Collectors.toList());
@@ -335,14 +335,14 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	@Override
 
 	public String updateReturnOrder(String rmaNo, String updateBy, String status) {
-		Optional<ReturnOrder> optionalItem = repository.findByRmaOrderNo(rmaNo);
+		Optional<ReturnOrder> optionalItem = returnOrderRepository.findByRmaOrderNo(rmaNo);
 
 		if (optionalItem.isPresent()) {
 			ReturnOrder returnOrder = optionalItem.get();
 
 			returnOrder.setStatus(status);
 
-			repository.save(returnOrder);
+			returnOrderRepository.save(returnOrder);
 
 			// audit log saving
 
@@ -354,13 +354,13 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditlog.setTitle("Return Order");
 			auditlog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditlog.setUserName(updateBy);
-			audrepo.save(auditlog);
+			auditLogRepository.save(auditlog);
 
 			// send email to customer-RMA processor
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
 			try {
 
-				sender.sendEmail2(recipient, returnOrder.getStatus());
+				emailSender.sendEmail2(recipient, returnOrder.getStatus());
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -395,13 +395,13 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			if (retryCount < 3) {
 				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo);
 				if (bln) {
-					Optional<ReturnOrder> ro = repository.findById(rmaInvoiceInfo.getReturnOrder().getId());
+					Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 
 					if (ro.isPresent()) {
 
 						ReturnOrder returnOrder = ro.get();
 						returnOrder.setISInvoiceLinked(true);
-						repository.save(returnOrder);
+						returnOrderRepository.save(returnOrder);
 
 						rmaInvoiceInfoRepository.delete(rmaInvoiceInfo);
 						// Here you can remove the corresponding DTO from the list
@@ -421,7 +421,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Override
 	public String assignRMA(String rmaNo, Long assignToId, String updateBy, ReturnOrderDTO note) {
-		Optional<ReturnOrder> optionalReturnOrder = repository.findByRmaOrderNo(rmaNo);
+		Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
 		Optional<User> optionalUser = userRepository.findById(assignToId);
 		if (optionalReturnOrder.isPresent() && optionalUser.isPresent()) {
 			ReturnOrder returnOrder = optionalReturnOrder.get();
@@ -436,13 +436,13 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setUser(user);
 			returnOrder.setNote(note.getNote());
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
-			repository.save(returnOrder);
+			returnOrderRepository.save(returnOrder);
 
 //			apply email functionality.
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
 			try {
 
-				sender.sendEmail3(recipient, returnOrder.getStatus(), returnOrder.getCustomer().getDisplayName(),
+				emailSender.sendEmail3(recipient, returnOrder.getStatus(), returnOrder.getCustomer().getDisplayName(),
 						returnOrder.getRmaOrderNo());
 			} catch (MessagingException e) {
 				e.printStackTrace();
@@ -455,7 +455,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditLog.setStatus("RMA");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditLog.setUserName(updateBy);
-			audrepo.save(auditLog);
+			auditLogRepository.save(auditLog);
 
 			return "Assiged RMA to User";
 

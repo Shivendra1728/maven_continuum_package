@@ -7,7 +7,8 @@ public final class PortalConstants {
 
 	public static final String SUCCESS = "Success";
 	public static final String FAILED = "Failed";
-
+	
+	//status configurations
 	public static final String UNDER_REVIEW = "Under Review";
 	public static final String RETURN_REQUESTED = "Return Requested";
 	public static final String AWAITING_VENDOR_APPROVAL = "Awaiting Vendor Approval";
@@ -17,6 +18,7 @@ public final class PortalConstants {
 	public static final String ITEM_RECIEVED_UNDER_REVIEW = "Item Recieved & Under Review";
 	public static final String RET_CMPLT_CRED_APPLIED = "Return Completed-Credit Applied";
 	public static final String RMA_DENIED = "RMA Denied";
+	public static final String RMCI = "Requires More Customer Information";
 
 	public static final String RMA = "RMA";
 	public static final String EMAIL_RECIPIENT = "ankit@bytesfarms.com";

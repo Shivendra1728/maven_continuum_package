@@ -62,7 +62,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	ReturnOrderRepository returnOrderRepository;
 
 	@Autowired
-	EmailSender sender;
+	EmailSender emailSender;
 
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
@@ -78,7 +78,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
-
+	
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
@@ -152,21 +152,21 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository.findByReturnOrderId(returnOrderId);
 
 				for (ReturnOrderItem returnOrderItem : returnOrderItems) {
-					if ("Requires More Customer Information".equalsIgnoreCase(returnOrderItem.getStatus())) {
+					if (PortalConstants.RMCI.equalsIgnoreCase(returnOrderItem.getStatus())) {
 						hasRequiresMoreCustomerInfo = true;
 						// If any item requires more customer information, break the loop
 						break;
 					}
-					if ("Under Review".equalsIgnoreCase(returnOrderItem.getStatus())) {
+					if (PortalConstants.UNDER_REVIEW.equalsIgnoreCase(returnOrderItem.getStatus())) {
 						hasUnderReview = true;
 					}
-					if (!"RMA Denied".equalsIgnoreCase(returnOrderItem.getStatus())) {
+					if (!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())) {
 						// If any item is not Denied, set allDenied to false
 						allDenied = false;
 					}
 
-					if (!("Authorized in Transit".equalsIgnoreCase(returnOrderItem.getStatus())
-							|| "Authorized Awaiting Transit".equalsIgnoreCase(returnOrderItem.getStatus()))) {
+					if (!(PortalConstants.APPROVED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())
+							|| PortalConstants.APPROVED_AWAITING_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus()))) {
 						// If any item is not Authorized, set allAuthorized to false
 						allAuthorized = false;
 					}
@@ -185,7 +185,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					String recipient = PortalConstants.EMAIL_RECIPIENT;
 					try {
 
-						sender.sendEmail4(recipient, returnOrderEntity.getCustomer().getDisplayName(),
+						emailSender.sendEmail4(recipient, returnOrderEntity.getCustomer().getDisplayName(),
 								returnOrderEntity.getStatus());
 					} catch (MessagingException e) {
 						e.printStackTrace();
@@ -197,7 +197,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					String recipient = PortalConstants.EMAIL_RECIPIENT;
 					try {
 
-						sender.sendEmail5(recipient, returnOrderEntity.getCustomer().getDisplayName(),
+						emailSender.sendEmail5(recipient, returnOrderEntity.getCustomer().getDisplayName(),
 								returnOrderEntity.getStatus());
 					} catch (MessagingException e) {
 						e.printStackTrace();
@@ -221,7 +221,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
 					try {
-						sender.sendEmail6(recipient, returnOrderEntity.getCustomer().getDisplayName(),
+						emailSender.sendEmail6(recipient, returnOrderEntity.getCustomer().getDisplayName(),
 								returnOrderEntity.getStatus());
 					} catch (MessagingException e) {
 						e.printStackTrace();
