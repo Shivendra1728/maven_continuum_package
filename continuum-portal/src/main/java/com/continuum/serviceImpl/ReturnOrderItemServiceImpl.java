@@ -1,9 +1,12 @@
 package com.continuum.serviceImpl;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -68,6 +71,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
+	
+	@Autowired
+	EmailSender emailSender;
 
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
@@ -125,6 +131,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 
 			returnOrderItemRepository.save(existingItem);
+			try {
+				emailSender.sendEmailForUpdateItemStatus(recipient, updatedItem.getStatus());
+				emailSender.sendEmailToVender(recipient, updatedItem.getStatus());
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
 			auditLogRepository.save(auditLog);
 
 			// Handle Status Configurations
@@ -173,16 +185,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderRepository.save(returnOrderEntity);
 
 			}
-			// update customer to put tracking code.
-
-			if ("Approved_Awaiting_Transit".equals(updatedItem.getStatus())) {
-				try {
-					sendEmail1(recipient, updatedItem.getStatus());
-				} catch (MessagingException e) {
-					e.printStackTrace();
-				}
-			}
-
 			return "List Item Details Updated Successfully.";
 		} else {
 			throw new EntityNotFoundException("ReturnOrderItem with ID " + id + " not found");
@@ -218,7 +220,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnRoom.setStatus(updateNote.getStatus());
 			returnRoom.setReturnOrderItem(existingItem);
 			returnRoomRepository.save(returnRoom);
-
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Returned Activity");
 			auditLog.setDescription(
@@ -228,9 +229,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
+			java.util.Date followUpDate = updateNote.getFollowUpDate();
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
+			String formattedDate = simpleDateFormat.format(followUpDate);
 			try {
-				sendNoteEmail(recipient, updateBy);
-
+				emailSender.emailToCustomer(recipient, updateBy, formattedDate);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -264,7 +267,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		VelocityContext context = new VelocityContext();
 
 		context.put("LineItemStatus", LineItemStatus);
-
+		System.err.println(LineItemStatus);
 		String renderedBody = EmailTemplateRenderer.renderStatusChangeTemplate(context);
 
 		Message message = new MimeMessage(session);
@@ -276,37 +279,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	}
 
-	public void sendNoteEmail(String email, String name) throws MessagingException {
-		User existingUser = userRepository.findByEmail(email);
-
-		Properties props = new Properties();
-
-		props.put(PortalConstants.SMTP_HOST, mailHost);
-		props.put(PortalConstants.SMTP_PORT, mailPort);
-		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
-		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
-
-		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
-			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
-			}
-		});
-
-		String templateFilePath = PortalConstants.NOTE_STATUS;
-		VelocityContext context = new VelocityContext();
-
-		context.put("name", name);
-
-		String renderedBody = EmailTemplateRenderer.renderNoteStatusChangeTemplate(context);
-
-		Message message = new MimeMessage(session);
-		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
-		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-		message.setSubject(templateFilePath);
-		message.setContent(renderedBody, "text/html");
-		Transport.send(message);
-
-	}
+	
 
 	@Override
 	public String updateShipTo(Long rtnOrdId, String rmaNo, String updateBy, OrderAddress orderAddress) {
@@ -378,6 +351,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		}
 		return "Restocking fee and return amount updated successfully";
 	}
+	
+	
 
 	@Override
 	public List<StatusConfig> getAllStatus() {

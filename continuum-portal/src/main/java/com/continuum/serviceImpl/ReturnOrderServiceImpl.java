@@ -14,6 +14,7 @@ import javax.persistence.criteria.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +77,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	CustomerService customerService;
+	
+	@Value(PortalConstants.EMAIL_RECIPIENT)
+	private String recipient;
 
 	@Autowired
 	EmailSender emailSender;
@@ -307,9 +311,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditLogRepository.save(auditlog);
 
 			// send email to customer-RMA processor
-			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			//String recipient = PortalConstants.EMAIL_RECIPIENT;
 			try {
-
 				emailSender.sendEmail2(recipient, returnOrder.getStatus());
 			} catch (MessagingException e) {
 				e.printStackTrace();
