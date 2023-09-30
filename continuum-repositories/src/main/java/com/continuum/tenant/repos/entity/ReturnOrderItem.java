@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -44,16 +43,9 @@ public class ReturnOrderItem extends BaseEntity {
 	@OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
 	@JoinColumn(name = "returnOrderItemId")
 	private List<OrderItemDocuments> orderItemDocuments;
-
 	
 	@OneToMany(mappedBy = "returnOrderItem",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ReturnRoom> returnRooms = new HashSet<ReturnRoom>();
-	
-	
-	@OneToMany(cascade = CascadeType.PERSIST,fetch = FetchType.EAGER)
-	@JoinColumn(name = "returnOrderItemId")
-	private Set<QuestionMap> questionMap;
-
 
 	/*
 	 * @OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL}) private
@@ -84,7 +76,7 @@ public class ReturnOrderItem extends BaseEntity {
 	private String courierName;
 	private String note;
 	private String Notes;
-	private BigDecimal Amount;
+    private BigDecimal Amount;
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
 	private User user;
@@ -92,8 +84,5 @@ public class ReturnOrderItem extends BaseEntity {
 
 	private Date followUpDate;
 	private Long reasonCodeId;
-
-
-	
 
 }

@@ -78,7 +78,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
-	
+
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
@@ -166,7 +166,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 
 					if (!(PortalConstants.APPROVED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())
-							|| PortalConstants.APPROVED_AWAITING_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus()))) {
+							|| PortalConstants.APPROVED_AWAITING_TRANSIT
+									.equalsIgnoreCase(returnOrderItem.getStatus()))) {
 						// If any item is not Authorized, set allAuthorized to false
 						allAuthorized = false;
 					}
@@ -174,8 +175,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (hasRequiresMoreCustomerInfo) {
 					returnOrderEntity.setStatus("Requires More Customer Information");
-					//audit logs
-					auditLog.setDescription(returnOrderEntity.getRmaOrderNo()+ " has been updated to 'Requires More Customer Information'.Awaiting more information with customer.");
+					// audit logs
+					auditLog.setDescription(returnOrderEntity.getRmaOrderNo()
+							+ " has been updated to 'Requires More Customer Information'.Awaiting more information with customer.");
 					auditLog.setHighlight("Requires More Customer Information");
 					auditLog.setStatus("RMA Header");
 					auditLog.setRmaNo(rmaNo);
@@ -190,7 +192,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
-					
+
 				} else if (allDenied) {
 					returnOrderEntity.setStatus("RMA Denied");
 //					apply email functionality.
@@ -202,19 +204,20 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
-					//audit logs 
-					
-					auditLog.setDescription(returnOrderEntity.getRmaOrderNo()+ " has been updated to 'RMA DENIED'.");
+					// audit logs
+
+					auditLog.setDescription(returnOrderEntity.getRmaOrderNo() + " has been updated to 'RMA DENIED'.");
 					auditLog.setHighlight("RMA DENIED");
 					auditLog.setStatus("RMA Header");
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
-					
+
 				} else if (allAuthorized) {
 					returnOrderEntity.setStatus("Authorized");
-					//audit logs
-					auditLog.setDescription(returnOrderEntity.getRmaOrderNo()+ " has been updated to 'AUTHORIZED'.The return is approved,Please proceed with the necessary steps");
+					// audit logs
+					auditLog.setDescription(returnOrderEntity.getRmaOrderNo()
+							+ " has been updated to 'AUTHORIZED'.The return is approved,Please proceed with the necessary steps");
 					auditLog.setHighlight("AUTHORIZED");
 					auditLog.setStatus("RMA Header");
 					auditLog.setRmaNo(rmaNo);
