@@ -19,7 +19,7 @@ import com.di.commons.mapper.StoreMapper;
 public class StoreServiceImpl implements StoreService {
 
 	@Autowired
-	StoreRepository repository;
+	StoreRepository StoreRepository;
 
 	@Autowired
 	StoreMapper storeMapper;
@@ -27,7 +27,7 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	public String createStore(StoreDTO storeDTO) {
 		Store store = storeMapper.storeDTOToStore(storeDTO);
-		repository.save(store);
+		StoreRepository.save(store);
 		return "Store created Sucessfully";
 	}
 
@@ -42,7 +42,7 @@ public class StoreServiceImpl implements StoreService {
 			spec = spec.and(Strname);
 		}
 
-		List<Store> storeList = repository.findAll(spec);
+		List<Store> storeList = StoreRepository.findAll(spec);
 		List<StoreDTO> storeDTOList = new ArrayList<>();
 		storeList.forEach(store -> {
 			storeDTOList.add(storeMapper.storeToStoreDTO(store));

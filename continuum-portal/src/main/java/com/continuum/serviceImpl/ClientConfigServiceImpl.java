@@ -21,7 +21,7 @@ import com.di.commons.mapper.ClientMapper;
 public class ClientConfigServiceImpl implements ClientService {
 
 	@Autowired
-	ClientRepository clientRepo;
+	ClientRepository clientRepository;
 	@Autowired
 	ClientConfigRepository clientConfigRepository;
 	@Autowired
@@ -34,7 +34,7 @@ public class ClientConfigServiceImpl implements ClientService {
 	@Override
 	public String createClient(ClientDTO clientDTO) {
 		Client client = clientMapper.clientDTOToClient(clientDTO);
-		clientRepo.save(client);
+		clientRepository.save(client);
 		return "Client Added Sucessfully";
 	}
 

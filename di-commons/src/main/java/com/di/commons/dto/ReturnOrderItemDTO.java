@@ -1,13 +1,17 @@
-	package com.di.commons.dto;
+package com.di.commons.dto;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import com.continuum.tenant.repos.entity.BaseEntity;
+import com.continuum.tenant.repos.entity.QuestionMap;
 import com.continuum.tenant.repos.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -31,6 +35,7 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	private OrderAddressDTO billTo;
 	private List<OrderItemDocumentsDTO> orderItemDocuments;
     private List<ReturnRoomDTO> returnRooms;
+    
 	private String reasonCode;
 	private String returnComments;
 	private int quanity;
@@ -59,5 +64,9 @@ public class ReturnOrderItemDTO extends BaseEntity{
 
 	private Date followUpDate;
 	private String itemDesc;
-	private Long reasonCodeId;
+	
+	@OneToMany
+	@JoinColumn(name = "returnOrderItemId")
+	Set<QuestionMap> questionMap;
+
 }
