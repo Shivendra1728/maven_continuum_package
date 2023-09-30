@@ -156,4 +156,22 @@ public class P21OrderMapper {
 
 		return orderDTOList;
 	}
+	
+	public OrderDTO convertP21OrderObjectToOrderDTOForCustomer(String order)
+			throws JsonMappingException, JsonProcessingException, ParseException {
+		P21OrderDataHelper p21OrderDataHelper = objectMapper.readValue(order, P21OrderDataHelper.class);
+		
+
+		OrderDTO orderDTO = new OrderDTO();
+		List<OrderDTO> orderDTOList = new ArrayList<>();
+		List<P21OrderData> p21OrderDataList = p21OrderDataHelper.getValue();
+		for (P21OrderData p21OrderData : p21OrderDataList) {
+			orderDTO.setContactEmailId(p21OrderData.getContact_email_address());
+			CustomerDTO customerDTO = new CustomerDTO();
+
+			customerDTO.setCustomerId(p21OrderData.getCustomer_id());
+			orderDTO.setCustomer(customerDTO);
+		}
+		return orderDTO;
+}
 }

@@ -21,7 +21,7 @@ public class FileUploadController {
 	FileUploadService fileUploadService;
 
 	@PostMapping("/upload-file")
-  public List<Map<String,String>> fileUploaders(MultipartFile[] data, @RequestParam("customerId") String customerId
+  public List<Map<String,String>> fileUploaders(List<MultipartFile> data, @RequestParam("customerId") String customerId
 	) throws Exception {
 
 		List<Map<String, String>> url = azureBlobService.uploadFiles(data, customerId);

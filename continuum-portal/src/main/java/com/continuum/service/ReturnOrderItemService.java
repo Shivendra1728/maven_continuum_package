@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.continuum.tenant.repos.entity.OrderAddress;
+import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.StatusConfig;
 import com.di.commons.dto.ReturnOrderItemDTO;
 
@@ -19,7 +20,5 @@ public interface ReturnOrderItemService {
 
 	List<StatusConfig> getAllStatus();
 
-
-	
-
+	List<QuestionConfig> getQuestions();
 }

@@ -8,6 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface AzureBlobService {
 
-	List<Map<String, String>> uploadFiles(MultipartFile[] data, String customerId) throws IOException, Exception;
+	List<Map<String, String>> uploadFiles(List<MultipartFile> data, String customerId) throws IOException, Exception;
 
 }
