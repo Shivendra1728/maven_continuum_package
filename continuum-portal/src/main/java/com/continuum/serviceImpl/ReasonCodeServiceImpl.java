@@ -20,7 +20,7 @@ import com.di.commons.mapper.ReasonCodeMapper;
 public class ReasonCodeServiceImpl implements ReasonCodeService {
 
 	@Autowired
-	ReasonCodeRepository repository;
+	ReasonCodeRepository reasonCodeRepository;
 
 	@Autowired
 	ReasonCodeMapper rcMapper;
@@ -31,7 +31,7 @@ public class ReasonCodeServiceImpl implements ReasonCodeService {
 	@Override
 	public List<ReasonCode> searchReasonCodesByStoreId(Long storeId) {
 		Store store = storeRepository.findById(storeId).orElse(new Store());
-		return repository.findNestedReasonCodesByStoreId(store);
+		return reasonCodeRepository.findNestedReasonCodesByStoreId(store);
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class ReasonCodeServiceImpl implements ReasonCodeService {
 		Store store = new Store();
 		store.setId(storeId);
 		List<ReasonCodeDTO> codeDTOs = new ArrayList<>();
-		List<ReasonCode> reasonCodes = repository.findByStore(store);
+		List<ReasonCode> reasonCodes = reasonCodeRepository.findByStore(store);
 		for (ReasonCode code : reasonCodes) {
 			codeDTOs.add(rcMapper.reasonCodeToReasonCodeDTO(code));
 		}
@@ -49,7 +49,7 @@ public class ReasonCodeServiceImpl implements ReasonCodeService {
 	@Override
 	public String createOrder(ReasonCodeDTO reasonCodeDTO) {
 		ReasonCode rc = rcMapper.reasonCodeDTOToReasonCode(reasonCodeDTO);
-		repository.save(rc);
+		reasonCodeRepository.save(rc);
 		return "ReasonCode created succssfully";
 	}
 }

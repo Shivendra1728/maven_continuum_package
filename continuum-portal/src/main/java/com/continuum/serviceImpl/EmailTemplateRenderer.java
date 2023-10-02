@@ -1282,4 +1282,6 @@ public class EmailTemplateRenderer {
 
 		return null;
 	}
+
 }
+
