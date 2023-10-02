@@ -3,7 +3,9 @@ package com.continuum.serviceImpl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
@@ -11,10 +13,10 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +25,13 @@ import com.continuum.service.CustomerService;
 import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
+import com.continuum.tenant.repos.entity.QuestionMap;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
+import com.continuum.tenant.repos.repositories.QuestionRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.RmaInvoiceInfoRepository;
@@ -52,6 +56,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	ReturnOrderRepository returnOrderRepository;
 
 	@Autowired
+	private ModelMapper modelMapper;
+
+	@Autowired
 	ReturnOrderItemRepository returnOrderItemRepository;
 
 	@Autowired
@@ -59,6 +66,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	UserRepository userRepository;
+
+	@Autowired
+	QuestionRepository questionRepository;
 
 	@Autowired
 	RmaInvoiceInfoMapper rmaInvoiceInfoMapper;
@@ -73,13 +83,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	ReturnOrderMapper returnOrderMapper;
 
 	@Autowired
-	P21ReturnOrderService p21Service;
+	P21ReturnOrderService p21ReturnOrderService;
 
 	@Autowired
 	CustomerService customerService;
-	
-	@Value(PortalConstants.EMAIL_RECIPIENT)
-	private String recipient;
 
 	@Autowired
 	EmailSender emailSender;
@@ -88,9 +95,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
-		P21RMAResponse p21RMAResponse = p21Service.createReturnOrder(returnOrderDTO);
-		logger.info("orderNo::: " + p21RMAResponse.getRmaOrderNo() + " status: " + p21RMAResponse.getStatus());
-		return p21RMAResponse;
+		P21RMAResponse p21RMARespo =  p21ReturnOrderService.createReturnOrder(returnOrderDTO);
+		logger.info("orderNo::: " + p21RMARespo.getRmaOrderNo() + " status: " + p21RMARespo.getStatus());
+		return p21RMARespo;
 	}
 
 	// @Async
@@ -103,8 +110,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		returnOrderDTO.setRequestedDate(new Date());
 		// returnOrderDTO.setStatus(p21RMARespo.getStatus());
 
-		String status = p21RMARespo.getStatus();
-		if (status.equals(PortalConstants.SUCCESS)) {
+		String Status = p21RMARespo.getStatus();
+		if (Status.equals(PortalConstants.SUCCESS)) {
 			returnOrderDTO.setStatus(PortalConstants.RETURN_REQUESTED);
 
 			logger.info("Setting status to:: '{}'", PortalConstants.RETURN_REQUESTED);
@@ -159,13 +166,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
 		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
-
 	}
 
 	@Override
 	public List<ReturnOrderDTO> getReturnOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) {
 
-		Specification<ReturnOrder> specification = Specification.where(null);
+		Specification<ReturnOrder> spec = Specification.where(null);
 
 		if (isNotNullAndNotEmpty(orderSearchParameters.getZipcode())) {
 			Specification<ReturnOrder> zipcodeSpec = (root, query, builder) -> {
@@ -174,7 +180,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 						orderSearchParameters.getZipcode());
 				return builder.and(zipcodePredicate);
 			};
-			specification = specification.and(zipcodeSpec);
+			spec = spec.and(zipcodeSpec);
 		}
 		if (isNotNullAndNotEmpty(orderSearchParameters.getCustomerId())) {
 			Specification<ReturnOrder> customerIdSpec = (root, query, builder) -> {
@@ -183,27 +189,27 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 						orderSearchParameters.getCustomerId());
 				return builder.and(customerIdPredicate);
 			};
-			specification = specification.and(customerIdSpec);
+			spec = spec.and(customerIdSpec);
 		}
 
 		if (isNotNullAndNotEmpty(orderSearchParameters.getPoNo())) {
 			Specification<ReturnOrder> poNoSpec = (root, query, builder) -> builder.equal(root.get("PONumber"),
 					orderSearchParameters.getPoNo());
-			specification = specification.and(poNoSpec);
+			spec = spec.and(poNoSpec);
 		}
 
 		if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
 			Specification<ReturnOrder> poNoSpec = (root, query, builder) -> builder.equal(root.get("invoiceNo"),
 					orderSearchParameters.getInvoiceNo());
-			specification = specification.and(poNoSpec);
+			spec = spec.and(poNoSpec);
 		}
 
-		List<ReturnOrder> returnOrderList = returnOrderRepository.findAll(specification);
-		List<ReturnOrderDTO> returnOrderDTOList = new ArrayList<>();
-		returnOrderList.forEach(returnOrder -> {
-			returnOrderDTOList.add(returnOrderMapper.returnOrderToReturnOrderDTO(returnOrder));
+		List<ReturnOrder> poList = returnOrderRepository.findAll(spec);
+		List<ReturnOrderDTO> poDTOList = new ArrayList<>();
+		poList.forEach(returnOrder -> {
+			poDTOList.add(returnOrderMapper.returnOrderToReturnOrderDTO(returnOrder));
 		});
-		return returnOrderDTOList;
+		return poDTOList;
 	}
 
 	public boolean isNotNullAndNotEmpty(String str) {
@@ -230,44 +236,82 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			if (user.getRoles().getId() == 1 || user.getRoles().getId() == 2) {
 				List<ReturnOrder> returnOrderEntities = returnOrderRepository.findAll();
 
-				returnOrderDTOs = findNextActivityDate(returnOrderEntities);
+				returnOrderDTOs = returnOrderEntities.stream()
+
+						.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
+
+//				List<ReturnOrderDTO> returnOrderDTOList = returnOrder.stream()
+
+//			            .map(returnOrderMapper::returnOrderToReturnOrderDTO)
+
+//			            .collect(Collectors.toList());
+
+				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
+
+					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
+
+					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
+
+						Date currentDate = new Date(); // Current date
+
+						List<Date> upcomingDates = returnOrderItems.stream()
+
+								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
+																									// ReturnOrderItemDTO
+
+								.filter(date -> date != null && date.after(currentDate))
+
+								.collect(Collectors.toList());
+
+						upcomingDates.sort(Date::compareTo);
+
+						if (!upcomingDates.isEmpty()) {
+
+							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
+
+						}
+
+					}
+
+				}
 			} else {
 				List<ReturnOrder> returnOrder = returnOrderRepository.findByUserId(userId);
 				List<ReturnOrder> returnOrder1 = returnOrderRepository.findAll();
-				for(ReturnOrder ro : returnOrder1) {
-					if(ro.getUser() == null) {
+				for (ReturnOrder ro : returnOrder1) {
+					if (ro.getUser() == null) {
 						returnOrder.add(ro);
 					}
 				}
-				returnOrderDTOs = findNextActivityDate(returnOrder);
-			}
-		}
-		return returnOrderDTOs;
+				returnOrderDTOs = returnOrder.stream()
 
-	}
+						.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
 
-	private List<ReturnOrderDTO> findNextActivityDate(List<ReturnOrder> returnOrderEntities) {
-		List<ReturnOrderDTO> returnOrderDTOs;
-		returnOrderDTOs = returnOrderEntities.stream().map(returnOrderMapper::returnOrderToReturnOrderDTO)
-				.collect(Collectors.toList());
+				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
 
-		for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
+					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
 
-			List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
+					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
 
-			if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
+						Date currentDate = new Date(); // Current date
 
-				Date currentDate = new Date(); // Current date
+						List<Date> upcomingDates = returnOrderItems.stream()
 
-				List<Date> upcomingDates = returnOrderItems.stream()
-						.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate())
-						.filter(date -> date != null && date.after(currentDate)).collect(Collectors.toList());
+								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
+																									// ReturnOrderItemDTO
 
-				upcomingDates.sort(Date::compareTo);
+								.filter(date -> date != null && date.after(currentDate))
 
-				if (!upcomingDates.isEmpty()) {
+								.collect(Collectors.toList());
 
-					returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
+						upcomingDates.sort(Date::compareTo);
+
+						if (!upcomingDates.isEmpty()) {
+
+							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
+
+						}
+
+					}
 
 				}
 
@@ -275,6 +319,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		}
 		return returnOrderDTOs;
+
 	}
 
 	@Override
@@ -291,9 +336,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	public String updateReturnOrder(String rmaNo, String updateBy, String status) {
 		Optional<ReturnOrder> optionalItem = returnOrderRepository.findByRmaOrderNo(rmaNo);
+
 		if (optionalItem.isPresent()) {
 			ReturnOrder returnOrder = optionalItem.get();
-			
+
 			returnOrder.setStatus(status);
 
 			returnOrderRepository.save(returnOrder);
@@ -311,8 +357,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditLogRepository.save(auditlog);
 
 			// send email to customer-RMA processor
-			//String recipient = PortalConstants.EMAIL_RECIPIENT;
+			String recipient = PortalConstants.EMAIL_RECIPIENT;
 			try {
+
 				emailSender.sendEmail2(recipient, returnOrder.getStatus());
 			} catch (MessagingException e) {
 				e.printStackTrace();
@@ -329,11 +376,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Override
 	public String getSearchRmaInvoiceinfo() throws Exception {
-		List<RmaInvoiceInfo> rmaInvoiceInfoList = rmaInvoiceInfoRepository.findAll();
+		List<RmaInvoiceInfo> rma = rmaInvoiceInfoRepository.findAll();
 
 		List<RmaInvoiceInfoDTO> rmaDTOList = new ArrayList<>();
 
-		for (RmaInvoiceInfo rmaInvoiceInfo : rmaInvoiceInfoList) {
+		for (RmaInvoiceInfo rmaInvoiceInfo : rma) {
 			RmaInvoiceInfoDTO rmaInvoiceInfoDTO = new RmaInvoiceInfoDTO();
 
 			// Manually set properties of rmaInvoiceInfoDTO based on rmaInvoiceInfo
@@ -348,11 +395,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			if (retryCount < 3) {
 				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo);
 				if (bln) {
-					Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
+					Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 
-					if (optionalReturnOrder.isPresent()) {
+					if (ro.isPresent()) {
 
-						ReturnOrder returnOrder = optionalReturnOrder.get();
+						ReturnOrder returnOrder = ro.get();
 						returnOrder.setISInvoiceLinked(true);
 						returnOrderRepository.save(returnOrder);
 
@@ -383,7 +430,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			for (ReturnOrderItem returnOrderItem : returnOrderItemList) {
 				if (returnOrderItem.getUser() == null) {
 					returnOrderItem.setUser(user);
-					returnOrderItem.setStatus(PortalConstants.UNDER_REVIEW);
 					returnOrderItemRepository.save(returnOrderItem);
 				}
 			}
@@ -391,6 +437,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setNote(note.getNote());
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
 			returnOrderRepository.save(returnOrder);
+
+//			apply email functionality.
+			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			try {
+
+				emailSender.sendEmail3(recipient, returnOrder.getStatus(), returnOrder.getCustomer().getDisplayName(),
+						returnOrder.getRmaOrderNo());
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Assign RMA");
@@ -408,4 +464,14 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	}
 
+	public List<ReturnOrderItem> returnOrderItemDTOToReturnOrderItem(List<ReturnOrderItemDTO> returnOrderItemDTOList) {
+		List<ReturnOrderItem> returnOrderItemList = new ArrayList<>();
+
+		for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
+			ReturnOrderItem returnOrderItem = modelMapper.map(returnOrderItemDTO, ReturnOrderItem.class);
+			returnOrderItemList.add(returnOrderItem);
+		}
+
+		return returnOrderItemList;
+	}
 }
