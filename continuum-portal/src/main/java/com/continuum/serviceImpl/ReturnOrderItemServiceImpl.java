@@ -1,6 +1,7 @@
 package com.continuum.serviceImpl;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -241,6 +242,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			if ("Authorized Awaiting Transit".equals(updatedItem.getStatus())) {
 				try {
 					sendEmail1(recipient, updatedItem.getStatus());
+					emailSender.sendEmailToVender(recipient, updatedItem.getStatus());
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
@@ -291,9 +293,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
+			
+			java.util.Date followUpDate = updateNote.getFollowUpDate();
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
+			String formattedDate = simpleDateFormat.format(followUpDate);
 			try {
-				sendNoteEmail(recipient, updateBy);
-
+				emailSender.emailToCustomer(recipient, updateBy, formattedDate);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
