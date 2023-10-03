@@ -74,7 +74,7 @@ public class CustomerServiceImpl implements CustomerService {
 		return customerMapper.cusotmerTocusotmerDTO(customer);
 	}
 
-	public CustomerDTO createCustomer(CustomerDTO customerDTO) throws MessagingException {
+	public String createCustomerInDB(CustomerDTO customerDTO) {
 
 		OrderDTO orderDTO = null;
 
@@ -84,12 +84,16 @@ public class CustomerServiceImpl implements CustomerService {
 			e.printStackTrace();
 		}
 		if (orderDTO != null) {
+			if(orderDTO.getCustomer()==null) {
+				return "You are not a customer of us!";
+			}
 			if (userRepository.existsByEmail(customerDTO.getEmail())) {
-				throw new MessagingException("Email already exists.");
+				return "Email already exists.";
 			}
 
 			Customer customer = new Customer();
 			customer.setCustomerId(orderDTO.getCustomer().getCustomerId());
+			
 			customerRepository.save(customer);
 
 			User user = new User();
@@ -103,11 +107,11 @@ public class CustomerServiceImpl implements CustomerService {
 			user.setCustomer(customer);
 			user.setFullName("None");
 			userRepository.save(user);
-			return customerMapper.cusotmerTocusotmerDTO(customer);
+			return "Customer Signed Up SuccessFully";
 
 		} else {
 
-			throw new MessagingException("You are not a customer of Us!");
+			return "You are not a customer of Us!";
 
 		}
 
@@ -164,6 +168,12 @@ public class CustomerServiceImpl implements CustomerService {
 			logger.error("An error occurred while preparing the order URI: {}", e.getMessage());
 
 		}
+		return null;
+	}
+
+	@Override
+	public CustomerDTO createCustomer(CustomerDTO custDTO) throws Exception {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }
