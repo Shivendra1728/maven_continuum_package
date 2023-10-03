@@ -103,7 +103,7 @@ public class EmailSender {
 		VelocityContext context = new VelocityContext();
 
 		context.put("rma_status", updatedRMAStatus);
-
+		context.put("message", "Sample Message");
 		String renderedBody = EmailTemplateRenderer.renderRMAStatusChangeTemplate(context);
 
 		Message message = new MimeMessage(session);
@@ -244,6 +244,69 @@ public class EmailSender {
 		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
 		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
 		message.setSubject("WE ARE SORRY , YOUR RMA IS DENIED.");
+		message.setContent(renderedBody, "text/html");
+		Transport.send(message);
+
+	}
+	
+	public void sendEmailToVender(String recipient, String LineItemStatus) throws MessagingException {
+		Properties props = new Properties();
+
+		props.put(PortalConstants.SMTP_HOST, mailHost);
+		props.put(PortalConstants.SMTP_PORT, mailPort);
+		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
+		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
+
+		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
+			}
+		});
+		
+		String templateFilePath = PortalConstants.RMAStatus;
+		VelocityContext context = new VelocityContext();
+		context.put("AssignedUser", "Sample user");
+		context.put("partNumber", "Sample Name");
+		context.put("vendorName", "Sample Vendername");
+		context.put("LineItemStatus", LineItemStatus);
+		
+		String renderedBody = EmailTemplateRenderer.renderVenderLineItemtatus(context);
+		Message message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
+		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+		message.setSubject(templateFilePath);
+		message.setContent(renderedBody, "text/html");
+		Transport.send(message);
+
+	}
+	
+	public void emailToCustomer(String email, String name, String formattedDate) throws MessagingException {
+		User existingUser = userRepository.findByEmail(email);
+
+		Properties props = new Properties();
+
+		props.put(PortalConstants.SMTP_HOST, mailHost);
+		props.put(PortalConstants.SMTP_PORT, mailPort);
+		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
+		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
+
+		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
+			}
+		});
+
+		String templateFilePath = PortalConstants.NOTE_STATUS;
+		VelocityContext context = new VelocityContext();
+
+		context.put("name", name);
+		context.put("date", formattedDate);
+		String renderedBody = EmailTemplateRenderer.renderCustomerNoteStatus(context);
+
+		Message message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
+		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+		message.setSubject(templateFilePath);
 		message.setContent(renderedBody, "text/html");
 		Transport.send(message);
 
