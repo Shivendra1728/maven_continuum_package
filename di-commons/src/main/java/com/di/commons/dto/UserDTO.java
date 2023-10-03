@@ -2,6 +2,7 @@ package com.di.commons.dto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.continuum.tenant.repos.entity.BaseEntity;
@@ -70,6 +71,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 	private String fullName;
 	@JsonIgnore
 	private String uuid;
+	private Date resetTokenExpiration;
 	// private String url;
 
 	private User_Address user_Address;

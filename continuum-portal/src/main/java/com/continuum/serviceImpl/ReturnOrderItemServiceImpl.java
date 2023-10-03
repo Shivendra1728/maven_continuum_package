@@ -40,6 +40,7 @@ import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
 import com.continuum.tenant.repos.repositories.StatusConfigRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ReturnOrderItemDTO;
+import java.util.*;
 
 @Service
 public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
@@ -98,13 +99,47 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			// Update only the fields that are not null in updatedItem
 			if (updatedItem.getStatus() != null) {
 				existingItem.setStatus(updatedItem.getStatus());
-				auditLog.setDescription(updateBy + " has changed status of " + existingItem.getItemName() + " from "
-						+ previousStatus + " to " + updatedItem.getStatus());
-				auditLog.setHighlight("status");
+				if (updatedItem.getStatus().equalsIgnoreCase("Under Review")) {
+					auditLog.setDescription(existingItem.getItemName() + " has been assigned to the 'Under Review' by "
+							+ updateBy + ".");
+					auditLog.setHighlight("Under Review");
+				}
+				if (updatedItem.getStatus().equalsIgnoreCase("Requires more customer  information")) {
+					auditLog.setDescription(existingItem.getItemName()
+							+ " has been assigned to the 'Requires more customer  information' by " + updateBy + ".");
+					auditLog.setHighlight("Requires more customer  information");
+				}
+				if (updatedItem.getStatus().equalsIgnoreCase("Awaiting Vendor approval")) {
+					auditLog.setDescription(existingItem.getItemName()
+							+ " has been assigned to the 'Awaiting Vendor approval' by " + updateBy + ".");
+					auditLog.setHighlight("Awaiting Vendor approval");
+				}
+				if (updatedItem.getStatus().equalsIgnoreCase("Awaiting Carrier approval")) {
+					auditLog.setDescription(existingItem.getItemName()
+							+ " has been assigned to the 'Awaiting Carrier approval' by " + updateBy + ".");
+					auditLog.setHighlight("Awaiting Carrier approval");
+				}
+				if (updatedItem.getStatus().equalsIgnoreCase("Authorized Awaiting Transit")) {
+					auditLog.setDescription(existingItem.getItemName()
+							+ " has been assigned to the 'Authorized Awaiting Transit' by " + updateBy + ".");
+					auditLog.setHighlight("Authorized Awaiting Transit");
+				}
+				if (updatedItem.getStatus().equalsIgnoreCase("Authorized In Transit")) {
+					auditLog.setDescription(existingItem.getItemName()
+							+ " has been assigned to the 'Authorized In Transit' by " + updateBy + ".");
+					auditLog.setHighlight("Authorized In Transit'");
+				}
+				if (updatedItem.getStatus().equalsIgnoreCase("RMA line Denied")) {
+					auditLog.setDescription(existingItem.getItemName()
+							+ " has been assigned to the 'RMA line Denied' by " + updateBy + ".");
+					auditLog.setHighlight("RMA line Denied");
+				}
+
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
 				auditLog.setUserName(updateBy);
 			}
+
 			if (updatedItem.getProblemDesc() != null) {
 				existingItem.setProblemDesc(updatedItem.getProblemDesc());
 				auditLog.setDescription(
@@ -207,9 +242,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 					// audit logs
 
-					auditLog.setDescription(returnOrderEntity.getRmaOrderNo() + " has been updated to 'RMA DENIED'.");
-					auditLog.setHighlight("RMA DENIED");
-					auditLog.setStatus("RMA Header");
+					auditLog.setDescription(returnOrderEntity.getRmaOrderNo() + " has been updated to 'DENIED'.");
+					auditLog.setHighlight("DENIED");
+					auditLog.setStatus("RMA");
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
@@ -218,9 +253,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					returnOrderEntity.setStatus("Authorized");
 					// audit logs
 					auditLog.setDescription(returnOrderEntity.getRmaOrderNo()
-							+ " has been updated to 'AUTHORIZED'.The return is approved,Please proceed with the necessary steps");
+							+ " has been updated to 'AUTHORIZED'.The return is approved,Please proceed with the necessary steps.");
 					auditLog.setHighlight("AUTHORIZED");
-					auditLog.setStatus("RMA Header");
+					auditLog.setStatus("RMA");
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
@@ -285,16 +320,21 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnRoomRepository.save(returnRoom);
 
 			AuditLog auditLog = new AuditLog();
-			auditLog.setTitle("Returned Activity");
-			auditLog.setDescription(
-					updateBy + " as added a new note in the ordered item - " + existingItem.getItemName());
-			auditLog.setHighlight("note");
+			
+			if (updateBy.equalsIgnoreCase(user.getFirstName() + " " + user.getLastName())) {
+				auditLog.setDescription("A note has been assigned to " + user.getFirstName() + " " + user.getLastName()
+						+ ". Please review the details and take necessary action.");	
+			} else {
+				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
+						+ user.getLastName() + ". Please review the details and take necessary action.");
+			}
+			auditLog.setHighlight("");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
-			
-			java.util.Date followUpDate = updateNote.getFollowUpDate();
+
+			Date followUpDate = updateNote.getFollowUpDate();
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
 			String formattedDate = simpleDateFormat.format(followUpDate);
 			try {
@@ -379,30 +419,76 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	@Override
 	public String updateShipTo(Long rtnOrdId, String rmaNo, String updateBy, OrderAddress orderAddress) {
 
-		Optional<ReturnOrderItem> ro = returnOrderItemRepository.findById(rtnOrdId);
+		Optional<ReturnOrderItem> optionalReturnOrder = returnOrderItemRepository.findById(rtnOrdId);
+		StringBuilder stringBuilder = new StringBuilder();
+		if (optionalReturnOrder.isPresent()) {
+			ReturnOrderItem returnOrderItem =optionalReturnOrder.get();
 
-		if (ro.isPresent()) {
-			ReturnOrderItem returnOrderItem = ro.get();
-
-			returnOrderItem.getShipTo().setAddressType(orderAddress.getAddressType());
-			returnOrderItem.getShipTo().setFax(orderAddress.getFax());
-			returnOrderItem.getShipTo().setStreet1(orderAddress.getStreet1());
-			returnOrderItem.getShipTo().setStreet2(orderAddress.getStreet2());
-			returnOrderItem.getShipTo().setZipcode(orderAddress.getZipcode());
-			returnOrderItem.getShipTo().setCity(orderAddress.getCity());
-			returnOrderItem.getShipTo().setCountry(orderAddress.getCountry());
-			returnOrderItem.getShipTo().setProvince(orderAddress.getProvince());
-			returnOrderItem.getShipTo().setPhoneNumber(orderAddress.getPhoneNumber());
-			returnOrderItem.getShipTo().setFirstName(orderAddress.getFirstName());
-			returnOrderItem.getShipTo().setLastName(orderAddress.getLastName());
-			returnOrderItem.getShipTo().setEmailAddress(orderAddress.getEmailAddress());
-
+			if (orderAddress.getFirstName() != null) {
+				returnOrderItem.getShipTo().setFirstName(orderAddress.getFirstName());
+				stringBuilder.append("First Name has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			if (orderAddress.getLastName() != null) {
+				returnOrderItem.getShipTo().setLastName(orderAddress.getLastName());
+				stringBuilder.append("Last Name has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			if (orderAddress.getAddressType() != null) {
+				returnOrderItem.getShipTo().setAddressType(orderAddress.getAddressType());
+				stringBuilder.append("Address Type has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			if (orderAddress.getFax() != null) {
+				returnOrderItem.getShipTo().setFax(orderAddress.getFax());
+				stringBuilder.append("Fax has been updated in shipping information of " + returnOrderItem.getItemName() + " by "
+						+ updateBy + ";");
+			}
+			if (orderAddress.getStreet1() != null) {
+				returnOrderItem.getShipTo().setStreet1(orderAddress.getStreet1());
+				stringBuilder.append("Street1 has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			if (orderAddress.getStreet2() != null) {
+				returnOrderItem.getShipTo().setStreet2(orderAddress.getStreet2());
+				stringBuilder.append("Street2 has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			if (orderAddress.getZipcode() != null) {
+				returnOrderItem.getShipTo().setZipcode(orderAddress.getZipcode());
+				stringBuilder.append("Zipcode has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			if (orderAddress.getCity() != null) {
+				returnOrderItem.getShipTo().setCity(orderAddress.getCity());
+				stringBuilder.append("City has been updated in shipping information of " + returnOrderItem.getItemName() + " by "
+						+ updateBy + ";");
+			}
+			if (orderAddress.getCountry() != null) {
+				returnOrderItem.getShipTo().setCountry(orderAddress.getCountry());
+				stringBuilder.append("Country has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			if (orderAddress.getProvince() != null) {
+				returnOrderItem.getShipTo().setProvince(orderAddress.getProvince());
+				stringBuilder.append("Province has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			if (orderAddress.getPhoneNumber() != null) {
+				returnOrderItem.getShipTo().setPhoneNumber(orderAddress.getPhoneNumber());
+				stringBuilder.append("Phone Number has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			if (orderAddress.getEmailAddress() != null) {
+				returnOrderItem.getShipTo().setEmailAddress(orderAddress.getEmailAddress());
+				stringBuilder.append("Email Address has been updated in shipping information of " + returnOrderItem.getItemName()
+						+ " by " + updateBy + ";");
+			}
+			String res = stringBuilder.toString();
 			returnOrderItemRepository.save(returnOrderItem);
-
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
-			auditLog.setDescription(
-					updateBy + "has updated shipping info for ordered item " + returnOrderItem.getItemName());
+			auditLog.setDescription(res);
 			auditLog.setHighlight("shipping info");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
@@ -421,6 +507,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		Optional<ReturnOrderItem> returnorderitem = returnOrderItemRepository.findById(id);
 		if (returnorderitem.isPresent()) {
 			ReturnOrderItem roi = returnorderitem.get();
+			BigDecimal preRestocking = roi.getReStockingAmount();
 
 			BigDecimal newReturnAmoun = roi.getAmount().subtract(reStockingAmount);
 
@@ -436,8 +523,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnOrderItemRepository.save(roi);
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
-			auditLog.setDescription(updateBy + " has updated restocking fee for ordered item: " + roi.getItemName());
-			auditLog.setHighlight("restocking fee");
+			auditLog.setDescription(updateBy + " has been updated the restocking fee for the " + roi.getItemName()
+					+ " from " + preRestocking + " to " + roi.getReStockingAmount() + ".");
+			auditLog.setHighlight("");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);

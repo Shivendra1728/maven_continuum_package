@@ -147,11 +147,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		// audit log
 
 		AuditLog auditlog = new AuditLog();
-		auditlog.setHighlight("rma request");
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-		String described = customerDTO.getDisplayName() + " submitted the new rma request. Order ID- TLD-"
-				+ returnOrderDTO.getRmaOrderNo();
+		String described = returnOrder.getRmaOrderNo()+" has been updated to 'Return Requested'.";
 		auditlog.setDescription(described);
+		auditlog.setHighlight("Return Requested");
 		auditlog.setStatus("Inbox");
 		auditlog.setTitle("Return Order");
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
@@ -345,9 +344,32 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			// audit log saving
 
 			AuditLog auditlog = new AuditLog();
-			auditlog.setHighlight("rma status");
-			String described = updateBy + " has changed rma status to " + returnOrder.getStatus();
-			auditlog.setDescription(described);
+			if(returnOrder.getStatus().equalsIgnoreCase("Return Requested")) {
+				String described = rmaNo+" has been updated to 'Return Requested'.";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Return Requested");
+			}
+			if(returnOrder.getStatus().equalsIgnoreCase("Under Review")) {
+				String described = rmaNo+" is now at 'Under Review'. ";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Under Review");
+			}
+			if(returnOrder.getStatus().equalsIgnoreCase("Requires More Customer Information")) {
+				String described = rmaNo+" has been updated to 'Requires More Customer Information'. Awaiting more information with customer";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Requires More Customer Information");
+			}
+			if(returnOrder.getStatus().equalsIgnoreCase("Authorized")) {
+				String described = rmaNo+" has been updated to 'Authorized'. The return is approved. Please proceed with the necessary steps.";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Authorized");
+			}
+			if(returnOrder.getStatus().equalsIgnoreCase("Denied")) {
+				String described = rmaNo+" has been updated to 'Denied'. ";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Denied");
+			}
+			
 			auditlog.setStatus("RMA");
 			auditlog.setTitle("Return Order");
 			auditlog.setRmaNo(returnOrder.getRmaOrderNo());
@@ -437,6 +459,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
 			repository.save(returnOrder);
 
+			
 //			apply email functionality.
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
 			try {
@@ -449,8 +472,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Assign RMA");
-			auditLog.setDescription(returnOrder.getRmaOrderNo()+" has been assigned to the"+ user.getFirstName()+" "+user.getLastName()+".");
-			auditLog.setHighlight("assign");
+			auditLog.setDescription(returnOrder.getRmaOrderNo()+" has been assigned to the "+ user.getFirstName()+" "+user.getLastName()+"."+";"+rmaNo+" is now at 'Under Review'. ");
+			auditLog.setHighlight("Under Review");
 			auditLog.setStatus("RMA");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditLog.setUserName(updateBy);
