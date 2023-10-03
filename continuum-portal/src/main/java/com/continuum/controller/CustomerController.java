@@ -35,11 +35,18 @@ public class CustomerController {
 
 	}
 
-	@PostMapping("/signupCust")
+	
 
 	public CustomerDTO createCustomer(@RequestBody CustomerDTO customerDTO) throws Exception {
 
 		return customerService.createCustomer(customerDTO);
+
+	}
+	
+	@PostMapping("/signupCust")
+	public String createCustomerInDB(@RequestBody CustomerDTO customerDTO)  {
+
+		return customerService.createCustomerInDB(customerDTO);
 
 	}
 
