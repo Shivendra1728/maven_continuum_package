@@ -71,7 +71,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 	private String fullName;
 	@JsonIgnore
 	private String uuid;
-	private Date resetTokenExpiration;
+	private Date resetTokenExpiration; 
 	// private String url;
 
 	private User_Address user_Address;

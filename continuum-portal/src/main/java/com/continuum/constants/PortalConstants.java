@@ -24,7 +24,7 @@ public final class PortalConstants {
 	public static final String EMAIL_RECIPIENT = "priyanshi.porwal@bytesfarms.com";
 	public static final String EMAIL_SUBJECT_PREFIX = "Your RMA Return Order ";
 	public static final String EMAIL_BODY_PREFIX = "Your RMA status is ";
-	public static final String FPasswordLink = "CHANGE YOUR PASSWORD.";
+	public static final String FPasswordLink = "Change Your Password.";
 	public static final String ReturnOrderLineItemStatus = "Update Your Tracking Code.";
 	public static final String RMAStatus = "Your RMA Status is Changed.";
 	public static final String NOTE_STATUS = "NOTE STATUS.";

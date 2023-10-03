@@ -79,7 +79,7 @@ public class User extends BaseEntity implements Serializable {
 //	private boolean secured;
 	@JsonIgnore
 	private String uuid;
-	private Date resetTokenExpiration;
+	private Date resetTokenExpiration; // to reset password
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "useraddressuserid")

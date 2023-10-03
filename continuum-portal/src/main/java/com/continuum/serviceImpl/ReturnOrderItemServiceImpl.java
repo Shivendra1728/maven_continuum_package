@@ -489,7 +489,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(res);
-			auditLog.setHighlight("shipping info");
+			auditLog.setHighlight("");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
@@ -506,25 +506,25 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			ReturnOrderItemDTO returnOrderItemDTO) {
 		Optional<ReturnOrderItem> returnorderitem = returnOrderItemRepository.findById(id);
 		if (returnorderitem.isPresent()) {
-			ReturnOrderItem roi = returnorderitem.get();
-			BigDecimal preRestocking = roi.getReStockingAmount();
+			ReturnOrderItem returnOrderItem = returnorderitem.get();
+			BigDecimal preRestocking = returnOrderItem.getReStockingAmount();
 
-			BigDecimal newReturnAmoun = roi.getAmount().subtract(reStockingAmount);
+			BigDecimal newReturnAmoun = returnOrderItem.getAmount().subtract(reStockingAmount);
 
-			roi.setReStockingAmount(reStockingAmount);
-			roi.setReturnAmount(newReturnAmoun);
+			returnOrderItem.setReStockingAmount(reStockingAmount);
+			returnOrderItem.setReturnAmount(newReturnAmoun);
 
 			if (returnOrderItemDTO.getNotes() != null) {
-				roi.setNotes(returnOrderItemDTO.getNotes());
+				returnOrderItem.setNotes(returnOrderItemDTO.getNotes());
 			}
 
 			// roi.setNotes(returnOrderItemDTO.getNotes());
 
-			returnOrderItemRepository.save(roi);
+			returnOrderItemRepository.save(returnOrderItem);
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
-			auditLog.setDescription(updateBy + " has been updated the restocking fee for the " + roi.getItemName()
-					+ " from " + preRestocking + " to " + roi.getReStockingAmount() + ".");
+			auditLog.setDescription(updateBy + " has been updated the restocking fee for the " + returnOrderItem.getItemName()
+					+ " from " + preRestocking + " to " + returnOrderItem.getReStockingAmount() + ".");
 			auditLog.setHighlight("");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);

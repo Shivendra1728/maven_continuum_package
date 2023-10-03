@@ -472,12 +472,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Assign RMA");
-			auditLog.setDescription(returnOrder.getRmaOrderNo()+" has been assigned to the "+ user.getFirstName()+" "+user.getLastName()+"."+";"+rmaNo+" is now at 'Under Review'. ");
+			auditLog.setDescription(returnOrder.getRmaOrderNo()+" has been assigned to the "+ user.getFirstName()+" "+user.getLastName()+"."+";"+rmaNo+" is now at 'Under Review'. "); 
 			auditLog.setHighlight("Under Review");
 			auditLog.setStatus("RMA");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditLog.setUserName(updateBy);
-			audrepo.save(auditLog);
+			audrepo.save(auditLog); // capture in audit log
 
 			return "Assiged RMA to User";
 
