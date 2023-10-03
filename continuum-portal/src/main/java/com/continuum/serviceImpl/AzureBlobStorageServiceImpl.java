@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -55,14 +57,30 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 				BlobClient blobClient = containerClient
 						.getBlobClient(customerId + formatter.format(now) + "/" + fileName);
 
-				InputStream inputStream = file.getInputStream();
+				boolean fileAlreadyExists = false;
 
-				blobClient.upload(inputStream, file.getSize());
+				for (Map<String, String> existingMap : list) {
+					if (existingMap.containsValue(fileName)) {
+						fileAlreadyExists = true;
+						break;
+					}
+				}
 
-				fileUrl.put("image", fileName);
-				fileUrl.put("url", blobClient.getBlobUrl());
+				if (!fileAlreadyExists) {
+					InputStream inputStream = file.getInputStream();
 
-				list.add(fileUrl);
+					blobClient.upload(inputStream, file.getSize());
+
+					fileUrl.put("image", fileName);
+					fileUrl.put("url", blobClient.getBlobUrl());
+
+					list.add(fileUrl);
+
+					inputStream.close();
+
+				} else {
+					continue;
+				}
 
 			} else {
 
@@ -89,5 +107,4 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 		return "";
 	}
 
-	
 }

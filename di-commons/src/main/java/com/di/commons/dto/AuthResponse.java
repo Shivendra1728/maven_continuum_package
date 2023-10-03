@@ -1,6 +1,7 @@
 package com.di.commons.dto;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import com.continuum.tenant.repos.entity.Role;
 
@@ -22,7 +23,9 @@ public class AuthResponse implements Serializable {
 	private String customer;
 	private String name;
 
-	public AuthResponse(String userName, String name, String token, Role role, long userId, String customer) {
+	private Date expirationDate;
+
+	public AuthResponse(String userName, String name, String token, Role role, long userId, String customer, Date expirationDate) {
 
 		this.userName = userName;
 		this.name = name;
@@ -33,6 +36,7 @@ public class AuthResponse implements Serializable {
 
 		this.userId = userId;
 		this.customer = customer;
+		this.expirationDate=expirationDate;
 
 	}
 
@@ -113,6 +117,21 @@ public class AuthResponse implements Serializable {
 	public AuthResponse setToken(String token) {
 
 		this.token = token;
+
+		return this;
+
+	}
+	
+	
+	public Date getExpirationDate() {
+
+		return expirationDate;
+
+	}
+
+	public AuthResponse setExpirationDate(Date expirationDate) {
+
+		this.expirationDate=expirationDate;
 
 		return this;
 
