@@ -15,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.config.ConfigData;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -22,12 +23,14 @@ import com.continuum.constants.PortalConstants;
 import com.continuum.service.CustomerService;
 import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.AuditLog;
+import com.continuum.tenant.repos.entity.ClientConfig;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
+import com.continuum.tenant.repos.repositories.ClientConfigRepository;
 import com.continuum.tenant.repos.repositories.QuestionRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
@@ -62,6 +65,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	AuditLogRepository auditLogRepository;
 
 	@Autowired
+	ClientConfigRepository clientConfigRepository;
+
+	@Autowired
 	UserRepository userRepository;
 
 	@Autowired
@@ -89,6 +95,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	EmailSender emailSender;
 
 	ReturnOrder returnOrder;
+
+	@Autowired
+	ClientConfig clientConfig;
 
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
@@ -129,7 +138,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			}
 		}
 		returnOrderDTO.setCustomer(customerDTO);
-		
 
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		returnOrderRepository.save(returnOrder);
@@ -147,8 +155,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		// audit log
 
 		AuditLog auditlog = new AuditLog();
+
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-		String described = returnOrder.getRmaOrderNo()+" has been updated to 'Return Requested'.";
+		String described = getRmaaQualifier() + returnOrder.getRmaOrderNo()
+				+ " has been updated to 'Return Requested'.";
 		auditlog.setDescription(described);
 		auditlog.setHighlight("Return Requested");
 		auditlog.setStatus("Inbox");
@@ -344,32 +354,34 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			// audit log saving
 
 			AuditLog auditlog = new AuditLog();
-			if(returnOrder.getStatus().equalsIgnoreCase("Return Requested")) {
-				String described = rmaNo+" has been updated to 'Return Requested'.";
+			if (returnOrder.getStatus().equalsIgnoreCase("Return Requested")) {
+				String described = rmaNo + " has been updated to 'Return Requested'.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Return Requested");
 			}
-			if(returnOrder.getStatus().equalsIgnoreCase("Under Review")) {
-				String described = rmaNo+" is now at 'Under Review'. ";
+			if (returnOrder.getStatus().equalsIgnoreCase("Under Review")) {
+				String described = rmaNo + " is now at 'Under Review'. ";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Under Review");
 			}
-			if(returnOrder.getStatus().equalsIgnoreCase("Requires More Customer Information")) {
-				String described = rmaNo+" has been updated to 'Requires More Customer Information'. Awaiting more information with customer";
+			if (returnOrder.getStatus().equalsIgnoreCase("Requires More Customer Information")) {
+				String described = rmaNo
+						+ " has been updated to 'Requires More Customer Information'. Awaiting more information with customer";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Requires More Customer Information");
 			}
-			if(returnOrder.getStatus().equalsIgnoreCase("Authorized")) {
-				String described = rmaNo+" has been updated to 'Authorized'. The return is approved. Please proceed with the necessary steps.";
+			if (returnOrder.getStatus().equalsIgnoreCase("Authorized")) {
+				String described = rmaNo
+						+ " has been updated to 'Authorized'. The return is approved. Please proceed with the necessary steps.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Authorized");
 			}
-			if(returnOrder.getStatus().equalsIgnoreCase("Denied")) {
-				String described = rmaNo+" has been updated to 'Denied'. ";
+			if (returnOrder.getStatus().equalsIgnoreCase("Denied")) {
+				String described = rmaNo + " has been updated to 'Denied'. ";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Denied");
 			}
-			
+
 			auditlog.setStatus("RMA");
 			auditlog.setTitle("Return Order");
 			auditlog.setRmaNo(returnOrder.getRmaOrderNo());
@@ -459,7 +471,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
 			returnOrderRepository.save(returnOrder);
 
-			
 //			apply email functionality.
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
 			try {
@@ -472,7 +483,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Assign RMA");
-			auditLog.setDescription(returnOrder.getRmaOrderNo()+" has been assigned to the "+ user.getFirstName()+" "+user.getLastName()+"."+";"+rmaNo+" is now at 'Under Review'. "); 
+			auditLog.setDescription(returnOrder.getRmaOrderNo() + " has been assigned to the " + user.getFirstName()
+					+ " " + user.getLastName() + "." + ";" + rmaNo + " is now at 'Under Review'. ");
 			auditLog.setHighlight("Under Review");
 			auditLog.setStatus("RMA");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
@@ -495,5 +507,17 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		}
 
 		return returnOrderItemList;
+	}
+
+	public String getRmaaQualifier() {
+		// Fetch the single row of data
+		ClientConfig clientConfig = clientConfigRepository.findById(1L).orElse(null);
+
+		if (clientConfig != null) {
+			return clientConfig.getRmaQualifier();
+		} else {
+
+			return "No RMA Qualifier";
+		}
 	}
 }
