@@ -15,7 +15,6 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigData;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -99,6 +98,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	@Autowired
 	ClientConfig clientConfig;
 
+
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
 		P21RMAResponse p21RMARespo = p21ReturnOrderService.createReturnOrder(returnOrderDTO);
@@ -157,7 +157,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		AuditLog auditlog = new AuditLog();
 
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-		String described = getRmaaQualifier() + returnOrder.getRmaOrderNo()
+		String described = getRmaaQualifier()+" "+ returnOrder.getRmaOrderNo()
 				+ " has been updated to 'Return Requested'.";
 		auditlog.setDescription(described);
 		auditlog.setHighlight("Return Requested");
@@ -355,29 +355,29 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditlog = new AuditLog();
 			if (returnOrder.getStatus().equalsIgnoreCase("Return Requested")) {
-				String described = rmaNo + " has been updated to 'Return Requested'.";
+				String described = getRmaaQualifier()+" "+rmaNo + " has been updated to 'Return Requested'.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Return Requested");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase("Under Review")) {
-				String described = rmaNo + " is now at 'Under Review'. ";
+				String described = getRmaaQualifier()+" "+rmaNo + " is now at 'Under Review'. ";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Under Review");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase("Requires More Customer Information")) {
-				String described = rmaNo
+				String described = getRmaaQualifier()+" "+rmaNo
 						+ " has been updated to 'Requires More Customer Information'. Awaiting more information with customer";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Requires More Customer Information");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase("Authorized")) {
-				String described = rmaNo
+				String described = getRmaaQualifier()+" "+rmaNo
 						+ " has been updated to 'Authorized'. The return is approved. Please proceed with the necessary steps.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Authorized");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase("Denied")) {
-				String described = rmaNo + " has been updated to 'Denied'. ";
+				String described = getRmaaQualifier()+" "+rmaNo + " has been updated to 'Denied'. ";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Denied");
 			}
@@ -483,8 +483,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Assign RMA");
-			auditLog.setDescription(returnOrder.getRmaOrderNo() + " has been assigned to the " + user.getFirstName()
-					+ " " + user.getLastName() + "." + ";" + rmaNo + " is now at 'Under Review'. ");
+			auditLog.setDescription(getRmaaQualifier()+" "+returnOrder.getRmaOrderNo() + " has been assigned to the " + user.getFirstName()
+					+ " " + user.getLastName() + "." + ";" +getRmaaQualifier()+" "+ rmaNo + " is now at 'Under Review'. ");
 			auditLog.setHighlight("Under Review");
 			auditLog.setStatus("RMA");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());

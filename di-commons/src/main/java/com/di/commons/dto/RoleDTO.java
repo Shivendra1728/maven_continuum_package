@@ -15,6 +15,7 @@ public class RoleDTO implements Serializable {
 
 	private Long id;
 	private String role;
+	private String page;
 
 	private List<PermissionDTO> permissions = new ArrayList<>();
 
