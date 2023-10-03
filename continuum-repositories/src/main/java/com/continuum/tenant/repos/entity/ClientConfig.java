@@ -1,11 +1,14 @@
 package com.continuum.tenant.repos.entity;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+
+import org.springframework.boot.context.config.ConfigData;
+import org.springframework.stereotype.Component;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +18,8 @@ import lombok.Setter;
 @Setter
 @Entity
 @AllArgsConstructor
+
+@Component
 public class ClientConfig extends BaseEntity {
 
 	@ManyToOne
@@ -39,19 +44,23 @@ public class ClientConfig extends BaseEntity {
 	private Integer returnPolicyPeriod;
 	private String feeType;
 	private BigDecimal reStockingAmount;
-	
+
 	private String emailFrom;
 	private String emailTO;
 	private String erpCompanyId;
-	
+
 	private boolean questionsRequired;
-	
+
 	private String Host;
 	private String Port;
 	private String Username;
 	private String Password;
-	
+	private String rmaQualifier;
+
 	public ClientConfig() {
 		// No-argument constructor
 	}
+	
+
+	
 }
