@@ -136,7 +136,7 @@ public class AuthenticationController implements Serializable {
 		// Map the value into applicationScope bean
 		setMetaDataAfterLogin();
 		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), name, token, user.getRoles(), userId,
-				user.getCustomer().getCustomerId()));
+				user.getCustomer().getCustomerId(), jwtTokenUtil.getExpirationDateFromToken(token)));
 	}
 
 	private void loadCurrentDatabaseInstance(String databaseName, String userName) {
