@@ -3,9 +3,7 @@ package com.continuum.serviceImpl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
@@ -25,7 +23,6 @@ import com.continuum.service.CustomerService;
 import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
-import com.continuum.tenant.repos.entity.QuestionMap;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
@@ -95,7 +92,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
-		P21RMAResponse p21RMARespo =  p21ReturnOrderService.createReturnOrder(returnOrderDTO);
+		P21RMAResponse p21RMARespo = p21ReturnOrderService.createReturnOrder(returnOrderDTO);
 		logger.info("orderNo::: " + p21RMARespo.getRmaOrderNo() + " status: " + p21RMARespo.getStatus());
 		return p21RMARespo;
 	}
@@ -132,6 +129,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			}
 		}
 		returnOrderDTO.setCustomer(customerDTO);
+		
 
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		returnOrderRepository.save(returnOrder);
@@ -149,11 +147,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		// audit log
 
 		AuditLog auditlog = new AuditLog();
-		auditlog.setHighlight("rma request");
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-		String described = customerDTO.getDisplayName() + " submitted the new rma request. Order ID- TLD-"
-				+ returnOrderDTO.getRmaOrderNo();
+		String described = returnOrder.getRmaOrderNo()+" has been updated to 'Return Requested'.";
 		auditlog.setDescription(described);
+		auditlog.setHighlight("Return Requested");
 		auditlog.setStatus("Inbox");
 		auditlog.setTitle("Return Order");
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
@@ -347,9 +344,32 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			// audit log saving
 
 			AuditLog auditlog = new AuditLog();
-			auditlog.setHighlight("rma status");
-			String described = updateBy + " has changed rma status to " + returnOrder.getStatus();
-			auditlog.setDescription(described);
+			if(returnOrder.getStatus().equalsIgnoreCase("Return Requested")) {
+				String described = rmaNo+" has been updated to 'Return Requested'.";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Return Requested");
+			}
+			if(returnOrder.getStatus().equalsIgnoreCase("Under Review")) {
+				String described = rmaNo+" is now at 'Under Review'. ";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Under Review");
+			}
+			if(returnOrder.getStatus().equalsIgnoreCase("Requires More Customer Information")) {
+				String described = rmaNo+" has been updated to 'Requires More Customer Information'. Awaiting more information with customer";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Requires More Customer Information");
+			}
+			if(returnOrder.getStatus().equalsIgnoreCase("Authorized")) {
+				String described = rmaNo+" has been updated to 'Authorized'. The return is approved. Please proceed with the necessary steps.";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Authorized");
+			}
+			if(returnOrder.getStatus().equalsIgnoreCase("Denied")) {
+				String described = rmaNo+" has been updated to 'Denied'. ";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Denied");
+			}
+			
 			auditlog.setStatus("RMA");
 			auditlog.setTitle("Return Order");
 			auditlog.setRmaNo(returnOrder.getRmaOrderNo());
@@ -430,6 +450,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			for (ReturnOrderItem returnOrderItem : returnOrderItemList) {
 				if (returnOrderItem.getUser() == null) {
 					returnOrderItem.setUser(user);
+					returnOrderItem.setStatus(PortalConstants.UNDER_REVIEW);
 					returnOrderItemRepository.save(returnOrderItem);
 				}
 			}
@@ -438,6 +459,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
 			returnOrderRepository.save(returnOrder);
 
+			
 //			apply email functionality.
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
 			try {
@@ -450,12 +472,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Assign RMA");
-			auditLog.setDescription(updateBy + " assign RMA to " + user.getFirstName() + " " + user.getLastName());
-			auditLog.setHighlight("assign");
+			auditLog.setDescription(returnOrder.getRmaOrderNo()+" has been assigned to the "+ user.getFirstName()+" "+user.getLastName()+"."+";"+rmaNo+" is now at 'Under Review'. "); 
+			auditLog.setHighlight("Under Review");
 			auditLog.setStatus("RMA");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditLog.setUserName(updateBy);
-			auditLogRepository.save(auditLog);
+			auditLogRepository.save(auditLog); // capture in audit log
 
 			return "Assiged RMA to User";
 

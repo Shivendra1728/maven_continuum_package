@@ -1,6 +1,7 @@
 package com.continuum.tenant.repos.entity;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -78,6 +79,7 @@ public class User extends BaseEntity implements Serializable {
 //	private boolean secured;
 	@JsonIgnore
 	private String uuid;
+	private Date resetTokenExpiration; // to reset password
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "useraddressuserid")

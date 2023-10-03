@@ -68,5 +68,7 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	@OneToMany
 	@JoinColumn(name = "returnOrderItemId")
 	Set<QuestionMap> questionMap;
+	
+	private Long reasonCodeId;
 
 }
