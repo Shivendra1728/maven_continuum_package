@@ -142,22 +142,23 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setUserName(updateBy);
 			}
 
-			if (updatedItem.getProblemDesc() != null) {
+			if (updatedItem.getProblemDesc() != null || updatedItem.getReasonCode()!=null) {
+				existingItem.setReasonCode(updatedItem.getReasonCode());
 				existingItem.setProblemDesc(updatedItem.getProblemDesc());
 				auditLog.setDescription("Problem Description has been updated of item - "+existingItem.getItemName()+" by "+updateBy+".");
-				auditLog.setHighlight("problem description");
+				auditLog.setHighlight("");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
 				auditLog.setUserName(updateBy);
 			}
-			if (updatedItem.getReasonCode() != null) {
-				existingItem.setReasonCode(updatedItem.getReasonCode());
-				auditLog.setDescription("Reason Code has been updated of item - "+existingItem.getItemName()+" by "+updateBy+".");
-				auditLog.setHighlight("reason code");
-				auditLog.setStatus("Ordered Items");
-				auditLog.setRmaNo(rmaNo);
-				auditLog.setUserName(updateBy);
-			}
+//			if (updatedItem.getReasonCode() != null) {
+//				existingItem.setReasonCode(updatedItem.getReasonCode());
+//				auditLog.setDescription("Reason Code has been updated of item - "+existingItem.getItemName()+" by "+updateBy+".");
+//				auditLog.setHighlight("reason code");
+//				auditLog.setStatus("Ordered Items");
+//				auditLog.setRmaNo(rmaNo);
+//				auditLog.setUserName(updateBy);
+//			}
 
 			if (updatedItem.getTrackingUrl() != null || updatedItem.getTrackingNumber() != null
 					|| updatedItem.getCourierName() != null) {
@@ -165,7 +166,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
 				existingItem.setCourierName(updatedItem.getCourierName());
 				auditLog.setDescription("Tracking Code has been updated of item - "+existingItem.getItemName()+" by "+updateBy+".");
-				auditLog.setHighlight("Tracking Code");
+				auditLog.setHighlight("");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
 				auditLog.setUserName(updateBy);
@@ -330,6 +331,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
 						+ user.getLastName() + " of item - "+existingItem.getItemName()+". Please review the details and take necessary action.");
 			}
+			auditLog.setTitle("Update Activity");
 			auditLog.setHighlight("");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
@@ -487,6 +489,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 //						+ " by " + updateBy + ";");
 //			}
 //			String res = stringBuilder.toString();
+				returnOrderItem.getShipTo().setTrackingNumber(orderAddress.getTrackingNumber());
+				returnOrderItem.getShipTo().setTrackingUrl(orderAddress.getTrackingUrl());
+				returnOrderItem.getShipTo().setCourierName(orderAddress.getCourierName());
 			returnOrderItemRepository.save(returnOrderItem);
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
