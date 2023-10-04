@@ -27,8 +27,10 @@ public class OrderAddressDTO {
 	private String city;
 	private String zipcode;
 	private String addressType;
-
 	private String firstName;
 	private String lastName;
 	private String emailAddress;
+	private String trackingUrl;
+	private Long trackingNumber;
+	private String courierName;
 }

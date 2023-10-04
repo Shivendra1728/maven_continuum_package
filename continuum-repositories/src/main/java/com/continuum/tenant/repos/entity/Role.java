@@ -39,6 +39,8 @@ public class Role {
 
 	@Column(name = "role", nullable = false)
 	private String role;
+	
+	private String page;
 
 	public Role(Long id, String role) {
 		this.id = id;

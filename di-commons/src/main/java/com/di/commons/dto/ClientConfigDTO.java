@@ -41,9 +41,11 @@ public class ClientConfigDTO {
 	private String Password;
 	private String emailFrom;
 	private String emailTO;
+	private String rmaQualifier;
 	
 	private boolean questionsRequired;
 
 	private MasterTenant masterTenant;
-
+	
+	 
 }
