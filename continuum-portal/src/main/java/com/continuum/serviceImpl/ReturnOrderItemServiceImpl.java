@@ -80,6 +80,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
+	
+	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
 
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
@@ -221,10 +223,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLogRepository.save(auditLog);
 					// apply email functionality.
 					String recipient = PortalConstants.EMAIL_RECIPIENT;
+					String subject = PortalConstants.RMAStatus;
+					String template = emailTemplateRenderer.getREQ_MORE_CUST_INFO();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("status", returnOrderEntity.getStatus());
 					try {
-
-						emailSender.sendEmail4(recipient, returnOrderEntity.getCustomer().getDisplayName(),
-								returnOrderEntity.getStatus());
+						emailSender.sendEmail(recipient, template, subject, map);
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
@@ -233,10 +238,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					returnOrderEntity.setStatus("RMA Denied");
 //					apply email functionality.
 					String recipient = PortalConstants.EMAIL_RECIPIENT;
+					String subject = PortalConstants.RMAStatus;
+					String template = emailTemplateRenderer.getDENIED_TEMPLATE();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("status", returnOrderEntity.getStatus());
 					try {
 
-						emailSender.sendEmail5(recipient, returnOrderEntity.getCustomer().getDisplayName(),
-								returnOrderEntity.getStatus());
+//						emailSender.sendEmail5(recipient, returnOrderEntity.getCustomer().getDisplayName(),
+//								returnOrderEntity.getStatus());
+						
+						emailSender.sendEmail(recipient, template, subject, map);
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
@@ -259,9 +271,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
+					String recipient = PortalConstants.EMAIL_RECIPIENT;
+					String subject = PortalConstants.RMAStatus;
+					String template = emailTemplateRenderer.getRMA_AUTHORIZED_TEMPLATE();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("status", returnOrderEntity.getStatus());
 					try {
-						emailSender.sendEmail6(recipient, returnOrderEntity.getCustomer().getDisplayName(),
-								returnOrderEntity.getStatus());
+//						emailSender.sendEmail6(recipient, returnOrderEntity.getCustomer().getDisplayName(),
+//								returnOrderEntity.getStatus());
+						emailSender.sendEmail(recipient, template, subject, map);
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
@@ -273,11 +292,23 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			}
 			// update customer to put tracking code.
-
+			String subject = PortalConstants.RMAStatus;
+			HashMap<String, String> map1 = new HashMap<>();
+			map1.put("LineItemStatus", updatedItem.getStatus());
+			HashMap<String, String> map2 = new HashMap<>();
+			String template1 = emailTemplateRenderer.getEMAIL_LINE_ITEM_STATUS_IN_TRANSIT();
+			String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS();
+			map2.put("AssignedUser", "Sample user");
+			map2.put("partNumber", "Sample Name");
+			map2.put("vendorName", "Sample Vendername");
+			map2.put("LineItemStatus", updatedItem.getStatus());
+			
 			if ("Authorized Awaiting Transit".equals(updatedItem.getStatus())) {
 				try {
-					sendEmail1(recipient, updatedItem.getStatus());
-					emailSender.sendEmailToVender(recipient, updatedItem.getStatus());
+//					sendEmail1(recipient, updatedItem.getStatus());
+//					emailSender.sendEmailToVender(recipient, updatedItem.getStatus());
+					emailSender.sendEmail(recipient, template1, subject, map1);
+					emailSender.sendEmail(recipient, template2, subject, map2);
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
@@ -337,8 +368,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			Date followUpDate = updateNote.getFollowUpDate();
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
 			String formattedDate = simpleDateFormat.format(followUpDate);
+			
+			String template = emailTemplateRenderer.getEMAIL_NOTE_STATUS();
+			String subject = PortalConstants.NOTE_STATUS;
+			HashMap<String, String> map = new HashMap<>();
+			map.put("name", updateBy);
+			map.put("date", formattedDate);
+			
 			try {
-				emailSender.emailToCustomer(recipient, updateBy, formattedDate);
+//				emailSender.emailToCustomer(recipient, updateBy, formattedDate);
+				emailSender.sendEmail(recipient, template, subject, map);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -352,69 +391,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	}
 
-	public void sendEmail1(String email, String LineItemStatus) throws MessagingException {
-		User existingUser = userRepository.findByEmail(email);
-
-		Properties props = new Properties();
-
-		props.put(PortalConstants.SMTP_HOST, mailHost);
-		props.put(PortalConstants.SMTP_PORT, mailPort);
-		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
-		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
-
-		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
-			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
-			}
-		});
-
-		String templateFilePath = PortalConstants.ReturnOrderLineItemStatus;
-		VelocityContext context = new VelocityContext();
-
-		context.put("LineItemStatus", LineItemStatus);
-
-		String renderedBody = EmailTemplateRenderer.renderStatusChangeTemplate(context);
-
-		Message message = new MimeMessage(session);
-		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
-		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-		message.setSubject(templateFilePath);
-		message.setContent(renderedBody, "text/html");
-		Transport.send(message);
-
-	}
-
-	public void sendNoteEmail(String email, String name) throws MessagingException {
-		User existingUser = userRepository.findByEmail(email);
-
-		Properties props = new Properties();
-
-		props.put(PortalConstants.SMTP_HOST, mailHost);
-		props.put(PortalConstants.SMTP_PORT, mailPort);
-		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
-		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
-
-		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
-			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
-			}
-		});
-
-		String templateFilePath = PortalConstants.NOTE_STATUS;
-		VelocityContext context = new VelocityContext();
-
-		context.put("name", name);
-
-		String renderedBody = EmailTemplateRenderer.renderNoteStatusChangeTemplate(context);
-
-		Message message = new MimeMessage(session);
-		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
-		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-		message.setSubject(templateFilePath);
-		message.setContent(renderedBody, "text/html");
-		Transport.send(message);
-
-	}
+	
 
 	@Override
 	public String updateShipTo(Long rtnOrdId, String rmaNo, String updateBy, OrderAddress orderAddress) {

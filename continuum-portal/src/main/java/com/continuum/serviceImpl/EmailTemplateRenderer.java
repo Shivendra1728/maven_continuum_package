@@ -5,6 +5,9 @@ import java.io.StringWriter;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
+
+
+
 public class EmailTemplateRenderer {
 	private static final String TEMPLATE_CONTENT = "<html>\n" + "<head>\n" + "    <meta charset=\"UTF-8\">\n"
 			+ "    <title>Email Template</title>\n" + "    <style>\n" +
@@ -212,6 +215,10 @@ public class EmailTemplateRenderer {
 			+ "			</tr>\r\n" + "		</tbody>\r\n" + "	</table><!-- End -->\n" +
 
 			"</body>\n" + "</html>";
+	
+	public String getTemplateContent() {
+		return TEMPLATE_CONTENT;
+	}
 
 	private static final String FPASSWORD_TEMPLETE_CONTENT = "<html xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" lang=\"en\">\r\n"
 			+ "\r\n" + "<head>\r\n" + "	<title></title>\r\n"
@@ -678,6 +685,9 @@ public class EmailTemplateRenderer {
 			+ "</body>\r\n"
 			+ "\r\n"
 			+ "</html>";
+	public String getEMAIL_LINE_ITEM_STATUS_IN_TRANSIT() {
+		return EMAIL_LINE_ITEM_STATUS_IN_TRANSIT;
+	}
 	private static final String EMAIL_RMA_STATUS = "<html xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" lang=\"en\">\r\n"
 			+ "\r\n"
 			+ "<head>\r\n"
@@ -961,6 +971,10 @@ public class EmailTemplateRenderer {
 			+ "</body>\r\n"
 			+ "\r\n"
 			+ "</html>";
+	
+	public String getEMAIL_RMA_STATUS() {
+		return EMAIL_RMA_STATUS;
+	}
 
 	private static final String EMAIL_NOTE_STATUS = "<html xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" lang=\"en\">\r\n"
 			+ "\r\n"
@@ -1215,6 +1229,10 @@ public class EmailTemplateRenderer {
 			+ "</body>\r\n"
 			+ "\r\n"
 			+ "</html>";
+	
+	public String getEMAIL_NOTE_STATUS() {
+		return EMAIL_NOTE_STATUS;
+	}
 
 	private static final String UNDER_REVIEW_TEMPLATE_CONTENT = "<html>\n" + "<head>\n"
 			+ "    <meta charset=\"UTF-8\">\n" + "    <title>Email Template</title>\n" + "    <style>\n" +
@@ -1422,6 +1440,10 @@ public class EmailTemplateRenderer {
 			+ "			</tr>\r\n" + "		</tbody>\r\n" + "	</table><!-- End -->\n" +
 
 			"</body>\n" + "</html>";
+	
+	public String getAssignRMATemplate() {
+		return UNDER_REVIEW_TEMPLATE_CONTENT;
+	}
 	
 	private static final String VENDER_LINE_ITEM_STATUS = "<html xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" lang=\"en\">\r\n"
 			+ "\r\n"
@@ -1677,25 +1699,23 @@ public class EmailTemplateRenderer {
 			+ "</body>\r\n"
 			+ "\r\n"
 			+ "</html>";
+	public String getVENDER_LINE_ITEM_STATUS() {
+		return VENDER_LINE_ITEM_STATUS;
+	}
 
 	private static final String REQ_MORE_CUST_INFO = "<html>\n";
-	private static final String DENIED_TEMPLATE = "<html>xxxxxxxxxxxxxx\n";
-	private static final String RMA_AUTHORIZED_TEMPLATE = "<html>\n";
-
-	public static String renderTemplate(VelocityContext context) {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.init();
-
-		try {
-			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", TEMPLATE_CONTENT);
-			return writer.toString();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
+	public String getREQ_MORE_CUST_INFO() {
+		return REQ_MORE_CUST_INFO;
 	}
+	private static final String DENIED_TEMPLATE = "<html>xxxxxxxxxxxxxx\n";
+	public String getDENIED_TEMPLATE() {
+		return DENIED_TEMPLATE;
+	}
+	private static final String RMA_AUTHORIZED_TEMPLATE = "<html>\n";
+	public String getRMA_AUTHORIZED_TEMPLATE() {
+		return RMA_AUTHORIZED_TEMPLATE;
+	}
+
 
 	public static String renderFPasswordTemplate(VelocityContext context) {
 		VelocityEngine velocityEngine = new VelocityEngine();
@@ -1712,103 +1732,14 @@ public class EmailTemplateRenderer {
 		return null;
 	}
 
-	public static String renderStatusChangeTemplate(VelocityContext context) {
+	
+	public static String renderer(String template, VelocityContext context) {
 		VelocityEngine velocityEngine = new VelocityEngine();
 		velocityEngine.init();
 
 		try {
 			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", EMAIL_LINE_ITEM_STATUS_IN_TRANSIT);
-			return writer.toString();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
-	}
-
-	public static String renderRMAStatusChangeTemplate(VelocityContext context) {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.init();
-
-		try {
-			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", EMAIL_RMA_STATUS);
-			return writer.toString();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
-	}
-
-	public static String renderNoteStatusChangeTemplate(VelocityContext context) {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.init();
-
-		try {
-			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", EMAIL_NOTE_STATUS);
-			return writer.toString();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
-	}
-
-	public static String renderUnderReviewTemplate(VelocityContext context) {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.init();
-
-		try {
-			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", UNDER_REVIEW_TEMPLATE_CONTENT);
-			return writer.toString();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
-	}
-
-	public static String renderRMCITemplate(VelocityContext context) {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.init();
-
-		try {
-			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", REQ_MORE_CUST_INFO);
-			return writer.toString();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
-	}
-
-	public static String renderDeniedTemplate(VelocityContext context) {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.init();
-
-		try {
-			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", DENIED_TEMPLATE);
-			return writer.toString();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
-	}
-
-	public static String renderRMAAuthorized(VelocityContext context) {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.init();
-
-		try {
-			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", RMA_AUTHORIZED_TEMPLATE);
+			velocityEngine.evaluate(context, writer, "EmailTemplate", template);
 			return writer.toString();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1817,35 +1748,5 @@ public class EmailTemplateRenderer {
 		return null;
 	}
 	
-	public static String renderVenderLineItemtatus(VelocityContext context) {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.init();
-
-		try {
-			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", VENDER_LINE_ITEM_STATUS);
-			return writer.toString();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
-	}
-	
-	
-	public static String renderCustomerNoteStatus(VelocityContext context) {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.init();
-
-		try {
-			StringWriter writer = new StringWriter();
-			velocityEngine.evaluate(context, writer, "EmailTemplate", EMAIL_NOTE_STATUS);
-			return writer.toString();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
-	}
 }
 
