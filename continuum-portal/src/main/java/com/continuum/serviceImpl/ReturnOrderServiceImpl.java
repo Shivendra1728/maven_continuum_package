@@ -2,7 +2,11 @@ package com.continuum.serviceImpl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+
+import java.util.Map;
+import java.util.Set;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -11,10 +15,12 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 
+import org.apache.velocity.VelocityContext;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -92,6 +98,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	EmailSender emailSender;
+	
+	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
 
 	ReturnOrder returnOrder;
 
@@ -167,12 +175,26 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		auditlog.setUserName(customerDTO.getDisplayName());
 		auditLogRepository.save(auditlog);
 
-		String recipient = PortalConstants.EMAIL_RECIPIENT;
+		String recipient = returnOrder.getCustomer().getEmail();
 		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : "
 				+ returnOrderDTO.getStatus();
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
-		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
+//		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
+		HashMap<String, String> map = new HashMap<>();
+		if (returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
+			map.put("status", returnOrderDTO.getStatus());
+			map.put("rma_order_no", returnOrderDTO.getRmaOrderNo());	
+		} else {
+			map.put("status", returnOrderDTO.getStatus());
+			map.put("rma_order_no", null);
+		}
+
+		map.put("order_contact_name", customerDTO.getDisplayName());
+		map.put("order_no", returnOrderDTO.getOrderNo());
+		String template = emailTemplateRenderer.getTemplateContent();
+		emailSender.sendEmail(recipient, template, subject, map);
+		
 	}
 
 	@Override
@@ -389,10 +411,17 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditLogRepository.save(auditlog);
 
 			// send email to customer-RMA processor
-			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			String recipient = returnOrder.getCustomer().getEmail();
+			String subject = PortalConstants.RMAStatus;
+			String template = emailTemplateRenderer.getEMAIL_RMA_STATUS();
+			
 			try {
 
-				emailSender.sendEmail2(recipient, returnOrder.getStatus());
+//				emailSender.sendEmail2(recipient, returnOrder.getStatus());
+				HashMap<String, String> map = new HashMap<>();
+				map.put("rma_status", returnOrder.getStatus());
+				map.put("message", "Sample Message");
+				emailSender.sendEmail(recipient, template, subject, map);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -473,10 +502,14 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 //			apply email functionality.
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			String subject = PortalConstants.RMAStatus;
+			HashMap<String, String> map = new HashMap<>();
+			map.put("rma", returnOrder.getRmaOrderNo());
+			map.put("assigned_person", user.getFirstName());
+			map.put("rma", returnOrder.getRmaOrderNo());
+			String template = emailTemplateRenderer.getAssignRMATemplate();
 			try {
-
-				emailSender.sendEmail3(recipient, returnOrder.getStatus(), returnOrder.getCustomer().getDisplayName(),
-						returnOrder.getRmaOrderNo());
+				emailSender.sendEmail(recipient, template, subject, map);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
