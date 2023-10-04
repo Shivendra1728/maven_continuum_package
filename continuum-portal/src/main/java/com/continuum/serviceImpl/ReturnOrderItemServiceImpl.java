@@ -174,6 +174,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			returnOrderItemRepository.save(existingItem);
 			auditLogRepository.save(auditLog);
+			String recipient = existingItem.getReturnOrder().getCustomer().getEmail();
 
 			// Handle Status Configurations
 			boolean hasUnderReview = false;
@@ -222,7 +223,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
 					// apply email functionality.
-					String recipient = PortalConstants.EMAIL_RECIPIENT;
 					String subject = PortalConstants.RMAStatus;
 					String template = emailTemplateRenderer.getREQ_MORE_CUST_INFO();
 					HashMap<String, String> map = new HashMap<>();
@@ -237,7 +237,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				} else if (allDenied) {
 					returnOrderEntity.setStatus("RMA Denied");
 //					apply email functionality.
-					String recipient = PortalConstants.EMAIL_RECIPIENT;
 					String subject = PortalConstants.RMAStatus;
 					String template = emailTemplateRenderer.getDENIED_TEMPLATE();
 					HashMap<String, String> map = new HashMap<>();
@@ -271,7 +270,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
-					String recipient = PortalConstants.EMAIL_RECIPIENT;
 					String subject = PortalConstants.RMAStatus;
 					String template = emailTemplateRenderer.getRMA_AUTHORIZED_TEMPLATE();
 					HashMap<String, String> map = new HashMap<>();
@@ -295,20 +293,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			String subject = PortalConstants.RMAStatus;
 			HashMap<String, String> map1 = new HashMap<>();
 			map1.put("LineItemStatus", updatedItem.getStatus());
-			HashMap<String, String> map2 = new HashMap<>();
+			
 			String template1 = emailTemplateRenderer.getEMAIL_LINE_ITEM_STATUS_IN_TRANSIT();
-			String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS();
-			map2.put("AssignedUser", "Sample user");
-			map2.put("partNumber", "Sample Name");
-			map2.put("vendorName", "Sample Vendername");
-			map2.put("LineItemStatus", updatedItem.getStatus());
+			
+			
 			
 			if ("Authorized Awaiting Transit".equals(updatedItem.getStatus())) {
 				try {
 //					sendEmail1(recipient, updatedItem.getStatus());
 //					emailSender.sendEmailToVender(recipient, updatedItem.getStatus());
 					emailSender.sendEmail(recipient, template1, subject, map1);
-					emailSender.sendEmail(recipient, template2, subject, map2);
+					
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
@@ -364,23 +359,46 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
-
+			
+			
 			Date followUpDate = updateNote.getFollowUpDate();
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
 			String formattedDate = simpleDateFormat.format(followUpDate);
-			
-			String template = emailTemplateRenderer.getEMAIL_NOTE_STATUS();
 			String subject = PortalConstants.NOTE_STATUS;
+			String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS();
 			HashMap<String, String> map = new HashMap<>();
-			map.put("name", updateBy);
-			map.put("date", formattedDate);
 			
+			map.put("AssignedUser", user.getFirstName());
+			map.put("partNumber", existingItem.getItemName());
+			map.put("vendorName", updateBy);
+			map.put("LineItemStatus", updateNote.getStatus());
+			map.put("date", formattedDate);
 			try {
-//				emailSender.emailToCustomer(recipient, updateBy, formattedDate);
-				emailSender.sendEmail(recipient, template, subject, map);
+				emailSender.sendEmail(recipient, template2, subject, map);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
+//			if(existingItem.getUser().getId() != assignToId) {
+//				
+//			}else {
+//				Date followUpDate = updateNote.getFollowUpDate();
+//				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
+//				String formattedDate = simpleDateFormat.format(followUpDate);
+//				String recipient = existingItem.getUser().getEmail();
+//				System.out.println(recipient);
+//				String template = emailTemplateRenderer.getEMAIL_NOTE_STATUS();
+//				
+//				HashMap<String, String> map1 = new HashMap<>();
+//				map1.put("name", updateBy);
+//				map1.put("date", formattedDate);
+//				
+//				try {
+////					emailSender.emailToCustomer(recipient, updateBy, formattedDate);
+//					emailSender.sendEmail(recipient, template, subject, map1);
+//				} catch (MessagingException e) {
+//					e.printStackTrace();
+//				}
+//			}
 
 			return "Updated Note Details and capture in return room and audit log";
 
