@@ -170,6 +170,8 @@ public class P21OrderMapper {
 
 			customerDTO.setCustomerId(p21OrderData.getCustomer_id());
 			customerDTO.setDisplayName(p21OrderData.getBill2_name());
+			customerDTO.setEmail(p21OrderData.getContact_email_address());
+			customerDTO.setPhone(p21OrderData.getContact_phone_number());
 			orderDTO.setCustomer(customerDTO);
 		}
 		return orderDTO;
