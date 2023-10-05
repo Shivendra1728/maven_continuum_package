@@ -93,6 +93,8 @@ public class CustomerServiceImpl implements CustomerService {
 
 			Customer customer = new Customer();
 			customer.setCustomerId(orderDTO.getCustomer().getCustomerId());
+			customer.setEmail(orderDTO.getCustomer().getEmail());
+			customer.setDisplayName(orderDTO.getCustomer().getDisplayName());
 
 			customerRepository.save(customer);
 
