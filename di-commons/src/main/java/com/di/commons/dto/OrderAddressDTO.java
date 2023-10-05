@@ -30,7 +30,5 @@ public class OrderAddressDTO {
 	private String firstName;
 	private String lastName;
 	private String emailAddress;
-	private String trackingUrl;
-	private Long trackingNumber;
-	private String courierName;
+	
 }
