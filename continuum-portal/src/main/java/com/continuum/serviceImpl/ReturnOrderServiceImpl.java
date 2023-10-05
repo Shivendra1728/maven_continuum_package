@@ -175,8 +175,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		auditlog.setUserName(customerDTO.getDisplayName());
 		auditLogRepository.save(auditlog);
 
-		String recipient = returnOrder.getCustomer().getEmail();
-		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + returnOrderDTO.getRmaOrderNo() + " : "
+		//String recipient = returnOrder.getCustomer().getEmail();
+		String recipient=PortalConstants.EMAIL_RECIPIENT;
+		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo() + " : "
 				+ returnOrderDTO.getStatus();
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
@@ -184,7 +185,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		HashMap<String, String> map = new HashMap<>();
 		if (returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
 			map.put("status", returnOrderDTO.getStatus());
-			map.put("rma_order_no", returnOrderDTO.getRmaOrderNo());	
+			map.put("rma_order_no", getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo());	
 		} else {
 			map.put("status", returnOrderDTO.getStatus());
 			map.put("rma_order_no", null);
@@ -411,7 +412,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditLogRepository.save(auditlog);
 
 			// send email to customer-RMA processor
-			String recipient = returnOrder.getCustomer().getEmail();
+		//	String recipient = returnOrder.getCustomer().getEmail();
+			String recipient=PortalConstants.EMAIL_RECIPIENT;
 			String subject = PortalConstants.RMAStatus;
 			String template = emailTemplateRenderer.getEMAIL_RMA_STATUS();
 			
@@ -501,12 +503,13 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrderRepository.save(returnOrder);
 
 //			apply email functionality.
-			String recipient = PortalConstants.EMAIL_RECIPIENT;
-			String subject = PortalConstants.RMAStatus;
+			//String recipient = user.getEmail();
+			String recipient=PortalConstants.EMAIL_RECIPIENT;
+			String subject = PortalConstants.ASSIGN_RMA;
 			HashMap<String, String> map = new HashMap<>();
-			map.put("rma", returnOrder.getRmaOrderNo());
+			map.put("rma", getRmaaQualifier()+" "+returnOrder.getRmaOrderNo());
 			map.put("assigned_person", user.getFirstName());
-			map.put("rma", returnOrder.getRmaOrderNo());
+			map.put("rma", getRmaaQualifier()+" "+returnOrder.getRmaOrderNo());
 			String template = emailTemplateRenderer.getAssignRMATemplate();
 			try {
 				emailSender.sendEmail(recipient, template, subject, map);

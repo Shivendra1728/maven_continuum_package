@@ -117,19 +117,7 @@ public class AuthenticationController implements Serializable {
 			}
 			userRepository.save(user);
 		}
-		if (user.getCustomer() != null && !(user.getCustomer().getCustomerId().isEmpty())) {
-
-			Role role = rolesRepository.findById(4L).orElse(null);
-
-			if (role != null) {
-
-				user.setRoles(role);
-
-				userRepository.save(user);
-
-			}
-
-		} // Set<Role> role = u.getRoles();
+		// Set<Role> role = u.getRoles();
 
 		// final String token =
 		// jwtTokenUtil.generateToken(userDetails.getUsername(),String.valueOf(userLoginDTO.getTenantOrClientId()));

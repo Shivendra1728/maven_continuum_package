@@ -6,8 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Collections;
 
-import javax.mail.MessagingException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +21,13 @@ import org.springframework.web.client.RestTemplate;
 
 import com.continuum.service.CustomerService;
 import com.continuum.tenant.repos.entity.Customer;
+import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.CustomerRepository;
+import com.continuum.tenant.repos.repositories.RolesRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
-import com.di.commons.dto.ContactDTO;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.OrderDTO;
-import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.mapper.CustomerMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
 import com.di.integration.constants.IntegrationConstants;
@@ -57,17 +55,19 @@ public class CustomerServiceImpl implements CustomerService {
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
 
+	@Autowired
+	RolesRepository rolesRepository;
+
 	@Value(IntegrationConstants.ERP_DATA_API_BASE_URL)
 	String DATA_API_BASE_URL;
 
 	@Value(IntegrationConstants.ERP_ORDER_FORMAT)
 	String ORDER_FORMAT;
-	
+
 	@Value(IntegrationConstants.ERP_DATA_API_ORDER_VIEW)
 	String DATA_API_ORDER_VIEW;
 
 	LocalDate localDate;
-	
 
 	public CustomerDTO findbyCustomerId(String customerId) {
 		Customer customer = customerRepository.findByCustomerId(customerId);
@@ -84,7 +84,7 @@ public class CustomerServiceImpl implements CustomerService {
 			e.printStackTrace();
 		}
 		if (orderDTO != null) {
-			if(orderDTO.getCustomer()==null) {
+			if (orderDTO.getCustomer() == null) {
 				return "You are not a customer of us!";
 			}
 			if (userRepository.existsByEmail(customerDTO.getEmail())) {
@@ -93,10 +93,11 @@ public class CustomerServiceImpl implements CustomerService {
 
 			Customer customer = new Customer();
 			customer.setCustomerId(orderDTO.getCustomer().getCustomerId());
-			
+
 			customerRepository.save(customer);
 
 			User user = new User();
+			Role role = rolesRepository.findById(4L).orElse(null);
 			user.setFirstName(customerDTO.getFirstName());
 			user.setLastName(customerDTO.getLastname());
 			String hashedPassword = BCrypt.hashpw(customerDTO.getPassword(), BCrypt.gensalt());
@@ -105,6 +106,9 @@ public class CustomerServiceImpl implements CustomerService {
 			user.setEmail(customerDTO.getEmail());
 			user.setStatus(true);
 			user.setCustomer(customer);
+			if (role != null) {
+				user.setRoles(role);
+			}
 			user.setFullName("None");
 			userRepository.save(user);
 			return "Customer Signed Up SuccessFully";
@@ -144,12 +148,6 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	private URI prepareOrderURI(String email) {
-
-		
-		
-		
-
-		
 
 		try {
 			String filter = "contact_email_address eq '" + email + "'";
