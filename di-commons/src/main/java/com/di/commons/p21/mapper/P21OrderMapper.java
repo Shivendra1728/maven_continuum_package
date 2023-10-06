@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.continuum.tenant.repos.entity.Customer;
+import com.continuum.tenant.repos.entity.StoreAddress;
 import com.continuum.tenant.repos.repositories.CustomerRepository;
+import com.continuum.tenant.repos.repositories.StoreAddressRepository;
 import com.di.commons.dto.CustomerDTO;
 import com.di.commons.dto.OrderAddressDTO;
 import com.di.commons.dto.OrderDTO;
@@ -30,6 +32,9 @@ public class P21OrderMapper {
 
 	@Autowired
 	CustomerMapper customerMapper;
+	
+	@Autowired
+	StoreAddressRepository storeAddressRepository;
 	
 	@Autowired
 	CustomerRepository customerRepository;
@@ -111,10 +116,6 @@ public class P21OrderMapper {
 			    customerRepository.save(newCustomer);
 			}
 
-
-
-			
-
 			OrderAddressDTO orderAddressShipTODTO = new OrderAddressDTO();
 
 			// orderAddressShipTODTO.setId(p21OrderData.getid());
@@ -123,15 +124,31 @@ public class P21OrderMapper {
 			// orderAddressShipTODTO.setPhoneNumber(p21OrderData.getphone_number());//No
 			// keys mapped here yet
 			orderAddressShipTODTO.setAddressId(p21OrderData.getAddress_id()); // TO Do Addrress API
-			orderAddressShipTODTO.setFax(p21OrderData.getContact_fax_number());
-			orderAddressShipTODTO.setStreet1(p21OrderData.getShip2_add1());
-			orderAddressShipTODTO.setStreet2(p21OrderData.getShip2_add2());
-			orderAddressShipTODTO.setCountry(p21OrderData.getShip2_country());
-			orderAddressShipTODTO.setProvince(p21OrderData.getShip2_state());
-			orderAddressShipTODTO.setCity(p21OrderData.getShip2_city());
-			orderAddressShipTODTO.setZipcode(p21OrderData.getShip2_zip());
+//			orderAddressShipTODTO.setFax(p21OrderData.getContact_fax_number());
+//			orderAddressShipTODTO.setStreet1(p21OrderData.getShip2_add1());
+//			orderAddressShipTODTO.setStreet2(p21OrderData.getShip2_add2());
+//			orderAddressShipTODTO.setCountry(p21OrderData.getShip2_country());
+//			orderAddressShipTODTO.setProvince(p21OrderData.getShip2_state());
+//			orderAddressShipTODTO.setCity(p21OrderData.getShip2_city());
+//			orderAddressShipTODTO.setZipcode(p21OrderData.getShip2_zip());
 			// orderAddressShipTODTO.setAddressType(p21OrderData.getaddresstype());
+			
+			StoreAddress shipTo = getShipToAddress();
+			
+			orderAddressShipTODTO.setFax(shipTo.getFax());
+			orderAddressShipTODTO.setStreet1(shipTo.getStreet1());
+			orderAddressShipTODTO.setStreet2(shipTo.getStreet2());
+			orderAddressShipTODTO.setCountry(shipTo.getCountry());
+			orderAddressShipTODTO.setProvince(shipTo.getProvince());
+			orderAddressShipTODTO.setCity(shipTo.getCity());
+			orderAddressShipTODTO.setZipcode(shipTo.getZipcode());
+			orderAddressShipTODTO.setAddressType(shipTo.getAddressType());
+			
+			// orderAddressShipTODTO.setAddressType(p21OrderData.getaddresstype());
+			
 			orderDTO.setShipTo(orderAddressShipTODTO);
+			
+			
 
 			OrderAddressDTO orderAddressBillTODTO = new OrderAddressDTO();
 
@@ -142,11 +159,11 @@ public class P21OrderMapper {
 			// keys mapped here yet
 			// orderAddressBillTODTO.setFax(p21OrderData.getContact_fax_number());
 			orderAddressBillTODTO.setStreet1(p21OrderData.getMail_address1_a());
-			orderAddressShipTODTO.setStreet2(p21OrderData.getMail_address2_a());
-			orderAddressShipTODTO.setCountry(p21OrderData.getMail_country_a());
-			orderAddressShipTODTO.setProvince(p21OrderData.getMail_state_a());
-			orderAddressShipTODTO.setCity(p21OrderData.getMail_city_a());
-			orderAddressShipTODTO.setZipcode(p21OrderData.getMail_postal_code_a());
+			orderAddressBillTODTO.setStreet2(p21OrderData.getMail_address2_a());
+			orderAddressBillTODTO.setCountry(p21OrderData.getMail_country_a());
+			orderAddressBillTODTO.setProvince(p21OrderData.getMail_state_a());
+			orderAddressBillTODTO.setCity(shipTo.getCity());
+			orderAddressBillTODTO.setZipcode(shipTo.getZipcode());
 			// orderAddressShipTODTO.setAddressType(p21OrderData.getaddresstype());
 			orderDTO.setBillTo(orderAddressBillTODTO);
 			orderDTO.setCompanyName(p21OrderData.getCompany_name());
@@ -155,6 +172,10 @@ public class P21OrderMapper {
 
 		return orderDTOList;
 	}
+	
+	public StoreAddress getShipToAddress() {
+		return storeAddressRepository.findByaddressType("Warehouse");
+	} 
 	
 	public OrderDTO convertP21OrderObjectToOrderDTOForCustomer(String order)
 			throws JsonMappingException, JsonProcessingException, ParseException {
