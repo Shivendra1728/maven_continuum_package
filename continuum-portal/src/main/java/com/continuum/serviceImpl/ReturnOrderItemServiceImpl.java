@@ -527,6 +527,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			if(preRestocking == null) {
 				preRestocking = BigDecimal.valueOf(0);
 			}
+			preRestocking = preRestocking.setScale(0, BigDecimal.ROUND_DOWN);
 			if(returnOrderItem.getAmount() == null) {
 				returnOrderItem.setAmount(BigDecimal.valueOf(0));
 			}
@@ -546,7 +547,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(updateBy + " has been updated the restocking fee of item - " + returnOrderItem.getItemName()
-					+ " from " + preRestocking + " to " + returnOrderItem.getReStockingAmount() + ".");
+            + " from $" + preRestocking + " to $" + returnOrderItem.getReStockingAmount() + ".");
 			auditLog.setHighlight("");
 			auditLog.setStatus("Ordered Items");
 			auditLog.setRmaNo(rmaNo);
