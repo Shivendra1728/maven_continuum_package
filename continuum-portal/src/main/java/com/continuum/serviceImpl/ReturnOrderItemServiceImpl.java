@@ -524,6 +524,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		if (returnorderitem.isPresent()) {
 			ReturnOrderItem returnOrderItem = returnorderitem.get();
 			BigDecimal preRestocking = returnOrderItem.getReStockingAmount();
+			if(preRestocking == null) {
+				preRestocking = BigDecimal.valueOf(0);
+			}
+			if(returnOrderItem.getAmount() == null) {
+				returnOrderItem.setAmount(BigDecimal.valueOf(0));
+			}
 
 			BigDecimal newReturnAmoun = returnOrderItem.getAmount().subtract(reStockingAmount);
 

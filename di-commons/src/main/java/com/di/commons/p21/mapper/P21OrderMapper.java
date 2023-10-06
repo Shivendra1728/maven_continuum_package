@@ -142,6 +142,7 @@ public class P21OrderMapper {
 			orderAddressShipTODTO.setProvince(shipTo.getProvince());
 			orderAddressShipTODTO.setCity(shipTo.getCity());
 			orderAddressShipTODTO.setZipcode(shipTo.getZipcode());
+			orderAddressShipTODTO.setAddressType(shipTo.getAddressType());
 			
 			// orderAddressShipTODTO.setAddressType(p21OrderData.getaddresstype());
 			
@@ -173,7 +174,7 @@ public class P21OrderMapper {
 	}
 	
 	public StoreAddress getShipToAddress() {
-		return storeAddressRepository.findByaddressType("101");
+		return storeAddressRepository.findByaddressType("Warehouse");
 	} 
 	
 	public OrderDTO convertP21OrderObjectToOrderDTOForCustomer(String order)
