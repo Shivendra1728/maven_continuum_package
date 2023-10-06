@@ -2,32 +2,32 @@ package com.continuum.serviceImpl;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
-import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.persistence.EntityNotFoundException;
 
-import org.apache.velocity.VelocityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.continuum.constants.PortalConstants;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
-
-import com.continuum.tenant.repos.entity.ReturnOrder;
-
 import com.continuum.tenant.repos.entity.QuestionConfig;
-
+import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.ReturnRoom;
 import com.continuum.tenant.repos.entity.StatusConfig;
@@ -40,7 +40,7 @@ import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
 import com.continuum.tenant.repos.repositories.StatusConfigRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ReturnOrderItemDTO;
-import java.util.*;
+import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
 
 @Service
 public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
@@ -65,6 +65,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	EmailSender emailSender;
+	
+	@Autowired
+	P21TokenServiceImpl p21TokenServiceImpl;
 
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
@@ -88,6 +91,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	ReturnOrderServiceImpl returnOrderServiceImpl;
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
+
+		
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
 
 		if (optionalItem.isPresent()) {
@@ -290,6 +295,29 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
+					
+					//Save in ERP
+				    String apiUrl = "https://apiplay.labdepotinc.com/api/sales/orders/"+returnOrderEntity.getRmaOrderNo()+"/approve";
+		            RestTemplate restTemplate = new RestTemplate();
+		            HttpHeaders headers = new HttpHeaders();
+	                try {
+						headers.setBearerAuth(p21TokenServiceImpl.getToken());
+					} catch (Exception e) {
+							e.printStackTrace();
+					}
+	                HttpEntity<String> entity = new HttpEntity<>(headers);
+	                ResponseEntity<String> response = restTemplate.exchange(
+	                        apiUrl, HttpMethod.PUT, entity, String.class);
+	                
+	                if (response.getStatusCode() == HttpStatus.OK) {
+	                	System.out.println("Saving Status Approved In ERP.");
+	                }
+	                else {
+	                	System.out.println("There was an error while saving status in ERP.");
+	                }
+					
+					
+					//email
 					String subject = PortalConstants.RMAStatus;
 					String template = emailTemplateRenderer.getRMA_AUTHORIZED_TEMPLATE();
 					HashMap<String, String> map = new HashMap<>();
