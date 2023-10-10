@@ -1,9 +1,11 @@
 package com.continuum.service;
 
+import org.springframework.http.ResponseEntity;
+
 import com.di.commons.dto.UserDTO;
 
 public interface JwtService {
-	 UserDTO decodeJwt(String base64Token);
+	 ResponseEntity<?> decodeJwt(String base64Token);
 	 
 	 
 }

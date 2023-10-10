@@ -263,7 +263,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		List<ReturnOrderDTO> returnOrderDTOs = null;
 		if (optionalUser.isPresent()) {
 			User user = optionalUser.get();
-			if (user.getRoles().getId() == 1 || user.getRoles().getId() == 2) {
+			if (user.getRole().getId() == 1 || user.getRole().getId() == 2) {
 				List<ReturnOrder> returnOrderEntities = returnOrderRepository.findAll();
 
 				returnOrderDTOs = returnOrderEntities.stream()
