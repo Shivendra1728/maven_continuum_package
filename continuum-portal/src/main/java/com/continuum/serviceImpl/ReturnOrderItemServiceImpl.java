@@ -112,32 +112,31 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ " has been assigned to the 'Under Review' by " + updateBy + ".");
 					auditLog.setHighlight("Under Review");
 				}
-				if (updatedItem.getStatus().equalsIgnoreCase("Requires more customer  information")) {
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
 							+ " has been assigned to the 'Requires more customer  information' by " + updateBy + ".");
 					auditLog.setHighlight("Requires more customer  information");
 				}
-				if (updatedItem.getStatus().equalsIgnoreCase("Awaiting Vendor approval")) {
-					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'Awaiting Vendor approval' by " + updateBy + ".");
-					auditLog.setHighlight("Awaiting Vendor approval");
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AWAITING_CARRIER_APPROVAL)) {
+					auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() +" "+ rmaNo +" has been updated to 'Under Review';Item - "+ existingItem.getItemName()+ " has been assigned to the 'Awaiting Carrier approval' by " + updateBy + "");
+					auditLog.setHighlight("Under Review");
 				}
-				if (updatedItem.getStatus().equalsIgnoreCase("Awaiting Carrier approval")) {
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AWAITING_VENDOR_APPROVAL)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'Awaiting Carrier approval' by " + updateBy + ".");
-					auditLog.setHighlight("Awaiting Carrier approval");
+							+ " has been assigned to the 'Awaiting Vender approval' by " + updateBy + ".");
+					auditLog.setHighlight("Awaiting Vender approval");
 				}
-				if (updatedItem.getStatus().equalsIgnoreCase("Authorized Awaiting Transit")) {
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
 							+ " has been assigned to the 'Authorized Awaiting Transit' by " + updateBy + ".");
 					auditLog.setHighlight("Authorized Awaiting Transit");
 				}
-				if (updatedItem.getStatus().equalsIgnoreCase("Authorized In Transit")) {
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
 							+ " has been assigned to the 'Authorized In Transit' by " + updateBy + ".");
 					auditLog.setHighlight("Authorized In Transit'");
 				}
-				if (updatedItem.getStatus().equalsIgnoreCase("RMA line Denied")) {
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_LINE_DENIED)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
 							+ " has been assigned to the 'RMA line Denied' by " + updateBy + ".");
 					auditLog.setHighlight("RMA line Denied");

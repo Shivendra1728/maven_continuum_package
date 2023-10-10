@@ -19,6 +19,8 @@ public final class PortalConstants {
 	public static final String ITEM_RECIEVED_UNDER_REVIEW = "Item Recieved & Under Review";
 	public static final String RET_CMPLT_CRED_APPLIED = "Return Completed-Credit Applied";
 	public static final String RMA_DENIED = "RMA Denied";
+	public static final String RMA_LINE_DENIED = "RMA line Denied";
+	public static final String REQUIRES_MORE_CUSTOMER_INFORMATION = "Requires More Customer Information";
 	public static final String RMCI = "Requires More Customer Information";
 
 	public static final String RMA = "RMA";
