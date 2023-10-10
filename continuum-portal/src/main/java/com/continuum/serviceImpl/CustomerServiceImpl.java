@@ -110,7 +110,7 @@ public class CustomerServiceImpl implements CustomerService {
 			user.setStatus(true);
 			user.setCustomer(customer);
 			if (role != null) {
-				user.setRoles(role);
+				user.setRole(role);
 			}
 			user.setFullName("None");
 			userRepository.save(user);

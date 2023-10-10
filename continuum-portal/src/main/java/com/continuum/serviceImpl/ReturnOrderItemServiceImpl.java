@@ -408,7 +408,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			user.setFirstName(user.getFirstName());
 			user.setLastName(user.getLastName());
 			user.setEmail(user.getEmail());
-			user.setRoles(user.getRoles());
+			user.setRole(user.getRole());
 			userRepository.save(user);
 
 			existingItem.setFollowUpDate(updateNote.getFollowUpDate());
