@@ -10,9 +10,10 @@ public final class PortalConstants {
 	
 	//status configurations
 	public static final String UNDER_REVIEW = "Under Review";
+	public static final String AUTHORIZED = "Authorized";
 	public static final String RETURN_REQUESTED = "Return Requested";
 	public static final String AWAITING_VENDOR_APPROVAL = "Awaiting Vendor Approval";
-	public static final String AWAITING_CARRIER_APPROVAL = "Awaiting Carrier Approval";
+	public static final String AWAITING_CARRIER_APPROVAL = "Awaiting Carrrier Approval";
 	public static final String AUTHORIZED_AWAITING_TRANSIT = "Authorized Awaiting Transit";
 	public static final String AUTHORIZED_IN_TRANSIT = "Authorized In Transit";
 	public static final String ITEM_RECIEVED_UNDER_REVIEW = "Item Recieved & Under Review";

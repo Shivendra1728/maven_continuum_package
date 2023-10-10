@@ -210,8 +210,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			boolean hasRequiresMoreCustomerInfo = false;
 			boolean allDenied = true;
 			boolean allAuthorized = true;
-			boolean allCarrier = true;
-
+			boolean allCarrier = false;
+			boolean hasAuthorized = false;
+			
 			Optional<ReturnOrder> returnOrderOptional = returnOrderRepository.findByRmaOrderNo(rmaNo);
 
 			if (returnOrderOptional.isPresent()) {
@@ -241,12 +242,23 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						allAuthorized = false;
 					}
 
-					if (!(PortalConstants.AWAITING_CARRIER_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus())
-							|| PortalConstants.AWAITING_CARRIER_APPROVAL
-									.equalsIgnoreCase(returnOrderItem.getStatus()))) {
-						// If any item is not Authorized, set allAuthorized to false
-						allCarrier = false;
+//					if (!(PortalConstants.AWAITING_CARRIER_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus())
+//							|| PortalConstants.AWAITING_CARRIER_APPROVAL
+//									.equalsIgnoreCase(returnOrderItem.getStatus()))) {
+//						// If any item is not Authorized, set allAuthorized to false
+//						allCarrier = false;
+//					}
+					
+					if(PortalConstants.AWAITING_CARRIER_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus()) || PortalConstants.AWAITING_VENDOR_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus())) {
+						allCarrier=true;
 					}
+					
+					if((PortalConstants.AUTHORIZED_AWAITING_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())|| PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus()) && PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus()))) {
+						hasAuthorized=true;
+					}
+					
+					
+					
 
 				}
 
@@ -276,7 +288,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						e.printStackTrace();
 					}
 
-				} else if (allDenied) {
+				} else if(allCarrier) {
+					returnOrderEntity.setStatus(PortalConstants.UNDER_REVIEW);
+					
+				}	else if (allDenied) {
 					returnOrderEntity.setStatus("RMA Denied");
 //					apply email functionality.
 					String subject = PortalConstants.RMAStatus;
@@ -366,7 +381,32 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
+				}else if(!allAuthorized && !allDenied && hasRequiresMoreCustomerInfo) {
+					returnOrderEntity.setStatus(PortalConstants.UNDER_REVIEW);
+					auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo()
+							+ " has been updated to 'Under Review'.");
+					auditLog.setHighlight("Under Review");
+					auditLog.setTitle("Return Order");
+					auditLog.setStatus("RMA");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+					
+				}else if(hasAuthorized) {
+					returnOrderEntity.setStatus(PortalConstants.AUTHORIZED);
+					auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo()
+							+ " has been updated to 'Authorized'.");
+					auditLog.setHighlight("Under Review");
+					auditLog.setTitle("Return Order");
+					auditLog.setStatus("RMA");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+					
 				}
+				
 
 				returnOrderRepository.save(returnOrderEntity);
 
