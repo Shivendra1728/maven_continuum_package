@@ -82,6 +82,9 @@ public class UserDTO extends BaseEntity implements Serializable {
 
 	private Role role;
 	private Customer customer;
+	private String password;
+	
+		
 
 
 }
