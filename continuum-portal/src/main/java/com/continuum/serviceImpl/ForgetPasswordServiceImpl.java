@@ -59,14 +59,15 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 		if (existingUser != null) {
 			existingUser.setUuid(uuid);
 			existingUser.setResetTokenExpiration(expirationTime);
-			userRepository.save(existingUser);//saving user
+			userRepository.save(existingUser);//saving user	
+			try {
+				this.sendEmail(email, uuid, request);
+				return uuid;
+			} catch (MessagingException me) {
+				me.printStackTrace();
+			}
 		}
-		try {
-			this.sendEmail(email, uuid, request);
-			return uuid;
-		} catch (MessagingException me) {
-			me.printStackTrace();
-		}
+		
 		return "Email not found";
 	}
 
