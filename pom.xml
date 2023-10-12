@@ -18,7 +18,7 @@
 	</parent>
 
 	<modules>
-		<module>continuum-CSV</module>
+		
 		<module>continuum-portal</module>
 		<module>continuum-repositories</module>
 		<module>di-commons</module>
