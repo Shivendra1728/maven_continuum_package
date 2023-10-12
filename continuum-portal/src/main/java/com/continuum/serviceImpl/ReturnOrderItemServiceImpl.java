@@ -308,7 +308,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
 					
-					//save in ERP
+					//save in ERP while rma denied
 					 String apiUrl = "https://apiplay.labdepotinc.com/uiserver0/api/v2/transaction"; 
 					    String xmlData = "<TransactionSet xmlns=\"http://schemas.datacontract.org/2004/07/P21.Transactions.Model.V2\">\r\n"
 					    		+ "    <IgnoreDisabled>true</IgnoreDisabled>\r\n"
