@@ -1,6 +1,7 @@
 package com.continuum.controller;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class ReturnOrderItemController {
 
 	@PutMapping("/update/note")
 	public String updateNote(@RequestParam long lineItemId, @RequestParam Long assignToId, @RequestParam String rmaNo,
-			@RequestParam String updateBy, @RequestBody ReturnOrderItemDTO updatedNote) {
+			@RequestParam String updateBy,@RequestBody ReturnOrderItemDTO updatedNote) {
 		return returnOrderItemService.updateNote(lineItemId, assignToId, rmaNo, updateBy, updatedNote);
 	}
 

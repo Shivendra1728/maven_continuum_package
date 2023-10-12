@@ -52,5 +52,6 @@ public class ReturnOrderDTO {
 	private Date nextActivityDate;
 	private String note;
 	private User user;
+	private String returnType;
 //	private Orders orders;
 }

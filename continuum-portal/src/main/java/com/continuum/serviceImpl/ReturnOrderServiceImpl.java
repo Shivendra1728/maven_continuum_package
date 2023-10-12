@@ -32,6 +32,7 @@ import com.continuum.tenant.repos.entity.ClientConfig;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
+import com.continuum.tenant.repos.entity.ReturnRoom;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
@@ -369,7 +370,66 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		if (optionalItem.isPresent()) {
 			ReturnOrder returnOrder = optionalItem.get();
+			
+			List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository.findByReturnOrderId(returnOrder.getId());
+			boolean hasRMCI=false;
+			boolean hasCarrier =false;
+			boolean allAuthorized=true;
+			boolean allDenied=true;
+			boolean allUnderReview=true;
+			
 
+		    for (ReturnOrderItem returnOrderItem : returnOrderItems) {
+		    	 if(PortalConstants.RMCI.equalsIgnoreCase(returnOrderItem.getStatus())){
+		    		 hasRMCI=true;
+		    		 break;
+		    	 }
+		    	 if(PortalConstants.AWAITING_CARRIER_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus()) ||PortalConstants.AWAITING_VENDOR_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus()) ){
+		    		 hasCarrier=true;
+		    		 
+		    	 }
+		    	
+		    	 if(!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())){
+		    		 allDenied=false;
+		    		 
+		    	 }
+		    	 if(!PortalConstants.UNDER_REVIEW.equalsIgnoreCase(returnOrderItem.getStatus())){
+		    		 allUnderReview=false;
+		    		 
+		    	 }
+		    	 if(!PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())) {
+		    		 if(!PortalConstants.AUTHORIZED_AWAITING_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())) {
+		    			 if(!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())){
+		    				 allAuthorized=false;
+		    			 }
+			    	 }
+		    	 }
+		    	 
+		    	
+		    }
+		    if(hasRMCI && !status.equalsIgnoreCase(PortalConstants.RMCI)) {
+				   return "Line item is RMCI";
+			   }
+		    if(!hasRMCI && status.equalsIgnoreCase(PortalConstants.RMCI)) {
+				   return "Cannot change to RMCI";
+			   }
+		    if(hasCarrier && !status.equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
+				   return "Can only change to under review";
+			   }
+		    
+		  if(allDenied && !status.equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
+			  return "Cannot change other than Denied";
+			  
+		  }
+		  if(allUnderReview && !status.equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
+			  return "Cannot change other than Under review";
+			  
+		  }
+		  if(allAuthorized && !status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
+			  return "Mat kar";
+		  }
+		 
+		  
 			returnOrder.setStatus(status);
 
 			returnOrderRepository.save(returnOrder);
@@ -377,32 +437,32 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			// audit log saving
 
 			AuditLog auditlog = new AuditLog();
-			if (returnOrder.getStatus().equalsIgnoreCase("Return Requested")) {
+			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
 				String described = getRmaaQualifier()+" "+rmaNo + " has been updated to 'Return Requested'.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Return Requested");
 			}
-			if (returnOrder.getStatus().equalsIgnoreCase("Under Review")) {
+			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
 				String described = getRmaaQualifier()+" "+rmaNo + " is now at 'Under Review'. ";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Under Review");
 			}
-			if (returnOrder.getStatus().equalsIgnoreCase("Requires More Customer Information")) {
+			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
 				String described = getRmaaQualifier()+" "+rmaNo
 						+ " has been updated to 'Requires More Customer Information'. Awaiting more information with customer";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Requires More Customer Information");
 			}
-			if (returnOrder.getStatus().equalsIgnoreCase("Authorized")) {
+			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
 				String described = getRmaaQualifier()+" "+rmaNo
 						+ " has been updated to 'Authorized'. The return is approved. Please proceed with the necessary steps.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Authorized");
 			}
-			if (returnOrder.getStatus().equalsIgnoreCase("Denied")) {
-				String described = getRmaaQualifier()+" "+rmaNo + " has been updated to 'Denied'. ";
+			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
+				String described = getRmaaQualifier()+" "+rmaNo + " has been updated to 'RMA Denied'. ";
 				auditlog.setDescription(described);
-				auditlog.setHighlight("Denied");
+				auditlog.setHighlight("RMA Denied");
 			}
 
 			auditlog.setStatus("RMA");
@@ -429,6 +489,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			}
 
 			return "RMA Status Updated Successfully.";
+		   
+		    
 
 		} else {
 
