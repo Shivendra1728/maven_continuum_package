@@ -487,7 +487,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			user.setRoles(user.getRoles());
 			userRepository.save(user);
 
-			existingItem.setFollowUpDate(updateNote.getFollowUpDate());
+			if(updateNote.getFollowUpDate() == null) {
+				existingItem.setFollowUpDate(null);
+			}else {
+				existingItem.setFollowUpDate(updateNote.getFollowUpDate());
+			}
 			existingItem.setNote(updateNote.getNote());
 			existingItem.setUser(user);
 			returnOrderItemRepository.save(existingItem);
@@ -496,7 +500,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnRoom.setName(updateBy);
 			returnRoom.setMessage(updateNote.getNote());
 			returnRoom.setAssignTo(user);
-			returnRoom.setFollowUpDate(updateNote.getFollowUpDate());
+			returnRoom.setFollowUpDate(updateNote.getFollowUpDate() != null ? updateNote.getFollowUpDate() : null);
 			returnRoom.setStatus(updateNote.getStatus());
 			returnRoom.setReturnOrderItem(existingItem);
 			returnRoomRepository.save(returnRoom);
@@ -519,9 +523,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
 
-			Date followUpDate = updateNote.getFollowUpDate();
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
-			String formattedDate = simpleDateFormat.format(followUpDate);
+			String formattedDate = "";
+			if(updateNote.getFollowUpDate() != null) {
+				Date followUpDate = updateNote.getFollowUpDate();
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
+				formattedDate = simpleDateFormat.format(followUpDate);
+			}else {
+				formattedDate = null;
+			}
 			String subject = PortalConstants.NOTE_STATUS;
 			String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS();
 			HashMap<String, String> map = new HashMap<>();
