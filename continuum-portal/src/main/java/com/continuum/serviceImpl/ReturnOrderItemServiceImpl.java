@@ -10,8 +10,6 @@ import java.util.Optional;
 import javax.mail.MessagingException;
 import javax.persistence.EntityNotFoundException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -145,62 +143,101 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
 				auditLog.setUserName(updateBy);
+				auditLogRepository.save(auditLog);
 			}
 
-			if (updatedItem.getProblemDesc() != null && updatedItem.getReasonCode() != null
-					&& !(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))
-					&& !(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))) {
-				existingItem.setReasonCode(updatedItem.getReasonCode());
-				existingItem.setProblemDesc(updatedItem.getProblemDesc());
-				auditLog.setDescription("Reason Listing ---> Problem Details  has been updated of item - "
-						+ existingItem.getItemName() + " by " + updateBy + ".");
-				auditLog.setHighlight("");
-				auditLog.setTitle("Update Activity");
-				auditLog.setStatus("Ordered Items");
-				auditLog.setRmaNo(rmaNo);
-				auditLog.setUserName(updateBy);
-			}
-			if (updatedItem.getProblemDesc() != null
-					&& (existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))
-					&& !(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))) {
-				existingItem.setProblemDesc(updatedItem.getProblemDesc());
-				auditLog.setDescription("Problem Details has been updated of item - " + existingItem.getItemName()
-						+ " by " + updateBy + ".");
-				auditLog.setHighlight("");
-				auditLog.setTitle("Update Activity");
-				auditLog.setStatus("Ordered Items");
-				auditLog.setRmaNo(rmaNo);
-				auditLog.setUserName(updateBy);
-			}
-			if (updatedItem.getReasonCode() != null
-					&& (existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))
-					&& !(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))) {
-				existingItem.setReasonCode(updatedItem.getReasonCode());
-				auditLog.setDescription("Reason Listing has been updated of item - " + existingItem.getItemName()
-						+ " by " + updateBy + ".");
-				auditLog.setHighlight("");
-				auditLog.setTitle("Update Activity");
-				auditLog.setStatus("Ordered Items");
-				auditLog.setRmaNo(rmaNo);
-				auditLog.setUserName(updateBy);
+			if (updatedItem.getProblemDesc() != null && updatedItem.getReasonCode() != null && updatedItem.getReturnType() != null) {
+			    if (!(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))
+			            && !(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))
+			            && !(existingItem.getReturnType().equalsIgnoreCase(updatedItem.getReturnType()))){
+			        existingItem.setReasonCode(updatedItem.getReasonCode());
+			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
+			        existingItem.setReturnType(updatedItem.getReturnType());
+			        auditLog.setDescription("Return type ---> Reason Listing ---> Problem Details has been updated of item - "
+			                + existingItem.getItemName() + " by " + updateBy + ".");
+			        auditLog.setHighlight("");
+					auditLog.setTitle("Update Activity");
+					auditLog.setStatus("Ordered Items");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+			    }
+			    else if (!(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))
+			            && !(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))){
+			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
+			        existingItem.setReasonCode(updatedItem.getReasonCode());
+			        auditLog.setDescription("Problem Details ---> Reason Listing has been updated of item - " + existingItem.getItemName()
+			                + " by " + updateBy + ".");
+			        auditLog.setHighlight("");
+					auditLog.setTitle("Update Activity");
+					auditLog.setStatus("Ordered Items");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+			    }
+			    else if (!(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))
+			            && !(existingItem.getReturnType().equalsIgnoreCase(updatedItem.getReturnType()))){
+			        existingItem.setReasonCode(updatedItem.getReasonCode());
+			        existingItem.setReturnType(updatedItem.getReturnType());
+			        auditLog.setDescription("Reason Listing ---> Return type has been updated of item - " + existingItem.getItemName()
+			                + " by " + updateBy +".");
+			        auditLog.setHighlight("");
+					auditLog.setTitle("Update Activity");
+					auditLog.setStatus("Ordered Items");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+			    }
+			    else if (!(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))
+			            && !(existingItem.getReturnType().equalsIgnoreCase(updatedItem.getReturnType()))){
+			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
+			        existingItem.setReturnType(updatedItem.getReturnType());
+			        auditLog.setDescription("Problem Details ---> Return type has been updated of item - " + existingItem.getItemName()
+			                + " by " + updateBy + ".");
+			        auditLog.setHighlight("");
+					auditLog.setTitle("Update Activity");
+					auditLog.setStatus("Ordered Items");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+			    }else if (!(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))) {
+			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
+			        auditLog.setDescription("Problem Details has been updated of item - " + existingItem.getItemName()
+			                + " by " + updateBy + ".");
+			        auditLog.setHighlight("");
+					auditLog.setTitle("Update Activity");
+					auditLog.setStatus("Ordered Items");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+			    } else if (!(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))){
+			        existingItem.setReasonCode(updatedItem.getReasonCode());
+			        auditLog.setDescription("Reason Listing has been updated of item - " + existingItem.getItemName()
+			                + " by " + updateBy + ".");
+			        auditLog.setHighlight("");
+					auditLog.setTitle("Update Activity");
+					auditLog.setStatus("Ordered Items");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+			    } else if (!(existingItem.getReturnType().equalsIgnoreCase(updatedItem.getReturnType()))){
+			        existingItem.setReturnType(updatedItem.getReturnType());
+			        auditLog.setDescription("Return Type has been updated of item - " + existingItem.getItemName()
+			                + " by " + updateBy + ".");
+			        auditLog.setHighlight("");
+					auditLog.setTitle("Update Activity");
+					auditLog.setStatus("Ordered Items");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+			    }
+			    
 			}
 
-			if (updatedItem.getTrackingUrl() != null || updatedItem.getTrackingNumber() != null
-					|| updatedItem.getCourierName() != null) {
-				existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
-				existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
-				existingItem.setCourierName(updatedItem.getCourierName());
-				auditLog.setDescription("Tracking Code has been updated of item - " + existingItem.getItemName()
-						+ " by " + updateBy + ".");
-				auditLog.setHighlight("");
-				auditLog.setTitle("Update Activity");
-				auditLog.setStatus("Ordered Items");
-				auditLog.setRmaNo(rmaNo);
-				auditLog.setUserName(updateBy);
-			}
+			
+
 
 			returnOrderItemRepository.save(existingItem);
-			auditLogRepository.save(auditLog);
 			// String recipient = existingItem.getReturnOrder().getCustomer().getEmail();
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
 
@@ -643,6 +680,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			// roi.setNotes(returnOrderItemDTO.getNotes());
 
 			returnOrderItemRepository.save(returnOrderItem);
+			
+			ReturnRoom returnRoom = new ReturnRoom();
+			returnRoom.setName(updateBy);
+			returnRoom.setMessage(returnOrderItemDTO.getNotes());
+			returnRoom.setReturnOrderItem(returnOrderItem);
+			returnRoom.setAssignTo(null);
+			returnRoomRepository.save(returnRoom);
+			
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(
@@ -653,6 +698,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
+			
+			
 		}
 		return "Restocking fee and return amount updated successfully";
 	}

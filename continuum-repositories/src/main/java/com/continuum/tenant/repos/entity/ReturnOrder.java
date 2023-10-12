@@ -71,6 +71,8 @@ public class ReturnOrder extends BaseEntity {
     @OneToMany(mappedBy = "returnOrder", cascade = CascadeType.ALL)
     private List<RmaInvoiceInfo> rmaInvoiceInfos;
     
+    private String returnType;
+    
     private boolean ISInvoiceLinked;
     private boolean ISDocumentLinked;
 
