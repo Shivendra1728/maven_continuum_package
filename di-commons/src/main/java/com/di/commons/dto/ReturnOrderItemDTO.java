@@ -12,6 +12,7 @@ import javax.persistence.OneToMany;
 
 import com.continuum.tenant.repos.entity.BaseEntity;
 import com.continuum.tenant.repos.entity.QuestionMap;
+import com.continuum.tenant.repos.entity.ReturnType;
 import com.continuum.tenant.repos.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -70,6 +71,6 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	Set<QuestionMap> questionMap;
 	
 	private Long reasonCodeId;
-	private String returnType;
+	private ReturnType returnType;
 
 }

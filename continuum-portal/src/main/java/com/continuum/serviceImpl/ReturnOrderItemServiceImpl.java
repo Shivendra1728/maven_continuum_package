@@ -16,6 +16,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -146,93 +147,44 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLogRepository.save(auditLog);
 			}
 
-			if (updatedItem.getProblemDesc() != null && updatedItem.getReasonCode() != null && updatedItem.getReturnType() != null) {
-			    if (!(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))
-			            && !(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))
-			            && !(existingItem.getReturnType().equalsIgnoreCase(updatedItem.getReturnType()))){
-			        existingItem.setReasonCode(updatedItem.getReasonCode());
+			if (updatedItem.getProblemDesc() != null || updatedItem.getReasonCode() != null || updatedItem.getReturnType() != null) {
+			    StringBuilder updatedFields = new StringBuilder();
+
+			    if (updatedItem.getProblemDesc() != null && !existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc())) {
 			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
-			        existingItem.setReturnType(updatedItem.getReturnType());
-			        auditLog.setDescription("Return type ---> Reason Listing ---> Problem Details has been updated of item - "
-			                + existingItem.getItemName() + " by " + updateBy + ".");
-			        auditLog.setHighlight("");
-					auditLog.setTitle("Update Activity");
-					auditLog.setStatus("Ordered Items");
-					auditLog.setRmaNo(rmaNo);
-					auditLog.setUserName(updateBy);
-					auditLogRepository.save(auditLog);
+			        updatedFields.append("Problem Details");
 			    }
-			    else if (!(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))
-			            && !(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))){
-			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
+
+			    if (updatedItem.getReasonCode() != null && !existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode())) {
+			        if (updatedFields.length() > 0) {
+			            updatedFields.append(" ---> ");
+			        }
 			        existingItem.setReasonCode(updatedItem.getReasonCode());
-			        auditLog.setDescription("Problem Details ---> Reason Listing has been updated of item - " + existingItem.getItemName()
-			                + " by " + updateBy + ".");
-			        auditLog.setHighlight("");
-					auditLog.setTitle("Update Activity");
-					auditLog.setStatus("Ordered Items");
-					auditLog.setRmaNo(rmaNo);
-					auditLog.setUserName(updateBy);
-					auditLogRepository.save(auditLog);
+			        updatedFields.append("Reason Listing");
 			    }
-			    else if (!(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))
-			            && !(existingItem.getReturnType().equalsIgnoreCase(updatedItem.getReturnType()))){
-			        existingItem.setReasonCode(updatedItem.getReasonCode());
-			        existingItem.setReturnType(updatedItem.getReturnType());
-			        auditLog.setDescription("Reason Listing ---> Return type has been updated of item - " + existingItem.getItemName()
-			                + " by " + updateBy +".");
-			        auditLog.setHighlight("");
-					auditLog.setTitle("Update Activity");
-					auditLog.setStatus("Ordered Items");
-					auditLog.setRmaNo(rmaNo);
-					auditLog.setUserName(updateBy);
-					auditLogRepository.save(auditLog);
+
+			    if (updatedItem.getReturnType() != null) {
+			        if (existingItem.getReturnType() == null || !existingItem.getReturnType().equals(updatedItem.getReturnType())) {
+			            if (updatedFields.length() > 0) {
+			                updatedFields.append(" ---> ");
+			            }
+			            existingItem.setReturnType(updatedItem.getReturnType());
+			            updatedFields.append("Return Type");
+			        }
 			    }
-			    else if (!(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))
-			            && !(existingItem.getReturnType().equalsIgnoreCase(updatedItem.getReturnType()))){
-			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
-			        existingItem.setReturnType(updatedItem.getReturnType());
-			        auditLog.setDescription("Problem Details ---> Return type has been updated of item - " + existingItem.getItemName()
+
+			    if (updatedFields.length() > 0) {
+			        auditLog.setDescription(updatedFields + " has been updated of item - " + existingItem.getItemName()
 			                + " by " + updateBy + ".");
 			        auditLog.setHighlight("");
-					auditLog.setTitle("Update Activity");
-					auditLog.setStatus("Ordered Items");
-					auditLog.setRmaNo(rmaNo);
-					auditLog.setUserName(updateBy);
-					auditLogRepository.save(auditLog);
-			    }else if (!(existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc()))) {
-			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
-			        auditLog.setDescription("Problem Details has been updated of item - " + existingItem.getItemName()
-			                + " by " + updateBy + ".");
-			        auditLog.setHighlight("");
-					auditLog.setTitle("Update Activity");
-					auditLog.setStatus("Ordered Items");
-					auditLog.setRmaNo(rmaNo);
-					auditLog.setUserName(updateBy);
-					auditLogRepository.save(auditLog);
-			    } else if (!(existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode()))){
-			        existingItem.setReasonCode(updatedItem.getReasonCode());
-			        auditLog.setDescription("Reason Listing has been updated of item - " + existingItem.getItemName()
-			                + " by " + updateBy + ".");
-			        auditLog.setHighlight("");
-					auditLog.setTitle("Update Activity");
-					auditLog.setStatus("Ordered Items");
-					auditLog.setRmaNo(rmaNo);
-					auditLog.setUserName(updateBy);
-					auditLogRepository.save(auditLog);
-			    } else if (!(existingItem.getReturnType().equalsIgnoreCase(updatedItem.getReturnType()))){
-			        existingItem.setReturnType(updatedItem.getReturnType());
-			        auditLog.setDescription("Return Type has been updated of item - " + existingItem.getItemName()
-			                + " by " + updateBy + ".");
-			        auditLog.setHighlight("");
-					auditLog.setTitle("Update Activity");
-					auditLog.setStatus("Ordered Items");
-					auditLog.setRmaNo(rmaNo);
-					auditLog.setUserName(updateBy);
-					auditLogRepository.save(auditLog);
+			        auditLog.setTitle("Update Activity");
+			        auditLog.setStatus("Ordered Items");
+			        auditLog.setRmaNo(rmaNo);
+			        auditLog.setUserName(updateBy);
+			        auditLogRepository.save(auditLog);
 			    }
-			    
 			}
+
 
 			
 
@@ -355,7 +307,63 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setRmaNo(rmaNo);
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
+					
+					//save in ERP while rma denied
+					 String apiUrl = "https://apiplay.labdepotinc.com/uiserver0/api/v2/transaction"; 
+					    String xmlData = "<TransactionSet xmlns=\"http://schemas.datacontract.org/2004/07/P21.Transactions.Model.V2\">\r\n"
+					    		+ "    <IgnoreDisabled>true</IgnoreDisabled>\r\n"
+					    		+ "    <Name>RMA</Name>\r\n"
+					    		+ "    <Transactions>\r\n"
+					    		+ "        <Transaction>\r\n"
+					    		+ "            <DataElements>\r\n"
+					    		+ "                <DataElement>\r\n"
+					    		+ "                    <Keys xmlns:a=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\"/>\r\n"
+					    		+ "                    <Name>TABPAGE_1.order</Name>\r\n"
+					    		+ "                    <Rows>\r\n"
+					    		+ "                        <Row>\r\n"
+					    		+ "                            <Edits>\r\n"
+					    		+ "								<Edit>\r\n"
+					    		+ "                                            <Name>order_no</Name>\r\n"
+					    		+ "                                            <Value>"+returnOrderEntity.getRmaOrderNo()+"</Value>\r\n"
+					    		+ "                                        </Edit>\r\n"
+					    		+ "                                        <Edit>\r\n"
+					    		+ "                                            <Name>cancel_flag</Name>\r\n"
+					    		+ "                                            <Value>Y</Value>\r\n"
+					    		+ "                                        </Edit>      \r\n"
+					    		+ "                            </Edits>\r\n"
+					    		+ "                            <RelativeDateEdits/>\r\n"
+					    		+ "                        </Row>\r\n"
+					    		+ "                    </Rows>\r\n"
+					    		+ "                    <Type>Form</Type>\r\n"
+					    		+ "                </DataElement>     \r\n"
+					    		+ "            </DataElements>\r\n"
+					    		+ "        </Transaction>\r\n"
+					    		+ "    </Transactions>\r\n"
+					    		+ "</TransactionSet>"; 
 
+					    HttpHeaders headers = new HttpHeaders();
+						try {
+							headers.setContentType(MediaType.APPLICATION_XML);
+							headers.setBearerAuth(p21TokenServiceImpl.getToken());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					    RestTemplate restTemplate = new RestTemplate();
+					    try {
+					    	ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST,
+									new HttpEntity<>(xmlData, headers), String.class);
+					        if (response.getStatusCode().is2xxSuccessful()) {
+					            System.out.println("Resource updated successfully.");
+					        } else {
+					            System.out.println("There was an error while updating the resource.");
+					        }
+					    } catch (Exception e) {
+					        e.printStackTrace();
+					        System.out.println("An exception occurred while making the API request.");
+					    }
+					
+					
+			
 				} else if (allAuthorized) {
 					returnOrderEntity.setStatus("Authorized");
 					// audit logs
