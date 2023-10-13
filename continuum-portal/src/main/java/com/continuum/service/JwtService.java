@@ -1,11 +1,11 @@
 package com.continuum.service;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
+
 import org.springframework.http.ResponseEntity;
 
-import com.di.commons.dto.UserDTO;
-
 public interface JwtService {
-	 ResponseEntity<?> decodeJwt(String base64Token);
-	 
-	 
+	ResponseEntity<?> decodeJwt(@NotNull String base64Token, HttpServletRequest request);
+
 }
