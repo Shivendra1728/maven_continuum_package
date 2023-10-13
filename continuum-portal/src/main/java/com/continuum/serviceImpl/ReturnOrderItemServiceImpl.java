@@ -64,6 +64,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	EmailSender emailSender;
+	
 
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
@@ -147,48 +148,54 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLogRepository.save(auditLog);
 			}
 
-			if (updatedItem.getProblemDesc() != null || updatedItem.getReasonCode() != null || updatedItem.getReturnType() != null) {
-			    StringBuilder updatedFields = new StringBuilder();
-
-			    if (updatedItem.getProblemDesc() != null && !existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc())) {
-			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
-			        updatedFields.append("Problem Details");
-			    }
-
-			    if (updatedItem.getReasonCode() != null && !existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode())) {
-			        if (updatedFields.length() > 0) {
-			            updatedFields.append(" ---> ");
-			        }
-			        existingItem.setReasonCode(updatedItem.getReasonCode());
-			        updatedFields.append("Reason Listing");
-			    }
-
-			    if (updatedItem.getReturnType() != null) {
-			        if (existingItem.getReturnType() == null || !existingItem.getReturnType().equals(updatedItem.getReturnType())) {
-			            if (updatedFields.length() > 0) {
-			                updatedFields.append(" ---> ");
-			            }
-			            existingItem.setReturnType(updatedItem.getReturnType());
-			            updatedFields.append("Return Type");
-			        }
-			    }
-
-			    if (updatedFields.length() > 0) {
-			        auditLog.setDescription(updatedFields + " has been updated of item - " + existingItem.getItemName()
-			                + " by " + updateBy + ".");
-			        auditLog.setHighlight("");
-			        auditLog.setTitle("Update Activity");
-			        auditLog.setStatus("Ordered Items");
-			        auditLog.setRmaNo(rmaNo);
-			        auditLog.setUserName(updateBy);
-			        auditLogRepository.save(auditLog);
-			    }
+//			if (updatedItem.getProblemDesc() != null || updatedItem.getReasonCode() != null || updatedItem.getReturnType() != null) {
+//			    StringBuilder updatedFields = new StringBuilder();
+//
+//			    if (updatedItem.getProblemDesc() != null && !existingItem.getProblemDesc().equalsIgnoreCase(updatedItem.getProblemDesc())) {
+//			        existingItem.setProblemDesc(updatedItem.getProblemDesc());
+//			        updatedFields.append("Problem Details");
+//			    }
+//
+//			    if (updatedItem.getReasonCode() != null && !existingItem.getReasonCode().equalsIgnoreCase(updatedItem.getReasonCode())) {
+//			        if (updatedFields.length() > 0) {
+//			            updatedFields.append(" ---> ");
+//			        }
+//			        existingItem.setReasonCode(updatedItem.getReasonCode());
+//			        updatedFields.append("Reason Listing");
+//			    }
+//
+//			    if (updatedItem.getReturnType() != null) {
+//			        if (existingItem.getReturnType() == null || !existingItem.getReturnType().equals(updatedItem.getReturnType())) {
+//			            if (updatedFields.length() > 0) {
+//			                updatedFields.append(" ---> ");
+//			            }
+//			            existingItem.setReturnType(updatedItem.getReturnType());
+//			            updatedFields.append("Return Type");
+//			        }
+//			    }
+//
+//			    if (updatedFields.length() > 0) {
+//			        auditLog.setDescription(updatedFields + " has been updated of item - " + existingItem.getItemName()
+//			                + " by " + updateBy + ".");
+//			        auditLog.setHighlight("");
+//			        auditLog.setTitle("Update Activity");
+//			        auditLog.setStatus("Ordered Items");
+//			        auditLog.setRmaNo(rmaNo);
+//			        auditLog.setUserName(updateBy);
+//			        auditLogRepository.save(auditLog);
+//			    }
+//			}
+			if(updatedItem.getProblemDescNote()!=null) {
+				existingItem.setProblemDescNote(updatedItem.getProblemDescNote());
+				ReturnRoom returnRoom = new ReturnRoom();
+				returnRoom.setName(updateBy);
+				returnRoom.setMessage(updatedItem.getProblemDescNote());
+				returnRoom.setReturnOrderItem(existingItem);
+				returnRoom.setAssignTo(null);
+				returnRoomRepository.save(returnRoom);
+ 
 			}
-
-
 			
-
-
 			returnOrderItemRepository.save(existingItem);
 			// String recipient = existingItem.getReturnOrder().getCustomer().getEmail();
 			String recipient = PortalConstants.EMAIL_RECIPIENT;

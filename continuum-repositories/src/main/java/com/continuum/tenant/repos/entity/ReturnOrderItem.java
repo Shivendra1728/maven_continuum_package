@@ -84,9 +84,7 @@ public class ReturnOrderItem extends BaseEntity {
 
 	private Date followUpDate;
 	private Long reasonCodeId;
-	
-	@OneToOne
-	private ReturnType returnType;
+	private String problemDescNote;
 	
 
 }
