@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import java.util.Map;
-import java.util.Set;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -15,12 +12,10 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 
-import org.apache.velocity.VelocityContext;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +27,7 @@ import com.continuum.tenant.repos.entity.ClientConfig;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
-import com.continuum.tenant.repos.entity.ReturnRoom;
+import com.continuum.tenant.repos.entity.ReturnType;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
@@ -40,6 +35,7 @@ import com.continuum.tenant.repos.repositories.ClientConfigRepository;
 import com.continuum.tenant.repos.repositories.QuestionRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
+import com.continuum.tenant.repos.repositories.ReturnTypeRepository;
 import com.continuum.tenant.repos.repositories.RmaInvoiceInfoRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.CustomerDTO;
@@ -99,6 +95,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	EmailSender emailSender;
+	
+	@Autowired
+	ReturnTypeRepository returnTypeRepository;
 	
 	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
 
@@ -545,12 +544,14 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	}
 
 	@Override
-	public String assignRMA(String rmaNo, Long assignToId, String updateBy, ReturnOrderDTO note) {
+	public String assignRMA(String rmaNo, Long assignToId, String updateBy, Long returnTypeId,ReturnOrderDTO note) {
 		Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
 		Optional<User> optionalUser = userRepository.findById(assignToId);
+		Optional<ReturnType> optionalReturnType=returnTypeRepository.findById(returnTypeId);
 		if (optionalReturnOrder.isPresent() && optionalUser.isPresent()) {
 			ReturnOrder returnOrder = optionalReturnOrder.get();
 			User user = optionalUser.get();
+			ReturnType returnType=optionalReturnType.get();
 			List<ReturnOrderItem> returnOrderItemList = returnOrder.getReturnOrderItem();
 			for (ReturnOrderItem returnOrderItem : returnOrderItemList) {
 				if (returnOrderItem.getUser() == null) {
@@ -562,6 +563,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setUser(user);
 			returnOrder.setNote(note.getNote());
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
+			returnOrder.setReturnType(returnType);
 			returnOrderRepository.save(returnOrder);
 
 //			apply email functionality.
@@ -582,7 +584,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Assign RMA");
 			auditLog.setDescription(getRmaaQualifier()+" "+returnOrder.getRmaOrderNo() + " has been assigned to the " + user.getFirstName()
-					+ " " + user.getLastName() + "." + ";" +getRmaaQualifier()+" "+ rmaNo + " is now at 'Under Review'. ");
+					+ " " + user.getLastName() + "." + ";" +getRmaaQualifier()+" "+ rmaNo + " is now at 'Under Review'.;"+"Return type of the "+getRmaaQualifier()+" "+rmaNo+" is set to as '"+returnType.getType()+"'.");
 			auditLog.setHighlight("Under Review");
 			auditLog.setStatus("RMA");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());

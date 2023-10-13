@@ -67,8 +67,8 @@ public class ReturnOrderController {
 	}
 	
 	@PostMapping("/assignRMA")
-	public String assignRMA(@RequestParam String rmaNo , @RequestParam Long assigntoId ,@RequestParam String updateBy,@RequestBody ReturnOrderDTO note) throws Exception {
-		return returnOrderService.assignRMA(rmaNo,assigntoId,updateBy,note);
+	public String assignRMA(@RequestParam String rmaNo , @RequestParam Long assigntoId ,@RequestParam String updateBy,@RequestParam Long returnTypeId,@RequestBody ReturnOrderDTO note) throws Exception {
+		return returnOrderService.assignRMA(rmaNo,assigntoId,updateBy,returnTypeId,note);
 	}
 	
 }

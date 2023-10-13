@@ -71,6 +71,7 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	Set<QuestionMap> questionMap;
 	
 	private Long reasonCodeId;
-	private ReturnType returnType;
+	private String problemDescNote;
+
 
 }
