@@ -5,7 +5,6 @@ import java.util.List;
 import com.continuum.tenant.repos.entity.Invoice;
 
 public interface InvoiceService {
-	
-	public List<Invoice> getInvoice(String customerId);
+	public List<Invoice> getInvoice(String customerId,String poNo , String invoiceNo ,String orderNo);
 
 }

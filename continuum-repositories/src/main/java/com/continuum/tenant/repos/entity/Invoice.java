@@ -22,9 +22,9 @@ public class Invoice extends BaseEntity{
 	private Long id;
 
 	private String invNo;
-	private String InvDate;
-	private String SONo;
-	private String PONo;
+	private String invDate;
+	private String soNo;
+	private String poNo;
 	private String currency;
 	private String customerId;
 	private String contactId;
