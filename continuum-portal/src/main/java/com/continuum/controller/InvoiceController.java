@@ -19,7 +19,7 @@ public class InvoiceController {
 	InvoiceService invoiceService;
 	
 	@GetMapping("/search")
-	public List<Invoice> getInvoice(@RequestParam String customerId){
-		return invoiceService.getInvoice(customerId);
+	public List<Invoice> getInvoice(@RequestParam(required = false) String customerId , @RequestParam(required = false) String poNo , @RequestParam(required = false) String invoiceNo,@RequestParam(required = false) String orderNo){
+		return invoiceService.getInvoice(customerId,poNo,invoiceNo,orderNo);
 	}
 }
