@@ -3,9 +3,7 @@ package com.continuum.multitenant.tenant.config;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import javax.sql.DataSource;
-
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.multitenant.util.DataSourceUtil;
@@ -76,7 +73,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl extends AbstractDa
 
     private String initializeTenantIfLost(String tenantIdentifier) {
         if (tenantIdentifier != DBContextHolder.getCurrentDb()) {
-            tenantIdentifier = DBContextHolder.getCurrentDb();
+            tenantIdentifier ="continuum";
         }
         return tenantIdentifier;
     }

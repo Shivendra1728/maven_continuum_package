@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
 			user.setFirstName(assignUser.getFirstName());
 			user.setLastName(assignUser.getLastName());
 			user.setEmail(assignUser.getEmail());
-			user.setRoles(assignUser.getRoles());
+			user.setRole(assignUser.getRole());
 			userRepository.save(user);
 
 			List<ReturnOrder> returnOrders = returnOrderRepository.findByUserId(id);
@@ -108,8 +108,8 @@ public class UserServiceImpl implements UserService {
 			if (user.getNote() != null) {
 				eUser.setNote(user.getNote());
 			}
-			if (user.getRoles() != null) {
-				eUser.setRoles(user.getRoles());
+			if (user.getRole() != null) {
+				eUser.setRole(user.getRole());
 			}
 			if (user.getDob() != null) {
 				eUser.setDob(user.getDob());
