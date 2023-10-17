@@ -66,11 +66,11 @@ public class JwtServiceImpl implements JwtService {
 	private Map<String, String> roleMappings = new HashMap<>();
 	private static final Logger logger = LoggerFactory.getLogger(ReturnOrderServiceImpl.class);
 
-	public ResponseEntity<?> decodeJwt(@NotNull String base64Token, HttpServletRequest request) {
+	public ResponseEntity<?> decodeJwt(@NotNull String bToken, HttpServletRequest request) {
 
 		try {
 
-			String[] parts = base64Token.split("\\.");
+			String[] parts = bToken.split("\\.");
 			String payload = new String(Base64.getDecoder().decode(parts[1]));
 			logger.info(payload);
 			ObjectMapper objectMapper = new ObjectMapper();

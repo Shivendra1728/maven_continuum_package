@@ -6,6 +6,6 @@ import javax.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 
 public interface JwtService {
-	ResponseEntity<?> decodeJwt(@NotNull String base64Token, HttpServletRequest request);
+	ResponseEntity<?> decodeJwt(@NotNull String bToken, HttpServletRequest request);
 
 }
