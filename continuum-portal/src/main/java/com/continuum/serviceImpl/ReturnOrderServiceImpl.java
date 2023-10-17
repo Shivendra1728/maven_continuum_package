@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -92,7 +93,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	P21ReturnOrderService p21ReturnOrderService;
-
+	
 	@Autowired
 	CustomerService customerService;
 
@@ -257,6 +258,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 //	}
 
 	@Override
+	@Cacheable("returnOrderCache")
 	public List<ReturnOrderDTO> getAllReturnOrder(Long userId) {
 
 		Optional<User> optionalUser = userRepository.findById(userId);
