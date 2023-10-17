@@ -66,11 +66,11 @@ public class JwtServiceImpl implements JwtService {
 	private Map<String, String> roleMappings = new HashMap<>();
 	private static final Logger logger = LoggerFactory.getLogger(ReturnOrderServiceImpl.class);
 
-	public ResponseEntity<?> decodeJwt(@NotNull String base64Token, HttpServletRequest request) {
+	public ResponseEntity<?> decodeJwt(@NotNull String bToken, HttpServletRequest request) {
 
 		try {
 
-			String[] parts = base64Token.split("\\.");
+			String[] parts = bToken.split("\\.");
 			String payload = new String(Base64.getDecoder().decode(parts[1]));
 			logger.info(payload);
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -94,7 +94,7 @@ public class JwtServiceImpl implements JwtService {
 
 			Customer customer = new Customer();
 			customer.setCustomerId((String) payloadMap.get("customerID"));
-			customerRepository.save(customer);
+			
 
 			String hashedPassword = BCrypt.hashpw("12345", BCrypt.gensalt());
 			userDTO.setPassword(hashedPassword);
@@ -102,8 +102,8 @@ public class JwtServiceImpl implements JwtService {
 			userDTO.setFullName((String) payloadMap.get("firstName") + (String) payloadMap.get("lastName"));
 			userDTO.setUserName((String) payloadMap.get("UserName"));
 			userDTO.setCustomer(customer);
-			User user = userMapper.UserDTOToUser(userDTO);
-			User existingUser = userRepository.findByEmail(user.getEmail());
+			
+			User existingUser = userRepository.findByEmail(userDTO.getEmail());
 			if (existingUser != null) {
 				// preparetoken and also give tenant
 				if (null == existingUser.getUserName() || existingUser.getUserName().isEmpty()) {
@@ -130,8 +130,10 @@ public class JwtServiceImpl implements JwtService {
 
 				return ResponseEntity
 						.ok(new AuthResponse(existingUser.getUserName(), name, token, existingUser.getRole(), userId,
-								user.getCustomer().getCustomerId(), jwtTokenUtil.getExpirationDateFromToken(token)));
+								existingUser.getCustomer().getCustomerId(), jwtTokenUtil.getExpirationDateFromToken(token)));
 			} else {
+				User user = userMapper.UserDTOToUser(userDTO);
+				customerRepository.save(customer);
 				userRepository.save(user);
 				// preparetoken and also give tenant
 				if (null == user.getUserName() || user.getUserName().isEmpty()) {
