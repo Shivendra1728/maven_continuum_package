@@ -73,7 +73,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl extends AbstractDa
 
     private String initializeTenantIfLost(String tenantIdentifier) {
         if (tenantIdentifier != DBContextHolder.getCurrentDb()) {
-            tenantIdentifier ="continuum";
+            tenantIdentifier = DBContextHolder.getCurrentDb();
         }
         return tenantIdentifier;
     }
