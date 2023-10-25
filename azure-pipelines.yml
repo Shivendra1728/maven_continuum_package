@@ -36,5 +36,6 @@ steps:
     runOptions: 'inline'
     inline: |
       cd /opt/backend-continnum/s/continuum-portal/target
+      sudo pwd
       sudo pkill -9 -f continuum-portal-0.0.1-SNAPSHOT.jar
     readyTimeout: '2000'
