@@ -20,5 +20,5 @@ steps:
     inline: |
       cd /opt/backend-continnum/s/continuum-portal/target
       sudo pwd
-      sudo pkill -9 -f continuum-portal-0.0.1-SNAPSHOT.jar
+      sudo pkill -9 -f 'java -jar'
     readyTimeout: '2000'
