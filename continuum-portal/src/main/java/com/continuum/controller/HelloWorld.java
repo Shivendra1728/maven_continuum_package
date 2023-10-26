@@ -14,7 +14,7 @@ import com.di.commons.dto.ClientDTO;
 public class HelloWorld {
 	
 	@GetMapping("/world")
-	public String createOrder(@RequestBody ClientDTO clientDTO) {
+	public String createOrder() {
 		return "Hello World!!!!!!!";
 	}
 
