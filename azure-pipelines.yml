@@ -17,10 +17,13 @@ steps:
   inputs:
     sshEndpoint: 'dev-stage-instance'
     runOptions: 'inline'
+    failOnStdErr: false
     inline: |
-      sudo pwd
       cd /opt/backend-continnum/s/continuum-portal/target
       sudo pwd
       sudo ps -ef | grep java
       sudo pkill -9 -f 'java -jar'
+      sudo nohup java -jar continuum-portal-0.0.1-SNAPSHOT.jar &
+
+      ls -lrt
     readyTimeout: '2000'
