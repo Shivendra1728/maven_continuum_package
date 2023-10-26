@@ -22,5 +22,5 @@ steps:
       cd /opt/backend-continnum/s/continuum-portal/target
       sudo pwd
       sudo ps -ef | grep java
-      sudo kill 2305268
+      sudo pkill -9 -f 'java -jar'
     readyTimeout: '2000'
