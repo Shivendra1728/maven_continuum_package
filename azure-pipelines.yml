@@ -18,7 +18,9 @@ steps:
     sshEndpoint: 'dev-stage-instance'
     runOptions: 'inline'
     inline: |
+      sudo pwd
       cd /opt/backend-continnum/s/continuum-portal/target
       sudo pwd
+      sudo ps -ef | grep java
       sudo pkill -9 -f 'java -jar'
     readyTimeout: '2000'
