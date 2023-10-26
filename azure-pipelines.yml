@@ -40,7 +40,5 @@ steps:
       sudo pwd
       sudo ps -ef | grep java
       sudo pkill -9 -f 'java -jar'
-      sudo nohup java -jar continuum-portal-0.0.1-SNAPSHOT.jar &
-
-      ls -lrt
+      sudo nohup java -jar continuum-portal-0.0.1-SNAPSHOT.jar > output.log 2>&1 &
     readyTimeout: '2000'
