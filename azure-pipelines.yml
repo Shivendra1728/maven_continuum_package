@@ -11,7 +11,24 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'package'
 
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'dev-stage-instance'
+    sourceFolder: '$(Agent.BuildDirectory)'
+    contents: '/s/continuum-portal/target/*.jar'
+    targetFolder: '/opt/backend-continnum/'
+    readyTimeout: '20000'
 
 - task: SSH@0
   inputs:
