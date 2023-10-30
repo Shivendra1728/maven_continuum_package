@@ -24,9 +24,8 @@ public class AuthResponse implements Serializable {
 	private String name;
 
 	private Date expirationDate;
-	private String rmaQualifier;
 
-	public AuthResponse(String userName, String name, String token, Role role, long userId, String customer, Date expirationDate,String rmaQualifier) {
+	public AuthResponse(String userName, String name, String token, Role role, long userId, String customer, Date expirationDate) {
 
 		this.userName = userName;
 		this.name = name;
@@ -38,7 +37,6 @@ public class AuthResponse implements Serializable {
 		this.userId = userId;
 		this.customer = customer;
 		this.expirationDate=expirationDate;
-		this.rmaQualifier=rmaQualifier;
 
 	}
 
@@ -51,20 +49,6 @@ public class AuthResponse implements Serializable {
 	public AuthResponse setUserName(String userName) {
 
 		this.userName = userName;
-
-		return this;
-
-	}
-	
-	public String getRmaQualifier() {
-
-		return rmaQualifier;
-
-	}
-
-	public AuthResponse setRmaQualifier(String rmaQualifier) {
-
-		this.rmaQualifier = rmaQualifier;
 
 		return this;
 
