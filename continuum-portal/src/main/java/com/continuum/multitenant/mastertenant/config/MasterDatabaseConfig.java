@@ -32,7 +32,7 @@ import com.zaxxer.hikari.HikariDataSource;
  */
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = {"com.continuum.multitenant.mastertenant.entity", "com.continuum.multitenant.mastertenant.repository"},
+@EnableJpaRepositories(basePackages = {"com.continuum.multitenant.mastertenant.entity", "com.continuum.multitenant.mastertenant.repository","com.continuum.tenant.repos.repositories"},
         entityManagerFactoryRef = "masterEntityManagerFactory",
         transactionManagerRef = "masterTransactionManager")
 public class MasterDatabaseConfig {

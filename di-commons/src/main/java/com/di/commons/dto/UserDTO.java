@@ -49,7 +49,7 @@ public class UserDTO extends BaseEntity implements Serializable {
 			roles = new ArrayList<>();
 			permissions = new ArrayList<>();
 
-			Role role = user.getRoles();
+			Role role = user.getRole();
 			for (Permission permission : role.getPermissions()) {
 				String key = permission.getPermission();
 				if ((!permissions.contains(key) && (permission.isEnabled()))) {
@@ -82,6 +82,9 @@ public class UserDTO extends BaseEntity implements Serializable {
 
 	private Role role;
 	private Customer customer;
+	private String password;
+	
+		
 
 
 }

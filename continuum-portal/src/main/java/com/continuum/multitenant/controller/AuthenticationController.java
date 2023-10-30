@@ -123,7 +123,7 @@ public class AuthenticationController implements Serializable {
 		// jwtTokenUtil.generateToken(userDetails.getUsername(),String.valueOf(userLoginDTO.getTenantOrClientId()));
 		// Map the value into applicationScope bean
 		setMetaDataAfterLogin();
-		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), name, token, user.getRoles(), userId,
+		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), name, token, user.getRole(), userId,
 				user.getCustomer().getCustomerId(), jwtTokenUtil.getExpirationDateFromToken(token)));
 	}
 

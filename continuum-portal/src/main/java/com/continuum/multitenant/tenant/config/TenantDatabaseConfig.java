@@ -6,14 +6,11 @@ import java.util.Map;
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.MultiTenancyStrategy;
-import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
-import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -25,10 +22,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.continuum.multitenant.mastertenant.config.PhysicalNamingStrategyImpl;
-import com.continuum.tenant.repos.entity.ClientConfig;
-import com.continuum.tenant.repos.entity.Store;
-import com.continuum.tenant.repos.repositories.ClientRepository;
-import com.continuum.tenant.repos.repositories.StoreRepository;
 
 /**
  * @author RK

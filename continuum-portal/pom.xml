@@ -1,79 +1,226 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.continuum-backend</groupId>
 		<artifactId>continuum-backend</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
+
+
 	<artifactId>continuum-portal</artifactId>
+
+
 	<dependencies>
 
+
 		<dependency>
+
+
 			<groupId>com.continuum-repositories</groupId>
+
+
 			<artifactId>continuum-repositories</artifactId>
+
+
 			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>javax.mail-api</artifactId>
-			<version>1.6.2</version>
+
+
 		</dependency>
 
 		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-			<version>1.6.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.di-commons</groupId>
-			<artifactId>di-commons</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
+
+
 			<groupId>com.continuum-backend</groupId>
+
+
 			<artifactId>continuum-integration</artifactId>
+
+
 			<version>0.0.1-SNAPSHOT</version>
+
+
 		</dependency>
+
+
 		<dependency>
-			<!-- <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-thymeleaf</artifactId> 
-				</dependency> <dependency> -->
-			<groupId>org.apache.velocity</groupId>
-			<artifactId>velocity-engine-core</artifactId>
-			<version>2.3</version>
+
+
+			<groupId>javax.mail</groupId>
+
+
+			<artifactId>javax.mail-api</artifactId>
+
+
+			<version>1.6.2</version>
+
+
 		</dependency>
+
+
 		<dependency>
+
+
+			<groupId>com.sun.mail</groupId>
+
+
+			<artifactId>javax.mail</artifactId>
+
+
+			<version>1.6.2</version>
+
+
+		</dependency>
+
+
+		<dependency>
+
+
+			<groupId>com.di-commons</groupId>
+
+
+			<artifactId>di-commons</artifactId>
+
+
+			<version>0.0.1-SNAPSHOT</version>
+
+
+		</dependency>
+
+
+		<dependency>
+
+
 			<groupId>com.continuum-backend</groupId>
-			<artifactId>continuum-scheduler</artifactId>
+
+
+			<artifactId>continuum-integration</artifactId>
+
+
 			<version>0.0.1-SNAPSHOT</version>
+
+
 		</dependency>
+
+
 		<dependency>
+
+
+			<!-- <groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+
+ 
+
+				</dependency>
+			<dependency> -->
+
+
+			<groupId>org.apache.velocity</groupId>
+
+
+			<artifactId>velocity-engine-core</artifactId>
+
+
+			<version>2.3</version>
+
+
+		</dependency>
+
+
+		<dependency>
+
+
+			<groupId>com.continuum-backend</groupId>
+
+
+			<artifactId>continuum-scheduler</artifactId>
+
+
+			<version>0.0.1-SNAPSHOT</version>
+
+
+		</dependency>
+
+
+		<dependency>
+
+
 			<groupId>org.apache.velocity.tools</groupId>
+
+
 			<artifactId>velocity-tools-generic</artifactId>
+
+
 			<version>3.1</version>
+
+
 		</dependency>
+
+
 		<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-actuator</artifactId>
-</dependency>
-		
+
+
+			<groupId>org.springframework.boot</groupId>
+
+
+			<artifactId>spring-boot-starter-actuator</artifactId>
+
+
+		</dependency>
+
+
 	</dependencies>
+
+
 	<build>
+
+
 		<plugins>
+
+
 			<plugin>
+
+
 				<groupId>org.springframework.boot</groupId>
+
+
 				<artifactId>spring-boot-maven-plugin</artifactId>
+
+
 				<configuration>
+
+
 					<excludes>
+
+
 						<exclude>
+
+
 							<groupId>org.projectlombok</groupId>
+
+
 							<artifactId>lombok</artifactId>
+
+
 						</exclude>
+
+
 					</excludes>
+
+
 				</configuration>
+
+
 			</plugin>
+
+
 		</plugins>
+
+
 	</build>
+
 
 </project>

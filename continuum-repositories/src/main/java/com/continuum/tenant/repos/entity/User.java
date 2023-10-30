@@ -109,7 +109,7 @@ public class User extends BaseEntity implements Serializable {
 
 	@ManyToOne
 	@JoinColumn(name = "role_id") // Adjust the column name accordingly
-	private Role roles;
+	private Role role;
 
 	@OneToOne
 	@JoinColumn(name = "customerId")
