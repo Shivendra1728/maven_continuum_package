@@ -31,6 +31,7 @@ import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.service.MasterTenantService;
 import com.continuum.multitenant.security.UserTenantInformation;
 import com.continuum.multitenant.util.JwtTokenUtil;
+import com.continuum.serviceImpl.ReturnOrderServiceImpl;
 import com.continuum.tenant.repos.entity.Customer;
 import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;
@@ -66,6 +67,9 @@ public class AuthenticationController implements Serializable {
 
 	@Autowired
 	CustomerRepository customerRepository;
+	
+	@Autowired
+	ReturnOrderServiceImpl returnOrderServiceImpl;
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public ResponseEntity<?> userLogin(@RequestBody @NotNull UserLoginDTO userLoginDTO, HttpServletRequest request,
@@ -89,7 +93,7 @@ public class AuthenticationController implements Serializable {
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 		final String token = jwtTokenUtil.generateToken(userDetails.getUsername(), tenentId);
 		User user = userRepository.findByUserName(userDetails.getUsername());
-		
+		String rmaQualifier = returnOrderServiceImpl.getRmaaQualifier();
 		if (!user.getStatus()) {
 			throw new RuntimeException("User account is inactive.");
 		}
@@ -124,7 +128,7 @@ public class AuthenticationController implements Serializable {
 		// Map the value into applicationScope bean
 		setMetaDataAfterLogin();
 		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), name, token, user.getRoles(), userId,
-				user.getCustomer().getCustomerId(), jwtTokenUtil.getExpirationDateFromToken(token)));
+				user.getCustomer().getCustomerId(), jwtTokenUtil.getExpirationDateFromToken(token),rmaQualifier));
 	}
 
 	private void loadCurrentDatabaseInstance(String databaseName, String userName) {
