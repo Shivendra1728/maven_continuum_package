@@ -22,6 +22,8 @@ steps:
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package'
 
+- bash: ls 
+  displayName: 'Check directories'
 - task: CopyFilesOverSSH@0
   inputs:
     sshEndpoint: 'dev-stage-instance'
