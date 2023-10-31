@@ -23,4 +23,5 @@ public class User_Address extends BaseEntity {
 	private String zipCode;
 	private String country;
 	private String state;
+	private String city;
 }

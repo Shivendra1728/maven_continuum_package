@@ -68,10 +68,11 @@ public class UserDTO extends BaseEntity implements Serializable {
 	private Gender gender;
 //	private boolean enabled;
 //	private boolean secured;
+	private String title;
 	private String fullName;
 	@JsonIgnore
 	private String uuid;
-	private Date resetTokenExpiration; 
+	private Date resetTokenExpiration;
 	// private String url;
 
 	private User_Address user_Address;
@@ -83,8 +84,5 @@ public class UserDTO extends BaseEntity implements Serializable {
 	private Role role;
 	private Customer customer;
 	private String password;
-	
-		
-
 
 }
