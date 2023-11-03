@@ -92,6 +92,7 @@ public class AuthenticationController implements Serializable {
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 		final String token = jwtTokenUtil.generateToken(userDetails.getUsername(), tenentId);
 		User user = userRepository.findByUserName(userDetails.getUsername());
+		//set rma qualifier.
 		String rmaQualifier = returnOrderServiceImpl.getRmaaQualifier();
 		
 		if (!user.getStatus()) {
