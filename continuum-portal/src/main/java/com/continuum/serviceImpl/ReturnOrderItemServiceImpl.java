@@ -196,6 +196,20 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
  
 			}
 			
+			if (updatedItem.getTrackingNumber() != null && updatedItem.getCourierName() != null
+					&& updatedItem.getTrackingUrl() != null) {
+				existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
+				existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
+				existingItem.setCourierName(updatedItem.getCourierName());
+				auditLog.setDescription("Tracking Detail has been updated of item - " + existingItem.getItemName()
+						+ " by " + updateBy + ".");
+				auditLog.setHighlight("Tracking Detail");
+				auditLog.setTitle("Update Activity");
+				auditLog.setStatus("Ordered Items");
+				auditLog.setRmaNo(rmaNo);
+				auditLog.setUserName(updateBy);
+				auditLogRepository.save(auditLog);
+			}
 			returnOrderItemRepository.save(existingItem);
 			// String recipient = existingItem.getReturnOrder().getCustomer().getEmail();
 			String recipient = PortalConstants.EMAIL_RECIPIENT;
