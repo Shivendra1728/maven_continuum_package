@@ -101,7 +101,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			String previousRC = existingItem.getReasonCode();
 			String previousPD = existingItem.getProblemDesc();
 			String TrackingUrl = existingItem.getTrackingUrl();
-			Long TrackingNumber = existingItem.getTrackingNumber();
+			String TrackingNumber = existingItem.getTrackingNumber();
 			String CourierName = existingItem.getCourierName();
 
 			// Update only the fields that are not null in updatedItem

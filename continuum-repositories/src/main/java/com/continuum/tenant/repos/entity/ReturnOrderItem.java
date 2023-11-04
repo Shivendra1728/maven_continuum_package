@@ -76,7 +76,7 @@ public class ReturnOrderItem extends BaseEntity {
 	private String reasonCode;
 
 	private String trackingUrl;
-	private Long trackingNumber;
+	private String trackingNumber;
 	private String courierName;
 	private String note;
 	private String Notes;

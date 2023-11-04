@@ -53,7 +53,7 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	private String status;
 
 	private String trackingUrl;
-	private Long trackingNumber;
+	private String trackingNumber;
 	private String courierName;
 	private String note;
 	private String Notes;
