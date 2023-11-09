@@ -89,6 +89,9 @@ public class ReturnOrderItem extends BaseEntity {
 	private Date followUpDate;
 	private Long reasonCodeId;
 	private String problemDescNote;
+	private String returnLocNote;
+	private String returnLocRole;
+
 	
 
 }

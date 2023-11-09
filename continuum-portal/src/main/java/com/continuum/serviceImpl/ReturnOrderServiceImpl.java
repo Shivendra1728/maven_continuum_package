@@ -177,8 +177,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		//String recipient = returnOrder.getCustomer().getEmail();
 		String recipient=PortalConstants.EMAIL_RECIPIENT;
-		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo() + " : "
-				+ returnOrderDTO.getStatus();
+		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX +" "+getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo();
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
 //		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
@@ -473,7 +472,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			// send email to customer-RMA processor
 		//	String recipient = returnOrder.getCustomer().getEmail();
 			String recipient=PortalConstants.EMAIL_RECIPIENT;
-			String subject = PortalConstants.RMAStatus;
+			String subject = PortalConstants.RMAStatus +" : "+getRmaaQualifier()+" "+returnOrder.getRmaOrderNo();
 			String template = emailTemplateRenderer.getEMAIL_RMA_STATUS();
 			
 			try {
@@ -569,7 +568,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 //			apply email functionality.
 			//String recipient = user.getEmail();
 			String recipient=PortalConstants.EMAIL_RECIPIENT;
-			String subject = PortalConstants.ASSIGN_RMA;
+			String subject = PortalConstants.ASSIGN_RMA+" : "+getRmaaQualifier()+" "+returnOrder.getRmaOrderNo();
 			HashMap<String, String> map = new HashMap<>();
 			map.put("rma", getRmaaQualifier()+" "+returnOrder.getRmaOrderNo());
 			map.put("assigned_person", user.getFirstName());
