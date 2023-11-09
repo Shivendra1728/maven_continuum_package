@@ -274,7 +274,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setUserName(updateBy);
 					auditLogRepository.save(auditLog);
 					// apply email functionality.
-					String subject = PortalConstants.RMAStatus;
+					String subject = PortalConstants.RMAStatus+" : "+returnOrderServiceImpl.getRmaaQualifier() + " "+ returnOrderEntity.getRmaOrderNo();
 					String template = emailTemplateRenderer.getREQ_MORE_CUST_INFO();
 					HashMap<String, String> map = new HashMap<>();
 					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
@@ -292,7 +292,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				} else if (allDenied) {
 					returnOrderEntity.setStatus("RMA Denied");
 //					apply email functionality.
-					String subject = PortalConstants.RMAStatus;
+					String subject = PortalConstants.RMAStatus+" : "+returnOrderServiceImpl.getRmaaQualifier() + " "+ returnOrderEntity.getRmaOrderNo();;
 					String template = emailTemplateRenderer.getDENIED_TEMPLATE();
 					HashMap<String, String> map = new HashMap<>();
 					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
@@ -397,7 +397,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 
 					// email
-					String subject = PortalConstants.RMAStatus;
+					String subject = PortalConstants.RMAStatus+" : "+returnOrderServiceImpl.getRmaaQualifier() + " "+ returnOrderEntity.getRmaOrderNo();;
 					String template = emailTemplateRenderer.getRMA_AUTHORIZED_TEMPLATE();
 					HashMap<String, String> map = new HashMap<>();
 					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
@@ -449,7 +449,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderRepository.save(returnOrderEntity);
 			}
 
-			}
+			
 			// update customer to put tracking code.
 			String subject = PortalConstants.RMAStatus;
 			HashMap<String, String> map1 = new HashMap<>();
@@ -466,6 +466,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
+			}
 			}
 
 			return "List Item Details Updated Successfully.";

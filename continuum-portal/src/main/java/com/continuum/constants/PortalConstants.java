@@ -25,13 +25,13 @@ public final class PortalConstants {
 
 	public static final String RMA = "RMA";
 	public static final String EMAIL_RECIPIENT = "rmagocontinuum@gmail.com";
-	public static final String EMAIL_SUBJECT_PREFIX = "Your RMA Return Order ";
-	public static final String EMAIL_BODY_PREFIX = "Your RMA status is ";
-	public static final String FPasswordLink = "Change Your Password.";
+	public static final String EMAIL_SUBJECT_PREFIX = "Continuum - Your RMA Return Order";
+	public static final String EMAIL_BODY_PREFIX = "Continuum - RMA Status Changed";
+	public static final String FPasswordLink = "Continuum - Change Your Password.";
 	public static final String ReturnOrderLineItemStatus = "Update Your Tracking Code.";
-	public static final String RMAStatus = "Your RMA Status is Changed.";
-	public static final String ASSIGN_RMA = "RMA has been assigned.";
-	public static final String NOTE_STATUS = "A New Note Added";
+	public static final String RMAStatus = "Continuum - RMA Status Changed";
+	public static final String ASSIGN_RMA = "Continuum - RMA Assigned";
+	public static final String NOTE_STATUS = "Continuum - Note Added";
 
 	public static final String EMAIL_FROM = "ankit@techexprt.com";
 	public static final String TRUE = "true";
