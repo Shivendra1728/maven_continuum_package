@@ -23,4 +23,5 @@ public class StatusConfig extends BaseEntity {
 	private boolean isTrackingAvl;
 	private boolean isEmailsend;
 	private boolean isInitial;
+	private boolean Display;
 }
