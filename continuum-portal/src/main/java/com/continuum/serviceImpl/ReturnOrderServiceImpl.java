@@ -176,7 +176,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		auditLogRepository.save(auditlog);
 
 		//String recipient = returnOrder.getCustomer().getEmail();
-		String recipient=PortalConstants.EMAIL_RECIPIENT;
+		String recipient = PortalConstants.EMAIL_RECIPIENT;
+		String email = returnOrderDTO.getContact().getContactEmailId();
+		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
+			recipient="alex@gocontinuum.ai";
+		}
 		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX +" "+getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo();
 		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
 
