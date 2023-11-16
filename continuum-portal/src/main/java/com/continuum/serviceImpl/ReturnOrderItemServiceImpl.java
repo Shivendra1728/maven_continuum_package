@@ -238,6 +238,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						// If any item is not Denied, set allDenied to false
 						allDenied = false;
 					}
+					if (!PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
+						// If any item is not Denied, set allDenied to false
+						allCancled = false;
+					}
 
 					if (!(PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())
 							|| PortalConstants.AUTHORIZED_AWAITING_TRANSIT
