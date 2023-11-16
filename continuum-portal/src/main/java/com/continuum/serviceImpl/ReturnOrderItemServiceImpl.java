@@ -374,7 +374,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 
 				} else if (allCancled) {
-					returnOrderEntity.setStatus("Canclled");
+					returnOrderEntity.setStatus("Cancelled");
 //					apply email functionality.
 					String subject = PortalConstants.RMAStatus;
 					String template = emailTemplateRenderer.getDENIED_TEMPLATE();
