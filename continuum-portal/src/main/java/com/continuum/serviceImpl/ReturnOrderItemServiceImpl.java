@@ -193,6 +193,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ " has been assigned to the 'RMA line Denied' by " + updateBy + ".");
 					auditLog.setHighlight("RMA line Denied");
 				}
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
+					auditLog.setDescription("Item - " + existingItem.getItemName()
+							+ " has been assigned to the 'RMA line Cancelled' by " + updateBy + ".");
+					auditLog.setHighlight("RMA line Cancelled");
+				}
 				auditLog.setTitle("Update Activity");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
@@ -210,6 +215,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			boolean allAuthorized = true;
 			boolean allCarrier = false;
 			boolean hasAuthorized = false;
+			boolean allCancled = true;
 
 			Optional<ReturnOrder> returnOrderOptional = returnOrderRepository.findByRmaOrderNo(rmaNo);
 
@@ -363,7 +369,36 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						System.out.println("An exception occurred while making the API request.");
 					}
 
-				} else if (allAuthorized) {
+				} else if (allCancled) {
+					returnOrderEntity.setStatus("Canclled");
+//					apply email functionality.
+					String subject = PortalConstants.RMAStatus;
+					String template = emailTemplateRenderer.getDENIED_TEMPLATE();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("rma_status", returnOrderEntity.getStatus());
+					map.put("rma", returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
+					try {
+
+//						emailSender.sendEmail5(recipient, returnOrderEntity.getCustomer().getDisplayName(),
+//								returnOrderEntity.getStatus());
+
+						emailSender.sendEmail(recipient, template, subject, map);
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
+					// audit logs
+
+					auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Cancelled'.");
+					auditLog.setHighlight("Cancelled");
+					auditLog.setTitle("Return Order");
+					auditLog.setStatus("RMA");
+					auditLog.setRmaNo(rmaNo);
+					auditLog.setUserName(updateBy);
+					auditLogRepository.save(auditLog);
+
+				}else if (allAuthorized) {
 					returnOrderEntity.setStatus("Authorized");
 					// audit logs
 					auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
