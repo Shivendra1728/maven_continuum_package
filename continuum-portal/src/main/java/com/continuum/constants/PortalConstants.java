@@ -32,6 +32,7 @@ public final class PortalConstants {
 	public static final String RMAStatus = "Continuum - RMA Status Changed";
 	public static final String ASSIGN_RMA = "Continuum - RMA Assigned";
 	public static final String NOTE_STATUS = "Continuum - Note Added";
+	public static final String RMA_CANCLED = "Cancelled";
 
 	public static final String EMAIL_FROM = "ankit@techexprt.com";
 	public static final String TRUE = "true";
