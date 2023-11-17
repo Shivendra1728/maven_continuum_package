@@ -539,6 +539,61 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			existingItem.setUser(user);
 			returnOrderItemRepository.save(existingItem);
 
+			String formattedDate = "";
+			if (updateNote.getFollowUpDate() != null) {
+				Date followUpDate = updateNote.getFollowUpDate();
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
+				formattedDate = simpleDateFormat.format(followUpDate);
+			} else {
+				formattedDate = null;
+			}
+
+			if (user.getRole().getId() == 4) {
+				existingItem.setVendorMessage(updateNote.getNote());
+				returnOrderItemRepository.save(existingItem);
+
+				AuditLog auditLog = new AuditLog();
+
+				auditLog.setDescription("Email has been sent.");
+				auditLog.setTitle("");
+				auditLog.setHighlight("");
+				auditLog.setStatus("Ordered Items");
+				auditLog.setRmaNo(rmaNo);
+				auditLog.setUserName(updateBy);
+				auditLogRepository.save(auditLog);
+
+				String subject = PortalConstants.NOTE_STATUS_CUSTOMER;
+				String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
+				HashMap<String, String> map = new HashMap<>();
+
+				map.put("AssignedUser", user.getFirstName());
+				map.put("partNumber", existingItem.getItemName());
+				map.put("vendorName", updateBy);
+				map.put("LineItemStatus", updateNote.getStatus());
+				map.put("note", updateNote.getNote());
+				map.put("date", formattedDate);
+				try {
+					emailSender.sendEmail(recipient, template2, subject, map);
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+			} else {
+				String subject = PortalConstants.NOTE_STATUS;
+				String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS();
+				HashMap<String, String> map = new HashMap<>();
+
+				map.put("AssignedUser", user.getFirstName());
+				map.put("partNumber", existingItem.getItemName());
+				map.put("vendorName", updateBy);
+				map.put("LineItemStatus", updateNote.getStatus());
+				map.put("date", formattedDate);
+				try {
+					emailSender.sendEmail(recipient, template2, subject, map);
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+			}
+
 			ReturnRoom returnRoom = new ReturnRoom();
 			returnRoom.setName(updateBy);
 			returnRoom.setMessage(updateNote.getNote());
@@ -565,29 +620,28 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
+//			if(existingItem.getUser().getId() != assignToId) {
+//				
+//			}else {
+//				Date followUpDate = updateNote.getFollowUpDate();
+//				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
+//				String formattedDate = simpleDateFormat.format(followUpDate);
+//				String recipient = existingItem.getUser().getEmail();
+//				System.out.println(recipient);
+//				String template = emailTemplateRenderer.getEMAIL_NOTE_STATUS();
+//				
+//				HashMap<String, String> map1 = new HashMap<>();
+//				map1.put("name", updateBy);
+//				map1.put("date", formattedDate);
+//				
+//				try {
+////					emailSender.emailToCustomer(recipient, updateBy, formattedDate);
+//					emailSender.sendEmail(recipient, template, subject, map1);
+//				} catch (MessagingException e) {
+//					e.printStackTrace();
+//				}
+//			}
 
-			String formattedDate = "";
-			if (updateNote.getFollowUpDate() != null) {
-				Date followUpDate = updateNote.getFollowUpDate();
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
-				formattedDate = simpleDateFormat.format(followUpDate);
-			} else {
-				formattedDate = null;
-			}
-			String subject = PortalConstants.NOTE_STATUS;
-			String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS();
-			HashMap<String, String> map = new HashMap<>();
-
-			map.put("AssignedUser", user.getFirstName());
-			map.put("partNumber", existingItem.getItemName());
-			map.put("vendorName", updateBy);
-			map.put("LineItemStatus", updateNote.getStatus());
-			map.put("date", formattedDate);
-			try {
-				emailSender.sendEmail(recipient, template2, subject, map);
-			} catch (MessagingException e) {
-				e.printStackTrace();
-			}
 			return "Updated Note Details and capture in return room and audit log";
 
 		} else {
