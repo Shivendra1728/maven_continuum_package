@@ -16,17 +16,27 @@ public class FileUploadController {
 
 	@Autowired
 	AzureBlobService azureBlobService;
-  
+
 	@Autowired
 	FileUploadService fileUploadService;
 
 	@PostMapping("/upload-file")
-  public List<Map<String,String>> fileUploaders(List<MultipartFile> data, @RequestParam("customerId") String customerId
-	) throws Exception {
+	public List<Map<String, String>> fileUploaders(List<MultipartFile> data,
+			@RequestParam("customerId") String customerId) throws Exception {
 
 		List<Map<String, String>> url = azureBlobService.uploadFiles(data, customerId);
-		
-    return url;
+
+		return url;
+
+	}
+
+	@PostMapping("/upload-attachment")
+	public List<Map<String, String>> fileAttachmentUploader(List<MultipartFile> data,
+			@RequestParam("LineItemId") Long lineItemId) throws Exception {
+
+		List<Map<String, String>> url = azureBlobService.uploadAttachment(data, lineItemId);
+
+		return url;
 
 	}
 

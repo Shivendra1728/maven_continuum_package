@@ -12,4 +12,6 @@ public interface AzureBlobService {
 
 	List<Map<String, String>> uploadCSV(List<MultipartFile> files) throws Exception;
 
+	List<Map<String, String>> uploadAttachment(List<MultipartFile> data, Long lineItemId) throws Exception;;
+
 }

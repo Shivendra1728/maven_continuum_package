@@ -23,7 +23,7 @@ public class OrderItemDocuments extends BaseEntity {
 	private String type;
 	private String status;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "returnOrderItemId")
 	private ReturnOrderItem returnOrderItem;
 

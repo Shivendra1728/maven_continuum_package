@@ -19,7 +19,10 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.continuum.service.AzureBlobService;
+import com.continuum.tenant.repos.entity.OrderItemDocuments;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.repositories.OrderItemDocumentRepository;
+import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 
 @Component
 public class AzureBlobStorageServiceImpl implements AzureBlobService {
@@ -37,6 +40,9 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 
 	@Autowired
 	OrderItemDocumentRepository orderItemDocumentRepository;
+	
+	@Autowired
+    ReturnOrderItemRepository returnOrderItemRepository;
 
 	public List<Map<String, String>> uploadFiles(List<MultipartFile> data, String customerId) throws Exception {
 
@@ -78,6 +84,83 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 					InputStream inputStream = file.getInputStream();
 
 					blobClient.upload(inputStream, file.getSize());
+
+					fileUrl.put("image", fileName);
+					fileUrl.put("url", blobClient.getBlobUrl());
+
+					list.add(fileUrl);
+
+					inputStream.close();
+
+				} else {
+					continue;
+				}
+
+			} else {
+
+				throw new Exception("Invalid file type!");
+
+			}
+
+		}
+
+		return list;
+
+	}
+	
+	public List<Map<String, String>> uploadAttachment(List<MultipartFile> data, Long lineItemId) throws Exception {
+
+		BlobContainerClient containerClient = new BlobServiceClientBuilder().connectionString(connectionString)
+				.buildClient().getBlobContainerClient(containerName);
+
+		OffsetDateTime now = OffsetDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+
+		List<Map<String, String>> list = new ArrayList<>();
+		
+	   ReturnOrderItem returnOrderItem = 	returnOrderItemRepository.findById(lineItemId).get();
+		
+
+		for (MultipartFile file : data) {
+
+			if (file == null || file.isEmpty()) {
+				continue; // Skip this file and continue with the next one
+			}
+			
+
+			Map<String, String> fileUrl = new HashMap<String, String>();
+
+			String fileName = file.getOriginalFilename();
+
+			String fileExtension = getFileExtension(fileName);
+
+			if (isValidFileType(fileExtension)) {
+
+				BlobClient blobClient = containerClient
+						.getBlobClient(lineItemId + formatter.format(now) + "/" + fileName);
+
+				boolean fileAlreadyExists = false;
+
+				for (Map<String, String> existingMap : list) {
+					if (existingMap.containsValue(fileName)) {
+						fileAlreadyExists = true;
+						break;
+					}
+				}
+
+				if (!fileAlreadyExists) {
+					
+					OrderItemDocuments orderItemDocument = new OrderItemDocuments(); 
+					InputStream inputStream = file.getInputStream();
+
+					blobClient.upload(inputStream, file.getSize());
+					
+					orderItemDocument.setStatus("note");
+					orderItemDocument.setType("note");
+					orderItemDocument.setURL(blobClient.getBlobUrl());
+					orderItemDocument.setReturnOrderItem(returnOrderItem);
+					
+					orderItemDocumentRepository.save(orderItemDocument);
 
 					fileUrl.put("image", fileName);
 					fileUrl.put("url", blobClient.getBlobUrl());
