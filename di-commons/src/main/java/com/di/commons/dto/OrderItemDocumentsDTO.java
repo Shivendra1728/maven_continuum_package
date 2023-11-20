@@ -14,4 +14,5 @@ public class OrderItemDocumentsDTO {
 	private String URL;
 	private String type;
 	private String status;
+	private String originalFileName;
 }

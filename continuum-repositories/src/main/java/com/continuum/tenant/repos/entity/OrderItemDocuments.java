@@ -22,6 +22,7 @@ public class OrderItemDocuments extends BaseEntity {
 	private String URL;
 	private String type;
 	private String status;
+	private String originalFileName;
 
 	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "returnOrderItemId")

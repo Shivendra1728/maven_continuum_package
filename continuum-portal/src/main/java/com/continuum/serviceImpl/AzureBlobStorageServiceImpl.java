@@ -40,9 +40,9 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 
 	@Autowired
 	OrderItemDocumentRepository orderItemDocumentRepository;
-	
+
 	@Autowired
-    ReturnOrderItemRepository returnOrderItemRepository;
+	ReturnOrderItemRepository returnOrderItemRepository;
 
 	public List<Map<String, String>> uploadFiles(List<MultipartFile> data, String customerId) throws Exception {
 
@@ -107,7 +107,7 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 		return list;
 
 	}
-	
+
 	public List<Map<String, String>> uploadAttachment(List<MultipartFile> data, Long lineItemId) throws Exception {
 
 		BlobContainerClient containerClient = new BlobServiceClientBuilder().connectionString(connectionString)
@@ -117,16 +117,14 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
 		List<Map<String, String>> list = new ArrayList<>();
-		
-	   ReturnOrderItem returnOrderItem = 	returnOrderItemRepository.findById(lineItemId).get();
-		
+
+		ReturnOrderItem returnOrderItem = returnOrderItemRepository.findById(lineItemId).get();
 
 		for (MultipartFile file : data) {
 
 			if (file == null || file.isEmpty()) {
 				continue; // Skip this file and continue with the next one
 			}
-			
 
 			Map<String, String> fileUrl = new HashMap<String, String>();
 
@@ -149,17 +147,18 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 				}
 
 				if (!fileAlreadyExists) {
-					
-					OrderItemDocuments orderItemDocument = new OrderItemDocuments(); 
+
+					OrderItemDocuments orderItemDocument = new OrderItemDocuments();
 					InputStream inputStream = file.getInputStream();
 
 					blobClient.upload(inputStream, file.getSize());
-					
+
 					orderItemDocument.setStatus("note");
 					orderItemDocument.setType("note");
+					orderItemDocument.setOriginalFileName(fileName);
 					orderItemDocument.setURL(blobClient.getBlobUrl());
 					orderItemDocument.setReturnOrderItem(returnOrderItem);
-					
+
 					orderItemDocumentRepository.save(orderItemDocument);
 
 					fileUrl.put("image", fileName);
