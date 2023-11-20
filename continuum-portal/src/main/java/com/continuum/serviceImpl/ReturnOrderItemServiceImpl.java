@@ -264,7 +264,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					if ((PortalConstants.AUTHORIZED_AWAITING_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())
 							|| PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())
-									&& PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus()))) {
+									|| PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus()))) {
 						hasAuthorized = true;
 					}
 

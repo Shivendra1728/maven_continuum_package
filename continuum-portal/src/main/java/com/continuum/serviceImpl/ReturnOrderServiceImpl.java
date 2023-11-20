@@ -376,6 +376,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository.findByReturnOrderId(returnOrder.getId());
 			boolean hasRMCI=false;
 			boolean hasCarrier =false;
+			boolean hasUnderReview = false;
 			boolean allAuthorized=true;
 			boolean allDenied=true;
 			boolean allUnderReview=true;
@@ -390,7 +391,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		    		 hasCarrier=true;
 		    		 
 		    	 }
-		    	
+		    	 if(PortalConstants.UNDER_REVIEW.equalsIgnoreCase(returnOrderItem.getStatus())){
+		    		 hasUnderReview=true;
+		    	 }
 		    	 if(!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())){
 		    		 allDenied=false;
 		    		 
@@ -405,9 +408,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		    				 allAuthorized=false;
 		    			 }
 			    	 }
-		    	 }
+		    	 } 
 		    	 
-		    	
 		    }
 		    if(hasRMCI && !status.equalsIgnoreCase(PortalConstants.RMCI)) {
 				   return "Line item is RMCI";
@@ -419,6 +421,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				   return "Can only change to under review";
 			   }
 		    
+		  if(!allDenied && status.equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
+			  return "Cannot change other than Denied";
+			  
+		  }
 		  if(allDenied && !status.equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
 			  return "Cannot change other than Denied";
 			  
@@ -430,8 +436,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		  if(allAuthorized && !status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
 			  return "Cannot change status";
 		  }
-		 
-		  
+		  if(hasUnderReview && status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
+			   return "Can only change to under review";
+		   }
+	    
+		   
 			returnOrder.setStatus(status);
 
 			returnOrderRepository.save(returnOrder);
