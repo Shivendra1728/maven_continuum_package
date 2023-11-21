@@ -132,6 +132,9 @@ public class UserServiceImpl implements UserService {
 			if (user.getEmail() != null) {
 				eUser.setEmail(user.getEmail());
 			}
+			if (user.getTitle() != null) {
+				eUser.setTitle(user.getTitle());
+			}
 			userRepository.save(eUser);
 			return "User updated";
 		} else {
