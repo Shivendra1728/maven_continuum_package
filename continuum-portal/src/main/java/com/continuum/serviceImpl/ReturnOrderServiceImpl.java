@@ -458,10 +458,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				return "Can only change to under review";
 			}
 			if (!hasCancelled && status.equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
-				return "Can not change to Cancled";
+				return "Can not change to cancelled";
 			}
 			if (allCancelled && !status.equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
-				return "Can not change other than cancled Cancled";
+				return "Can not change other than cancelled";
 			}
 
 	    
