@@ -30,5 +30,7 @@ public class OrderAddressDTO {
 	private String firstName;
 	private String lastName;
 	private String emailAddress;
+	private String returnLocNote;
+
 	
 }

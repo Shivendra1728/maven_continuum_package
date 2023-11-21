@@ -30,6 +30,8 @@ public class OrderAddress extends BaseEntity {
 	private String firstName;
 	private String lastName;
 	private String emailAddress;
+	private String returnLocNote;
+
 	
 
 }
