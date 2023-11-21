@@ -116,30 +116,30 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			}
 
-			if (updatedItem.getReturnLocNote() != null && updatedItem.getReturnLocRole() != null) {
-				existingItem.setReturnLocNote(updatedItem.getReturnLocNote());
-				existingItem.setReturnLocRole(updatedItem.getReturnLocRole());
-				ReturnRoom returnRoom = new ReturnRoom();
-				returnRoom.setName(updateBy);
-				returnRoom.setMessage(updatedItem.getReturnLocNote());
-				returnRoom.setReturnOrderItem(existingItem);
-				returnRoom.setAssignTo(null);
-				returnRoomRepository.save(returnRoom);
+//			if (updatedItem.getReturnLocNote() != null && updatedItem.getReturnLocRole() != null) {
+//				existingItem.setReturnLocNote(updatedItem.getReturnLocNote());
+//				existingItem.setReturnLocRole(updatedItem.getReturnLocRole());
+//				ReturnRoom returnRoom = new ReturnRoom();
+//				returnRoom.setName(updateBy);
+//				returnRoom.setMessage(updatedItem.getReturnLocNote());
+//				returnRoom.setReturnOrderItem(existingItem);
+//				returnRoom.setAssignTo(null);
+//				returnRoomRepository.save(returnRoom);
+//
+//				auditLog.setDescription(updateBy + " added a new vendor as " + updatedItem.getReturnLocRole()
+//						+ " for item - " + existingItem.getItemName() + ".");
+//				auditLog.setHighlight("");
+//				auditLog.setTitle("Update Activity");
+//				auditLog.setStatus("Ordered Items");
+//				auditLog.setRmaNo(rmaNo);
+//				auditLog.setUserName(updateBy);
+//				auditLogRepository.save(auditLog);
+//				returnOrderItemRepository.save(existingItem);
+//
+//			}
 
-				auditLog.setDescription(updateBy + " added a new vendor as " + updatedItem.getReturnLocRole()
-						+ " for item - " + existingItem.getItemName() + ".");
-				auditLog.setHighlight("");
-				auditLog.setTitle("Update Activity");
-				auditLog.setStatus("Ordered Items");
-				auditLog.setRmaNo(rmaNo);
-				auditLog.setUserName(updateBy);
-				auditLogRepository.save(auditLog);
-				returnOrderItemRepository.save(existingItem);
-
-			}
-
-			if (updatedItem.getTrackingNumber() != null && updatedItem.getCourierName() != null
-					&& updatedItem.getTrackingUrl() != null) {
+			if (updatedItem.getTrackingNumber() != null || updatedItem.getCourierName() != null
+					|| updatedItem.getTrackingUrl() != null) {
 				existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
 				existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
 				existingItem.setCourierName(updatedItem.getCourierName());
@@ -726,12 +726,22 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 //			}
 //			if (orderAddress.getEmailAddress() != null) {
 			returnOrderItem.getShipTo().setEmailAddress(orderAddress.getEmailAddress());
+			returnOrderItem.getShipTo().setReturnLocNote(orderAddress.getReturnLocNote());
+
 //				stringBuilder.append("Email Address has been updated in shipping information of " + returnOrderItem.getItemName()
 //						+ " by " + updateBy + ";");
 //			}
 //			String res = stringBuilder.toString();
 
 			returnOrderItemRepository.save(returnOrderItem);
+			
+			ReturnRoom returnRoom = new ReturnRoom();
+			returnRoom.setName(updateBy);
+			returnRoom.setMessage(returnOrderItem.getShipTo().getReturnLocNote());
+			returnRoom.setStatus(returnOrderItem.getStatus());
+			returnRoom.setReturnOrderItem(returnOrderItem);
+			returnRoomRepository.save(returnRoom);
+			
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription("Shipping Information has been updated of item - " + returnOrderItem.getItemName()

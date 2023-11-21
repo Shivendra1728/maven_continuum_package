@@ -72,8 +72,6 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	
 	private Long reasonCodeId;
 	private String problemDescNote;
-	private String returnLocNote;
-	private String returnLocRole;
 	private String vendorMessage;
 
 
