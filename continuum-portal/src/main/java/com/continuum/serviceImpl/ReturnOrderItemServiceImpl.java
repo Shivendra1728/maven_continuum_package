@@ -197,6 +197,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ " has been assigned to the 'RMA line Cancelled' by " + updateBy + ".");
 					auditLog.setHighlight("RMA line Cancelled");
 				}
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
+					auditLog.setDescription("Item - " + existingItem.getItemName()
+							+ " has been assigned to the 'RMA line Cancelled' by " + updateBy + ".");
+					auditLog.setHighlight("RMA line Cancelled");
+				}
 				auditLog.setTitle("Update Activity");
 				auditLog.setStatus("Ordered Items");
 				auditLog.setRmaNo(rmaNo);
@@ -214,7 +219,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				boolean allAuthorized = true;
 				boolean allCarrier = false;
 				boolean hasAuthorized = false;
-				boolean allCancled = true;
+				boolean allCancelled = true;
 
 				Optional<ReturnOrder> returnOrderOptional = returnOrderRepository.findByRmaOrderNo(rmaNo);
 
@@ -234,13 +239,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						if (PortalConstants.UNDER_REVIEW.equalsIgnoreCase(returnOrderItem.getStatus())) {
 							hasUnderReview = true;
 						}
-						if (!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())) {
+						if (!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus()) && !PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
 							// If any item is not Denied, set allDenied to false
 							allDenied = false;
 						}
 						if (!PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
-							// If any item is not Denied, set allDenied to false
-							allCancled = false;
+							allCancelled = false;
 						}
 
 						if (!(PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())
@@ -302,7 +306,33 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					} else if (allCarrier) {
 						returnOrderEntity.setStatus(PortalConstants.UNDER_REVIEW);
 
-					} else if (allDenied) {
+					} else if (allCancelled) {
+						returnOrderEntity.setStatus("Cancelled");
+//						apply email functionality.
+						String subject = PortalConstants.RMAStatus;
+						String template = emailTemplateRenderer.getDENIED_TEMPLATE();
+						HashMap<String, String> map = new HashMap<>();
+						map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
+						map.put("rma_status", returnOrderEntity.getStatus());
+						map.put("rma",
+								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
+						try {
+							emailSender.sendEmail(recipient, template, subject, map);
+						} catch (MessagingException e) {
+							e.printStackTrace();
+						}
+
+						auditLog.setDescription(
+								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo()
+										+ " has been updated to 'Cancelled'. ; Email has been sent");
+						auditLog.setHighlight("Cancelled");
+						auditLog.setTitle("Return Order");
+						auditLog.setStatus("RMA Header");
+						auditLog.setRmaNo(rmaNo);
+						auditLog.setUserName(updateBy);
+						auditLogRepository.save(auditLog);
+
+					}else if (allDenied) {
 						returnOrderEntity.setStatus("RMA Denied");
 //					apply email functionality.
 						String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier()
@@ -380,37 +410,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							System.out.println("An exception occurred while making the API request.");
 						}
 
-					} else if (allCancled) {
-						returnOrderEntity.setStatus("Cancelled");
-//					apply email functionality.
-						String subject = PortalConstants.RMAStatus;
-						String template = emailTemplateRenderer.getDENIED_TEMPLATE();
-						HashMap<String, String> map = new HashMap<>();
-						map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
-						map.put("rma_status", returnOrderEntity.getStatus());
-						map.put("rma",
-								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
-						try {
-
-//						emailSender.sendEmail5(recipient, returnOrderEntity.getCustomer().getDisplayName(),
-//								returnOrderEntity.getStatus());
-
-							emailSender.sendEmail(recipient, template, subject, map);
-						} catch (MessagingException e) {
-							e.printStackTrace();
-						}
-						// audit logs
-
-						auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Cancelled'.");
-						auditLog.setHighlight("Cancelled");
-						auditLog.setTitle("Return Order");
-						auditLog.setStatus("RMA");
-						auditLog.setRmaNo(rmaNo);
-						auditLog.setUserName(updateBy);
-						auditLogRepository.save(auditLog);
-
-					} else if (allAuthorized) {
+					}  else if (allAuthorized) {
 						returnOrderEntity.setStatus("Authorized");
 						// audit logs
 						auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
