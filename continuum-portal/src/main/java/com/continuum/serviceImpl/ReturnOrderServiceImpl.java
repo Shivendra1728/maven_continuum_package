@@ -380,6 +380,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			boolean allAuthorized=true;
 			boolean allDenied=true;
 			boolean allUnderReview=true;
+			boolean hasCancelled = false;
+			boolean hasDenied = false;
+			boolean allCancelled = true;
 			
 
 		    for (ReturnOrderItem returnOrderItem : returnOrderItems) {
@@ -402,13 +405,25 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		    		 allUnderReview=false;
 		    		 
 		    	 }
+		    	 if(PortalConstants.RMA_CANCLED.equals(returnOrderItem.getStatus())) {
+		    		 hasCancelled = true;
+		    	 }
+				if(PortalConstants.RMA_DENIED.equals(returnOrderItem.getStatus())) {
+		    		 hasDenied = true;
+		    	 }
+
+		    	 if(!PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
+		    		 allCancelled = false;
+		    	 }
 		    	 if(!PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())) {
 		    		 if(!PortalConstants.AUTHORIZED_AWAITING_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())) {
 		    			 if(!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())){
-		    				 allAuthorized=false;
+		    				 if(!PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
+		    					 allAuthorized=false;
+		    				 }
 		    			 }
 			    	 }
-		    	 } 
+		    	 }
 		    	 
 		    }
 		    if(hasRMCI && !status.equalsIgnoreCase(PortalConstants.RMCI)) {
@@ -439,6 +454,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		  if(hasUnderReview && status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
 			   return "Can only change to under review";
 		   }
+		  if (hasCancelled && hasDenied && status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
+				return "Can only change to under review";
+			}
+			if (!hasCancelled && status.equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
+				return "Can not change to cancelled";
+			}
+			if (allCancelled && !status.equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
+				return "Can not change other than cancelled";
+			}
+
 	    
 		   
 			returnOrder.setStatus(status);
