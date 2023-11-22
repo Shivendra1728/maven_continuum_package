@@ -166,7 +166,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
 		String described = getRmaaQualifier()+" "+ returnOrder.getRmaOrderNo()
-				+ " has been updated to 'Return Requested'.";
+		+ " has been updated to 'Return Requested'."+";"+"Email has been sent to the "+returnOrderDTO.getContact().getContactEmailId();
 		auditlog.setDescription(described);
 		auditlog.setHighlight("Return Requested");
 		auditlog.setStatus("Inbox");
@@ -474,34 +474,45 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditlog = new AuditLog();
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
-				String described = getRmaaQualifier()+" "+rmaNo + " has been updated to 'Return Requested'.";
+				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Return Requested' by "+updateBy+".";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Return Requested");
+				auditlog.setStatus("RMA Header");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
-				String described = getRmaaQualifier()+" "+rmaNo + " is now at 'Under Review'. ";
+				String described = getRmaaQualifier() + " " + rmaNo + " has been updated by 'Return Requested' by "+updateBy+".";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Under Review");
+				auditlog.setStatus("RMA Header");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
 				String described = getRmaaQualifier()+" "+rmaNo
-						+ " has been updated to 'Requires More Customer Information'. Awaiting more information with customer";
+						+ " has been updated to 'Requires More Customer Information' by "+updateBy+". Awaiting more information with customer";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Requires More Customer Information");
+				auditlog.setStatus("RMA Header");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
 				String described = getRmaaQualifier()+" "+rmaNo
-						+ " has been updated to 'Authorized'. The return is approved. Please proceed with the necessary steps.";
+						+ " has been updated to 'Authorized' by "+updateBy+". The return is approved. Please proceed with the necessary steps."+";"+"Email has been sent.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Authorized");
+				auditlog.setStatus("Inbox");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-				String described = getRmaaQualifier()+" "+rmaNo + " has been updated to 'RMA Denied'. ";
+				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'RMA Denied' by "+updateBy+"."+";"+"Email has been sent.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("RMA Denied");
+				auditlog.setStatus("Inbox");
+			}
+			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)){
+				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Cancelled' by "+updateBy+"."+";"+"Email has been sent.";
+				auditlog.setDescription(described);
+				auditlog.setHighlight("Cancelled");
+				auditlog.setStatus("Inbox");
 			}
 
-			auditlog.setStatus("RMA");
+
 			auditlog.setTitle("Return Order");
 			auditlog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditlog.setUserName(updateBy);
@@ -585,7 +596,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
 		Optional<User> optionalUser = userRepository.findById(assignToId);
 		Optional<ReturnType> optionalReturnType=returnTypeRepository.findById(returnTypeId);
-		if (optionalReturnOrder.isPresent() && optionalUser.isPresent()) {
+		if (optionalReturnOrder.isPresent() && optionalUser.isPresent()) {	
 			ReturnOrder returnOrder = optionalReturnOrder.get();
 			User user = optionalUser.get();
 			ReturnType returnType=optionalReturnType.get();
@@ -623,7 +634,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditLog.setDescription(getRmaaQualifier()+" "+returnOrder.getRmaOrderNo() + " has been assigned to the " + user.getFirstName()
 					+ " " + user.getLastName() + "." + ";" +getRmaaQualifier()+" "+ rmaNo + " is now at 'Under Review'.;"+"Return type of the "+getRmaaQualifier()+" "+rmaNo+" is set to as '"+returnType.getType()+"'.");
 			auditLog.setHighlight("Under Review");
-			auditLog.setStatus("RMA");
+			auditLog.setStatus("RMA Header");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog); // capture in audit log

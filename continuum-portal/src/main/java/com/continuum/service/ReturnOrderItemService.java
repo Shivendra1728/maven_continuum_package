@@ -11,7 +11,7 @@ import com.di.commons.dto.ReturnOrderItemDTO;
 public interface ReturnOrderItemService {
 	String updateReturnOrderItem(Long id, String rmaNo,String updateBy, ReturnOrderItemDTO updatedItem);
 
-	String updateNote(Long lineItemId, Long assignToId, String rmaNo,String updateBy,ReturnOrderItemDTO updateNote);
+	String updateNote(Long lineItemId, Long assignToId, String rmaNo,String updateBy,String contactEmail,ReturnOrderItemDTO updateNote);
 
 	String updateShipTo(Long rtnOrdId, String rmaNo,String updateByName, OrderAddress orderAddress);
 
