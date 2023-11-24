@@ -30,13 +30,9 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 	private static final Logger logger = LoggerFactory.getLogger(ReturnOrderServiceImpl.class);
 	@Value("${azure.storage.connection-string-value}")
 	private String connectionString;
+	
 	@Value("${azure.storage.container-name}")
 	private String containerName;
-
-	@Value("${azure.storage.connection-string-value.g2s}")
-	private String connectionStringg2s;
-	@Value("${azure.storage.container-name.extracts.g2s}")
-	private String containerNameg2s;
 
 	@Autowired
 	OrderItemDocumentRepository orderItemDocumentRepository;
@@ -203,8 +199,8 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 
 	@Override
 	public List<Map<String, String>> uploadCSV(List<MultipartFile> files) throws Exception {
-		BlobContainerClient containerClient = new BlobServiceClientBuilder().connectionString(connectionStringg2s)
-				.buildClient().getBlobContainerClient(containerNameg2s);
+		BlobContainerClient containerClient = new BlobServiceClientBuilder().connectionString(connectionString)
+				.buildClient().getBlobContainerClient(containerName);
 
 		OffsetDateTime now = OffsetDateTime.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
@@ -225,7 +221,7 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 			if (isValidFileCSVType(fileExtension)) {
 				// Create a different containerClient for CSV files
 				BlobContainerClient csvContainerClient = new BlobServiceClientBuilder()
-						.connectionString(connectionStringg2s).buildClient().getBlobContainerClient(containerNameg2s);
+						.connectionString(connectionString).buildClient().getBlobContainerClient(containerName);
 
 				BlobClient blobClient = csvContainerClient.getBlobClient(fileName);
 
