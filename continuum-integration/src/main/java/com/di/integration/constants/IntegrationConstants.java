@@ -49,6 +49,7 @@ public final class IntegrationConstants {
     public static final String ERP_ORDER_LINE_SELECT_FIELDS = "${erp.order_line_select_fields}";
     public static final String ERP_ORDER_FORMAT = "${erp.order_format}";
     public static final String ERP_RMA_CREATE_API = "${erp.rma.create}";
+    public static final String ERP_RMA_UPDATE_RESTOCKING_API = "${erp.data_update_restocking_url}";
     
     
     public static final String ERP_DATA_API_ORDER_VIEW = "${erp.data_api_order_view}";

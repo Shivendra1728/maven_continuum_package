@@ -39,6 +39,7 @@ import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
 import com.continuum.tenant.repos.repositories.StatusConfigRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ReturnOrderItemDTO;
+import com.di.integration.p21.service.P21UpdateRMAService;
 import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
 
 @Service
@@ -64,6 +65,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	EmailSender emailSender;
+	
+	@Autowired
+	P21UpdateRMAService p21UpdateRMAService;
 
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
@@ -409,7 +413,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					}  else if (allAuthorized) {
 						returnOrderEntity.setStatus("Authorized");
-						// audit logs
+						sendRestockingFeeToERP(rmaNo);
 						auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
 								+ returnOrderEntity.getRmaOrderNo()
 								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'AUTHORIZED' by " + updateBy
@@ -809,6 +813,29 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		}
 		return "Restocking fee and return amount updated successfully";
 	}
+	
+	public void sendRestockingFeeToERP(String rmaNo) {
+		Optional<ReturnOrder> findByRmaOrderNo = returnOrderRepository.findByRmaOrderNo(rmaNo);
+		if(findByRmaOrderNo.isPresent()) {
+			Double totalRestocking = 0d;
+			ReturnOrder returnOrder = findByRmaOrderNo.get();
+			List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
+			for(ReturnOrderItem returnOrderItem : returnOrderItems) {
+				if(returnOrderItem.getReStockingAmount() != null) {
+					totalRestocking += returnOrderItem.getReStockingAmount().doubleValue();
+				}
+			}
+			Integer rmaNumber = Integer.parseInt(returnOrder.getRmaOrderNo());
+			Integer poNumber = Integer.parseInt(returnOrder.getPONumber());
+			try {
+				p21UpdateRMAService.updateRMARestocking(rmaNumber,  poNumber, totalRestocking);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
 
 	@Override
 	public List<StatusConfig> getAllStatus() {
