@@ -31,7 +31,7 @@ import com.di.integration.p21.service.P21InvoiceService;
 
 @Service
 public class P21InvoiceServiceImpl implements P21InvoiceService {
-	private static final Logger logger = LoggerFactory.getLogger(P21OrderLineServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(P21InvoiceServiceImpl.class);
 
 	@Autowired
 	RestTemplate restTemplate;
