@@ -160,6 +160,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 			if (updatedItem.getStatus() != null) {
 				existingItem.setStatus(updatedItem.getStatus());
+				if(updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT) 
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT) 
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED) 
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_LINE_DENIED)
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
+					existingItem.setIsEditable(false);
+				}
 				if (updatedItem.getStatus().equalsIgnoreCase("Under Review")) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
 							+ " has been assigned to the 'Under Review' by " + updateBy + ".");
@@ -308,6 +315,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					} else if (allCancelled) {
 						returnOrderEntity.setStatus("Cancelled");
+						returnOrderEntity.setIsEditable(false);
 //						apply email functionality.
 						String subject = PortalConstants.RMAStatus;
 						String template = emailTemplateRenderer.getDENIED_TEMPLATE();
@@ -334,6 +342,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					}else if (allDenied) {
 						returnOrderEntity.setStatus("RMA Denied");
+						returnOrderEntity.setIsEditable(false);
 //					apply email functionality.
 						String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier()
 								+ " " + returnOrderEntity.getRmaOrderNo();
@@ -413,6 +422,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					}  else if (allAuthorized) {
 						returnOrderEntity.setStatus("Authorized");
+						returnOrderEntity.setIsEditable(false);
 						sendRestockingFeeToERP(rmaNo);
 						auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
 								+ returnOrderEntity.getRmaOrderNo()
@@ -491,6 +501,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					} else if (hasAuthorized) {
 						returnOrderEntity.setStatus(PortalConstants.AUTHORIZED);
+						returnOrderEntity.setIsEditable(false);
 						auditLog.setDescription(
 								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo()
 										+ " has been updated to 'Authorized' by " + updateBy + ".");

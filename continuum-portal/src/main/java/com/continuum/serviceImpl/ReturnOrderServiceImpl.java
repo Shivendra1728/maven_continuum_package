@@ -605,6 +605,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				if (returnOrderItem.getUser() == null) {
 					returnOrderItem.setUser(user);
 					returnOrderItem.setStatus(PortalConstants.UNDER_REVIEW);
+					returnOrderItem.setIsEditable(true);
 					returnOrderItemRepository.save(returnOrderItem);
 				}
 			}
@@ -612,6 +613,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrder.setNote(note.getNote());
 			returnOrder.setStatus(PortalConstants.UNDER_REVIEW);
 			returnOrder.setReturnType(returnType);
+			returnOrder.setIsEditable(true);
 			returnOrderRepository.save(returnOrder);
 
 //			apply email functionality.

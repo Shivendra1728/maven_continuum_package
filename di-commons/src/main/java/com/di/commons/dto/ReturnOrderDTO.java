@@ -53,5 +53,6 @@ public class ReturnOrderDTO {
 	private String note;
 	private User user;
 	private ReturnTypeDTO returnType;
+	private Boolean isEditable;
 //	private Orders orders;
 }
