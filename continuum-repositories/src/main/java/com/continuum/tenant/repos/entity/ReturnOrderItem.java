@@ -90,7 +90,7 @@ public class ReturnOrderItem extends BaseEntity {
 	private Long reasonCodeId;
 	private String problemDescNote;
 	private String vendorMessage;
-
+	private Boolean isEditable;
 	
 
 }
