@@ -81,4 +81,5 @@ public class ReturnOrder extends BaseEntity {
     private Date nextActivityDate;
     private String note;
     private Boolean isEditable;
+    private Boolean isAuthorized;
 }

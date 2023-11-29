@@ -24,4 +24,6 @@ public class StatusConfig extends BaseEntity {
 	private boolean isEmailsend;
 	private boolean isInitial;
 	private boolean Display;
+	private Boolean isEditable;
+	private Boolean isAuthorized;
 }
