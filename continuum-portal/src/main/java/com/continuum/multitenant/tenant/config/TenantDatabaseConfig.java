@@ -41,6 +41,8 @@ public class TenantDatabaseConfig {
 
     @Bean(name = "transactionManager")
     public JpaTransactionManager transactionManager(@Qualifier("entityManagerFactory") EntityManagerFactory tenantEntityManager) {
+    	
+    	 System.out.println("Step 6====================!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(tenantEntityManager);
         return transactionManager;
@@ -84,24 +86,36 @@ public class TenantDatabaseConfig {
                     MultiTenantConnectionProvider connectionProvider,
             @Qualifier("currentTenantIdentifierResolver")
                     CurrentTenantIdentifierResolver tenantResolver) {
+    	
+    	System.out.println("Step 1====================!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    	
         LocalContainerEntityManagerFactoryBean emfBean = new LocalContainerEntityManagerFactoryBean();
         //All tenant related entities, repositories and service classes must be scanned
         emfBean.setPackagesToScan(new String[] { "com.continuum.tenant.repos.repositories", "com.continuum.tenant.repos.entity"
                 });
+        
+        System.out.println("Step 2====================!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         emfBean.setJpaVendorAdapter(jpaVendorAdapter());
         emfBean.setPersistenceUnitName("tenantdb-persistence-unit");
         Map<String, Object> properties = new HashMap<>();
+        
+        
+        System.out.println("Step 3====================!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         properties.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
         properties.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, connectionProvider);
         properties.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, tenantResolver);
         properties.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
         properties.put(Environment.SHOW_SQL, true);
         properties.put(Environment.FORMAT_SQL, true);
+        
+        System.out.println("Step 4====================!!!!!!!!!!!!!!!!!!!!!!!!!!!");
        // properties.put(Environment.IMPLICIT_NAMING_STRATEGY, SpringImplicitNamingStrategy.class.getName());
        // properties.put(Environment.PHYSICAL_NAMING_STRATEGY, PhysicalNamingStrategyStandardImpl.class.getName());
         properties.put(Environment.PHYSICAL_NAMING_STRATEGY, PhysicalNamingStrategyImpl.class.getName());
         properties.put(Environment.HBM2DDL_AUTO, "none");
         emfBean.setJpaPropertyMap(properties);
+        System.out.println("Step 5====================!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        
         return emfBean;
     }
 }
