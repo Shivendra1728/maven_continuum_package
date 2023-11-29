@@ -27,8 +27,6 @@ import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.zaxxer.hikari.HikariDataSource;
 
-import jdk.internal.org.jline.utils.Log;
-
 /**
  * @author RK
  */
@@ -79,8 +77,7 @@ public class MasterDatabaseConfig {
         // 'default' if not defined
         em.setPersistenceUnitName("masterdb-persistence-unit");
         // Setting Hibernate as the JPA provider
-        
-        Log.info("Initialized==========================!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
         JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
         // Set the hibernate properties
