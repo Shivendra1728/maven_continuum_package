@@ -54,5 +54,6 @@ public class ReturnOrderDTO {
 	private User user;
 	private ReturnTypeDTO returnType;
 	private Boolean isEditable;
+	private Boolean isAuthorized;
 //	private Orders orders;
 }

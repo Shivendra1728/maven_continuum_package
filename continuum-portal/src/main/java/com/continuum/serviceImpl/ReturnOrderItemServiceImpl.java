@@ -165,7 +165,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED) 
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_LINE_DENIED)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-					existingItem.setIsEditable(false);
+					List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
+					StatusConfig statusConfig = statusConfigList.get(0);
+					System.err.println(statusConfig.getIsEditable());
+					existingItem.setIsEditable(statusConfig.getIsEditable());
+					existingItem.setIsAuthorized(statusConfig.getIsAuthorized());
 				}
 				if (updatedItem.getStatus().equalsIgnoreCase("Under Review")) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
@@ -315,7 +319,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					} else if (allCancelled) {
 						returnOrderEntity.setStatus("Cancelled");
-						returnOrderEntity.setIsEditable(false);
+						List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
+						StatusConfig statusConfig = statusConfigList.get(0);
+						returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+						returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
 //						apply email functionality.
 						String subject = PortalConstants.RMAStatus;
 						String template = emailTemplateRenderer.getDENIED_TEMPLATE();
@@ -342,7 +349,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					}else if (allDenied) {
 						returnOrderEntity.setStatus("RMA Denied");
-						returnOrderEntity.setIsEditable(false);
+						List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
+						StatusConfig statusConfig = statusConfigList.get(0);
+						returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+						returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
 //					apply email functionality.
 						String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier()
 								+ " " + returnOrderEntity.getRmaOrderNo();
@@ -422,7 +432,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					}  else if (allAuthorized) {
 						returnOrderEntity.setStatus("Authorized");
-						returnOrderEntity.setIsEditable(false);
+						List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
+						StatusConfig statusConfig = statusConfigList.get(0);
+						returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+						returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
 						sendRestockingFeeToERP(rmaNo);
 						auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
 								+ returnOrderEntity.getRmaOrderNo()
@@ -501,7 +514,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					} else if (hasAuthorized) {
 						returnOrderEntity.setStatus(PortalConstants.AUTHORIZED);
-						returnOrderEntity.setIsEditable(false);
+						List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
+						StatusConfig statusConfig = statusConfigList.get(0);
+						returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+						returnOrderEntity.setIsAuthorized(true);
 						auditLog.setDescription(
 								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo()
 										+ " has been updated to 'Authorized' by " + updateBy + ".");

@@ -91,6 +91,6 @@ public class ReturnOrderItem extends BaseEntity {
 	private String problemDescNote;
 	private String vendorMessage;
 	private Boolean isEditable;
-	
+	private Boolean isAuthorized;
 
 }
