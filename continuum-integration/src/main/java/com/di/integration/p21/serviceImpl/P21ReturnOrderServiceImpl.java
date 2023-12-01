@@ -13,8 +13,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.constants.IntegrationConstants;
@@ -43,6 +47,8 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 	@Value(IntegrationConstants.ERP_ORDER_SELECT_FIELDS)
 	String ORDER_SELECT_FIELDS;
+	@Autowired
+	ReturnOrderRepository returnOrderRepository;
 
 	@Value(IntegrationConstants.ERP_ORDER_FORMAT)
 	String ORDER_FORMAT;
@@ -80,6 +86,7 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		p21OrderHeader.setPo_no(returnOrderDTO.getPONumber());
 		p21OrderHeader.setSales_loc_id(returnOrderDTO.getSalesLocationId());
 		p21OrderHeader.setShip_to_id(returnOrderDTO.getShipTo().getAddressId());
+		
 
 		p21OrderHeader.setTaker(IntegrationConstants.CONTINUUM);
 
@@ -117,10 +124,12 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 		String xmlPayload = p21ReturnOrderMarshller.createRMA(p21ReturnOrderDataHelper);
 		logger.info("returnOrderXmlPayload {}", xmlPayload);
-		
+		try {
+			
 		headers.setContentType(MediaType.APPLICATION_XML);
 		ResponseEntity<String> response = restTemplate.exchange(RMA_CREATE_API, HttpMethod.POST,
 				new HttpEntity<>(xmlPayload, headers), String.class);
+		
 		String responseBody = response.getBody();
 
 		logger.info("#### RMA RESPONSE #### {}", response.getBody());
@@ -153,8 +162,40 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 				String responseBody1 = response1.getBody();
 
 				logger.info("#### RMA Notes RESPONSE #### {}", responseBody1);
-		return rmaResponse;
+				return rmaResponse;
+		}
+		catch (HttpClientErrorException | HttpServerErrorException ex) {
+	        
+	        ex.printStackTrace();
+
+	        P21RMAResponse p21rmaResponse = new P21RMAResponse();
+
+	        p21rmaResponse.setRmaOrderNo(generateRmaNumber());
+	        p21rmaResponse.setStatus(IntegrationConstants.FAILED);
+	        return p21rmaResponse;
+		}
+		
 	}
+	
+	
+	
+	public String generateRmaNumber() {
+		String prefix = "FAIL";
+
+		ReturnOrder lastCRDRecord = returnOrderRepository
+				.findFirstByRmaOrderNoStartingWithOrderByRmaOrderNoDesc(prefix);
+
+		if (lastCRDRecord == null) {
+			int startingValue = 1;
+			return String.format("%s%07d", prefix, startingValue);
+		} else {
+			String rma = lastCRDRecord.getRmaOrderNo();
+			int number = Integer.parseInt(rma.substring(prefix.length()));
+			number++;
+			return String.format("%s%07d", prefix, number);
+		}
+	}
+	
 
 	@Override
 	public P21RMAResponse linkInvoice() {
