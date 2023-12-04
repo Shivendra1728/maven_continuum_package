@@ -13,8 +13,8 @@ import lombok.Setter;
 @Entity
 @AllArgsConstructor
 
-public class EditableConfig extends BaseEntity{
-	
+public class EditableConfig extends BaseEntity {
+
 	private boolean assignRMA;
 	private boolean changeStatus;
 	private boolean restockingFees;
@@ -25,6 +25,6 @@ public class EditableConfig extends BaseEntity{
 	private boolean trackingCode;
 	private boolean amountAddition;
 	private boolean itemDeletion;
-
+	private boolean searchChildSKU;
 
 }
