@@ -24,4 +24,20 @@ public class AuditLogServiceImpl implements AuditLogService{
 	 public List<AuditLog> getByRmaNo(String rmaNo) {
         return auditLogRepository.findByRmaNo(rmaNo);
     }
+
+	@Override
+	public AuditLog setAuditLog(String description, String title, String status, String rmaNumber, String updateBy, String highlight)
+	{
+		AuditLog auditLog = new AuditLog();
+		
+		auditLog.setDescription(description);
+		auditLog.setHighlight(highlight);
+		auditLog.setTitle(title);
+		auditLog.setStatus(status);
+		auditLog.setRmaNo(rmaNumber);
+		auditLog.setUserName(updateBy);
+		auditLogRepository.save(auditLog);
+		
+		return auditLog;
+	}
 }

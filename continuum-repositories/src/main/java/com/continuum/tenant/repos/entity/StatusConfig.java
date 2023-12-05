@@ -26,4 +26,6 @@ public class StatusConfig extends BaseEntity {
 	private boolean Display;
 	private Boolean isEditable;
 	private Boolean isAuthorized;
+	private int priority;
+	private String statusMap;
 }

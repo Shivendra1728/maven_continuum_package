@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.continuum.constants.PortalConstants;
+import com.continuum.service.AuditLogService;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.OrderAddress;
@@ -65,7 +66,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	EmailSender emailSender;
-	
+
 	@Autowired
 	P21UpdateRMAService p21UpdateRMAService;
 
@@ -92,10 +93,15 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	@Autowired
 	ReturnOrderServiceImpl returnOrderServiceImpl;
 
+	@Autowired
+	AuditLogService auditLogService;
+
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
 
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
+		Optional<ReturnOrder> findByRmaOrderNo = returnOrderRepository.findByRmaOrderNo(rmaNo);
+		ReturnOrder returnOrder = findByRmaOrderNo.get();
 
 		if (optionalItem.isPresent()) {
 			AuditLog auditLog = new AuditLog();
@@ -160,12 +166,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 			if (updatedItem.getStatus() != null) {
 				existingItem.setStatus(updatedItem.getStatus());
-				if(updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT) 
-						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT) 
-						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED) 
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_LINE_DENIED)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-					List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
+					List<StatusConfig> statusConfigList = statusConfigRepository
+							.findBystatuslabl(updatedItem.getStatus());
 					StatusConfig statusConfig = statusConfigList.get(0);
 					System.err.println(statusConfig.getIsEditable());
 					existingItem.setIsEditable(statusConfig.getIsEditable());
@@ -202,9 +209,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ " has been assigned to the 'Authorized In Transit' by " + updateBy + ".");
 					auditLog.setHighlight("Authorized In Transit'");
 				}
-				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_LINE_DENIED)) {
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'RMA line Denied' by " + updateBy + ".");
+							+ " has been assigned to the 'RMA Denied' by " + updateBy + ".");
 					auditLog.setHighlight("RMA line Denied");
 				}
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
@@ -223,314 +230,210 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				String recipient = PortalConstants.EMAIL_RECIPIENT;
 
 				// Handle Status Configurations
-				boolean hasUnderReview = false;
-				boolean hasRequiresMoreCustomerInfo = false;
-				boolean allDenied = true;
-				boolean allAuthorized = true;
-				boolean allCarrier = false;
-				boolean hasAuthorized = false;
-				boolean allCancelled = true;
 
-				Optional<ReturnOrder> returnOrderOptional = returnOrderRepository.findByRmaOrderNo(rmaNo);
+				ReturnOrder returnOrderEntity = returnOrderRepository.findByRmaOrderNo(rmaNo).get();
+				List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository
+						.findByReturnOrderId(returnOrderEntity.getId());
 
-				if (returnOrderOptional.isPresent()) {
+				int min = 1000;
+				for (ReturnOrderItem returnOrderItem : returnOrderItems) {
 
-					ReturnOrder returnOrderEntity = returnOrderOptional.get();
-					Long returnOrderId = returnOrderEntity.getId();
-					List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository
-							.findByReturnOrderId(returnOrderId);
-
-					for (ReturnOrderItem returnOrderItem : returnOrderItems) {
-						if (PortalConstants.RMCI.equalsIgnoreCase(returnOrderItem.getStatus())) {
-							hasRequiresMoreCustomerInfo = true;
-							// If any item requires more customer information, break the loop
-							break;
-						}
-						if (PortalConstants.UNDER_REVIEW.equalsIgnoreCase(returnOrderItem.getStatus())) {
-							hasUnderReview = true;
-						}
-						if (!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus()) && !PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
-							// If any item is not Denied, set allDenied to false
-							allDenied = false;
-						}
-						if (!PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
-							allCancelled = false;
-						}
-
-						if (!(PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())
-								|| PortalConstants.AUTHORIZED_AWAITING_TRANSIT
-										.equalsIgnoreCase(returnOrderItem.getStatus()))) {
-							// If any item is not Authorized, set allAuthorized to false
-							allAuthorized = false;
-						}
-
-//					if (!(PortalConstants.AWAITING_CARRIER_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus())
-//							|| PortalConstants.AWAITING_CARRIER_APPROVAL
-//									.equalsIgnoreCase(returnOrderItem.getStatus()))) {
-//						// If any item is not Authorized, set allAuthorized to false
-//						allCarrier = false;
-//					}
-
-						if (PortalConstants.AWAITING_CARRIER_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus())
-								|| PortalConstants.AWAITING_VENDOR_APPROVAL
-										.equalsIgnoreCase(returnOrderItem.getStatus())) {
-							allCarrier = true;
-						}
-
-						if ((PortalConstants.AUTHORIZED_AWAITING_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())
-								|| PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())
-								|| PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus()))) {
-							hasAuthorized = true;
-						}
+					StatusConfig statusConfig = statusConfigRepository.findBystatuslabl(returnOrderItem.getStatus())
+							.get(0);
+					if (statusConfig.getPriority() < min) {
+						min = statusConfig.getPriority();
 
 					}
 
-					if (hasRequiresMoreCustomerInfo) {
-						returnOrderEntity.setStatus("Requires More Customer Information");
-						// audit logs
+				}
 
-						auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
+				StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
+
+				returnOrderEntity.setStatus(statusConfig.getStatusMap());
+				returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+				returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
+
+				if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
+					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
+					String description = returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Under Review' by "
+							+ updateBy + ".";
+					String title = "Return Order";
+					String highlight = "Under Review";
+					String status = "RMA Header";
+					auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);}
+
+				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
+					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
+
+						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Authorized' by " + updateBy
+								+ ". The return is approved. Please proceed with the necessary steps." + "; "
+								+ "Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
+						String title = "Return Order";
+						String highlight = "Authorized";
+						String status = "Inbox";
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+					}
+
+					// Save in ERP
+					String apiUrl = "https://apiplay.labdepotinc.com/api/sales/orders/"
+							+ returnOrderEntity.getRmaOrderNo() + "/approve";
+					RestTemplate restTemplate = new RestTemplate();
+					HttpHeaders headers = new HttpHeaders();
+					try {
+						headers.setBearerAuth(p21TokenServiceImpl.getToken());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					HttpEntity<String> entity = new HttpEntity<>(headers);
+					ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PUT, entity,
+							String.class);
+
+					if (response.getStatusCode() == HttpStatus.OK) {
+						System.out.println("Saving Status Approved In ERP.");
+					} else {
+						System.out.println("There was an error while saving status in ERP.");
+					}
+
+					String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo();
+					String template = emailTemplateRenderer.getRMA_AUTHORIZED_TEMPLATE();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("rma_status", returnOrderEntity.getStatus());
+					map.put("rma", returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
+					try {
+						emailSender.sendEmail(recipient, template, subject, map);
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
+				} else if (statusConfig.getStatusMap()
+						.equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
+
+					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
+
+						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
 								+ returnOrderEntity.getRmaOrderNo()
 								+ " has been updated to 'Requires More Customer Information' by " + updateBy
-								+ ".Awaiting more information with customer.; Email has been sent to the "+returnOrderEntity.getContact().getContactEmailId()+".");
-						auditLog.setHighlight("Requires More Customer Information");
-						auditLog.setTitle("Return Order");
-						auditLog.setStatus("Inbox");
-						auditLog.setRmaNo(rmaNo);
-						auditLog.setUserName(updateBy);
-						auditLogRepository.save(auditLog);
-						// apply email functionality.
-						String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier()
-								+ " " + returnOrderEntity.getRmaOrderNo();
-						String template = emailTemplateRenderer.getREQ_MORE_CUST_INFO();
-						HashMap<String, String> map = new HashMap<>();
-						map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
-						map.put("rma_status", returnOrderEntity.getStatus());
-						map.put("rma",
-								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
-						try {
-							emailSender.sendEmail(recipient, template, subject, map);
-						} catch (MessagingException e) {
-							e.printStackTrace();
-						}
-
-					} else if (allCarrier) {
-						returnOrderEntity.setStatus(PortalConstants.UNDER_REVIEW);
-
-					} else if (allCancelled) {
-						returnOrderEntity.setStatus("Cancelled");
-						List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
-						StatusConfig statusConfig = statusConfigList.get(0);
-						returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
-						returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
-//						apply email functionality.
-						String subject = PortalConstants.RMAStatus;
-						String template = emailTemplateRenderer.getDENIED_TEMPLATE();
-						HashMap<String, String> map = new HashMap<>();
-						map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
-						map.put("rma_status", returnOrderEntity.getStatus());
-						map.put("rma",
-								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
-						try {
-							emailSender.sendEmail(recipient, template, subject, map);
-						} catch (MessagingException e) {
-							e.printStackTrace();
-						}
-
-						auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Cancelled' by " + updateBy
-								+ "." + ";Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId() + ".");
-						auditLog.setHighlight("Cancelled");
-						auditLog.setTitle("Return Order");
-						auditLog.setStatus("Inbox");
-						auditLog.setRmaNo(rmaNo);
-						auditLog.setUserName(updateBy);
-						auditLogRepository.save(auditLog);
-
-					}else if (allDenied) {
-						returnOrderEntity.setStatus("RMA Denied");
-						List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
-						StatusConfig statusConfig = statusConfigList.get(0);
-						returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
-						returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
-//					apply email functionality.
-						String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier()
-								+ " " + returnOrderEntity.getRmaOrderNo();
-						;
-						String template = emailTemplateRenderer.getDENIED_TEMPLATE();
-						HashMap<String, String> map = new HashMap<>();
-						map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
-						map.put("rma_status", returnOrderEntity.getStatus());
-						map.put("rma",
-								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
-						try {
-
-//						emailSender.sendEmail5(recipient, returnOrderEntity.getCustomer().getDisplayName(),
-//								returnOrderEntity.getStatus());
-
-							emailSender.sendEmail(recipient, template, subject, map);
-						} catch (MessagingException e) {
-							e.printStackTrace();
-						}
-						// audit logs
-
-						auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'DENIED' by " + updateBy
-								+ ".;Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId()+".");				
-						auditLog.setHighlight("DENIED");
-						auditLog.setTitle("Return Order");
-						auditLog.setStatus("Inbox");
-						auditLog.setRmaNo(rmaNo);
-						auditLog.setUserName(updateBy);
-						auditLogRepository.save(auditLog);
-
-						// save in ERP while rma denied
-						String apiUrl = "https://apiplay.labdepotinc.com/uiserver0/api/v2/transaction";
-						String xmlData = "<TransactionSet xmlns=\"http://schemas.datacontract.org/2004/07/P21.Transactions.Model.V2\">\r\n"
-								+ "    <IgnoreDisabled>true</IgnoreDisabled>\r\n" + "    <Name>RMA</Name>\r\n"
-								+ "    <Transactions>\r\n" + "        <Transaction>\r\n"
-								+ "            <DataElements>\r\n" + "                <DataElement>\r\n"
-								+ "                    <Keys xmlns:a=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\"/>\r\n"
-								+ "                    <Name>TABPAGE_1.order</Name>\r\n"
-								+ "                    <Rows>\r\n" + "                        <Row>\r\n"
-								+ "                            <Edits>\r\n" + "								<Edit>\r\n"
-								+ "                                            <Name>order_no</Name>\r\n"
-								+ "                                            <Value>"
-								+ returnOrderEntity.getRmaOrderNo() + "</Value>\r\n"
-								+ "                                        </Edit>\r\n"
-								+ "                                        <Edit>\r\n"
-								+ "                                            <Name>cancel_flag</Name>\r\n"
-								+ "                                            <Value>Y</Value>\r\n"
-								+ "                                        </Edit>      \r\n"
-								+ "                            </Edits>\r\n"
-								+ "                            <RelativeDateEdits/>\r\n"
-								+ "                        </Row>\r\n" + "                    </Rows>\r\n"
-								+ "                    <Type>Form</Type>\r\n"
-								+ "                </DataElement>     \r\n" + "            </DataElements>\r\n"
-								+ "        </Transaction>\r\n" + "    </Transactions>\r\n" + "</TransactionSet>";
-
-						HttpHeaders headers = new HttpHeaders();
-						try {
-							headers.setContentType(MediaType.APPLICATION_XML);
-							headers.setBearerAuth(p21TokenServiceImpl.getToken());
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						RestTemplate restTemplate = new RestTemplate();
-						try {
-							ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST,
-									new HttpEntity<>(xmlData, headers), String.class);
-							if (response.getStatusCode().is2xxSuccessful()) {
-								System.out.println("Resource updated successfully.");
-							} else {
-								System.out.println("There was an error while updating the resource.");
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-							System.out.println("An exception occurred while making the API request.");
-						}
-
-					}  else if (allAuthorized) {
-						returnOrderEntity.setStatus("Authorized");
-						List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
-						StatusConfig statusConfig = statusConfigList.get(0);
-						returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
-						returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
-						sendRestockingFeeToERP(rmaNo);
-						auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo()
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'AUTHORIZED' by " + updateBy
-								+ ".The return is approved,Please proceed with the necessary steps."	
-								+ ".;Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId()+".");
-						auditLog.setHighlight("AUTHORIZED");
-						auditLog.setTitle("Return Order");
-						auditLog.setStatus("Inbox");
-						auditLog.setRmaNo(rmaNo);
-						auditLog.setUserName(updateBy);
-						auditLogRepository.save(auditLog);
-
-						// Save in ERP
-						String apiUrl = "https://apiplay.labdepotinc.com/api/sales/orders/"
-								+ returnOrderEntity.getRmaOrderNo() + "/approve";
-						RestTemplate restTemplate = new RestTemplate();
-						HttpHeaders headers = new HttpHeaders();
-						try {
-							headers.setBearerAuth(p21TokenServiceImpl.getToken());
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						HttpEntity<String> entity = new HttpEntity<>(headers);
-						ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PUT, entity,
-								String.class);
-
-						if (response.getStatusCode() == HttpStatus.OK) {
-							System.out.println("Saving Status Approved In ERP.");
-						} else {
-							System.out.println("There was an error while saving status in ERP.");
-						}
-
-						// email
-						String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier()
-								+ " " + returnOrderEntity.getRmaOrderNo();
-						;
-						String template = emailTemplateRenderer.getRMA_AUTHORIZED_TEMPLATE();
-						HashMap<String, String> map = new HashMap<>();
-						map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
-						map.put("rma_status", returnOrderEntity.getStatus());
-						map.put("rma",
-								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
-						try {
-//						emailSender.sendEmail6(recipient, returnOrderEntity.getCustomer().getDisplayName(),
-//								returnOrderEntity.getStatus());
-							emailSender.sendEmail(recipient, template, subject, map);
-						} catch (MessagingException e) {
-							e.printStackTrace();
-						}
-					} else if (hasUnderReview) {
-						returnOrderEntity.setStatus("Under Review");
-					} else if (allCarrier) {
-						returnOrderEntity.setStatus("Under Review");
-
-						auditLog.setDescription(
-								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo()
-										+ " has been updated to 'Under Review' by " + updateBy + ".");
-						auditLog.setHighlight("Under Review");
-						auditLog.setTitle("Return Order");
-						auditLog.setStatus("RMA Header");
-						auditLog.setRmaNo(rmaNo);
-						auditLog.setUserName(updateBy);
-						auditLogRepository.save(auditLog);
-					} else if (!allAuthorized && !allDenied && hasRequiresMoreCustomerInfo) {
-						returnOrderEntity.setStatus(PortalConstants.UNDER_REVIEW);
-						auditLog.setDescription(
-								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo()
-										+ " has been updated to 'Under Review' by " + updateBy + ".");
-						auditLog.setHighlight("Under Review");
-						auditLog.setTitle("Return Order");
-						auditLog.setStatus("RMA");
-						auditLog.setRmaNo(rmaNo);
-						auditLog.setUserName(updateBy);
-						auditLogRepository.save(auditLog);
-
-					} else if (hasAuthorized) {
-						returnOrderEntity.setStatus(PortalConstants.AUTHORIZED);
-						List<StatusConfig> statusConfigList = statusConfigRepository.findBystatuslabl(updatedItem.getStatus());
-						StatusConfig statusConfig = statusConfigList.get(0);
-						returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
-						returnOrderEntity.setIsAuthorized(true);
-						auditLog.setDescription(
-								returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo()
-										+ " has been updated to 'Authorized' by " + updateBy + ".");
-						auditLog.setHighlight("Under Review");
-						auditLog.setTitle("Return Order");
-						auditLog.setStatus("RMA");
-						auditLog.setRmaNo(rmaNo);
-						auditLog.setUserName(updateBy);
-						auditLogRepository.save(auditLog);
-
+								+ ". Awaiting more information with customer.; Email has been sent to the "
+								+ returnOrderEntity.getContact().getContactEmailId();
+						String title = "Return Order";
+						String highlight = "Requires More Customer Information";
+						String status = "Inbox";
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 					}
-					returnOrderRepository.save(returnOrderEntity);
+
+					String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo();
+					String template = emailTemplateRenderer.getREQ_MORE_CUST_INFO();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("rma_status", returnOrderEntity.getStatus());
+					map.put("rma", returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
+					try {
+						emailSender.sendEmail(recipient, template, subject, map);
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
+				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
+
+					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
+
+						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Cancelled' by " + updateBy
+								+ "." + ";Email has been sent to" + returnOrderEntity.getContact().getContactEmailId();
+						String title = "Return Order";
+						String highlight = "Cancelled";
+						String status = "RMA Header";
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+					}
+
+					String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo();
+					String template = emailTemplateRenderer.getDENIED_TEMPLATE();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("rma_status", returnOrderEntity.getStatus());
+					map.put("rma", returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
+					try {
+						emailSender.sendEmail(recipient, template, subject, map);
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
+				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
+
+					if (!statusConfig.getStatusMap().equals(returnOrder.getStatus())) {
+
+						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'DENIED' by " + updateBy
+								+ ".; Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
+						String title = "Return Order";
+						String highlight = "Denied";
+						String status = "Inbox";
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+					}
+
+					// save in ERP while rma denied
+					String apiUrl = "https://apiplay.labdepotinc.com/uiserver0/api/v2/transaction";
+					String xmlData = "<TransactionSet xmlns=\"http://schemas.datacontract.org/2004/07/P21.Transactions.Model.V2\">\r\n"
+							+ "    <IgnoreDisabled>true</IgnoreDisabled>\r\n" + "    <Name>RMA</Name>\r\n"
+							+ "    <Transactions>\r\n" + "        <Transaction>\r\n" + "            <DataElements>\r\n"
+							+ "                <DataElement>\r\n"
+							+ "                    <Keys xmlns:a=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\"/>\r\n"
+							+ "                    <Name>TABPAGE_1.order</Name>\r\n" + "                    <Rows>\r\n"
+							+ "                        <Row>\r\n" + "                            <Edits>\r\n"
+							+ "								<Edit>\r\n"
+							+ "                                            <Name>order_no</Name>\r\n"
+							+ "                                            <Value>" + returnOrderEntity.getRmaOrderNo()
+							+ "</Value>\r\n" + "                                        </Edit>\r\n"
+							+ "                                        <Edit>\r\n"
+							+ "                                            <Name>cancel_flag</Name>\r\n"
+							+ "                                            <Value>Y</Value>\r\n"
+							+ "                                        </Edit>      \r\n"
+							+ "                            </Edits>\r\n"
+							+ "                            <RelativeDateEdits/>\r\n"
+							+ "                        </Row>\r\n" + "                    </Rows>\r\n"
+							+ "                    <Type>Form</Type>\r\n" + "                </DataElement>     \r\n"
+							+ "            </DataElements>\r\n" + "        </Transaction>\r\n"
+							+ "    </Transactions>\r\n" + "</TransactionSet>";
+
+					HttpHeaders headers = new HttpHeaders();
+					try {
+						headers.setContentType(MediaType.APPLICATION_XML);
+						headers.setBearerAuth(p21TokenServiceImpl.getToken());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					RestTemplate restTemplate = new RestTemplate();
+					try {
+						ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST,
+								new HttpEntity<>(xmlData, headers), String.class);
+						if (response.getStatusCode().is2xxSuccessful()) {
+							System.out.println("Resource updated successfully.");
+						} else {
+							System.out.println("There was an error while updating the resource.");
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						System.out.println("An exception occurred while making the API request.");
+					}
+
+					String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo();
+					String template = emailTemplateRenderer.getDENIED_TEMPLATE();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("rma_status", returnOrderEntity.getStatus());
+					map.put("rma", returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
+					try {
+						emailSender.sendEmail(recipient, template, subject, map);
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
 				}
+				
+				returnOrderRepository.save(returnOrderEntity);
 
 				// update customer to put tracking code.
 				String subject = PortalConstants.RMAStatus;
@@ -559,7 +462,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String updateNote(Long lineItemId, Long assignToId, String rmaNo, String updateBy,String contactEmail,
+	public String updateNote(Long lineItemId, Long assignToId, String rmaNo, String updateBy, String contactEmail,
 			ReturnOrderItemDTO updateNote) {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(lineItemId);
 		Optional<User> optionalUser = userRepository.findById(assignToId);
@@ -767,14 +670,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 //			String res = stringBuilder.toString();
 
 			returnOrderItemRepository.save(returnOrderItem);
-			
+
 			ReturnRoom returnRoom = new ReturnRoom();
 			returnRoom.setName(updateBy);
 			returnRoom.setMessage(returnOrderItem.getShipTo().getReturnLocNote());
 			returnRoom.setStatus(returnOrderItem.getStatus());
 			returnRoom.setReturnOrderItem(returnOrderItem);
 			returnRoomRepository.save(returnRoom);
-			
+
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription("Shipping Information has been updated of item - " + returnOrderItem.getItemName()
@@ -840,29 +743,27 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		}
 		return "Restocking fee and return amount updated successfully";
 	}
-	
+
 	public void sendRestockingFeeToERP(String rmaNo) {
 		Optional<ReturnOrder> findByRmaOrderNo = returnOrderRepository.findByRmaOrderNo(rmaNo);
-		if(findByRmaOrderNo.isPresent()) {
+		if (findByRmaOrderNo.isPresent()) {
 			Double totalRestocking = 0d;
 			ReturnOrder returnOrder = findByRmaOrderNo.get();
 			List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
-			for(ReturnOrderItem returnOrderItem : returnOrderItems) {
-				if(returnOrderItem.getReStockingAmount() != null) {
+			for (ReturnOrderItem returnOrderItem : returnOrderItems) {
+				if (returnOrderItem.getReStockingAmount() != null) {
 					totalRestocking += returnOrderItem.getReStockingAmount().doubleValue();
 				}
 			}
 			Integer rmaNumber = Integer.parseInt(returnOrder.getRmaOrderNo());
 			Integer poNumber = Integer.parseInt(returnOrder.getPONumber());
 			try {
-				p21UpdateRMAService.updateRMARestocking(rmaNumber,  poNumber, totalRestocking);
+				p21UpdateRMAService.updateRMARestocking(rmaNumber, poNumber, totalRestocking);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
-	
-	
 
 	@Override
 	public List<StatusConfig> getAllStatus() {

@@ -10,4 +10,7 @@ public interface AuditLogService {
 
 	List<AuditLog> getByRmaNo(String rmaNo);
 
+	public AuditLog setAuditLog(String description, String title, String status, String rmaNo, String updateBy,
+			String highlight);
+
 }
