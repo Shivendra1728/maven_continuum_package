@@ -126,6 +126,19 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			}
 
+			if (updatedItem.getAmount() != null) {
+				existingItem.setAmount(updatedItem.getAmount());
+				auditLog.setDescription("Amount has been updated of item - " + existingItem.getItemName()
+						+ " by " + updateBy + ".");
+				auditLog.setHighlight("Amount");
+				auditLog.setTitle("Update Activity");
+				auditLog.setStatus("Line Items");
+				auditLog.setRmaNo(rmaNo);
+				auditLog.setUserName(updateBy);
+				auditLogRepository.save(auditLog);
+				returnOrderItemRepository.save(existingItem);
+			}
+
 //			if (updatedItem.getReturnLocNote() != null && updatedItem.getReturnLocRole() != null) {
 //				existingItem.setReturnLocNote(updatedItem.getReturnLocNote());
 //				existingItem.setReturnLocRole(updatedItem.getReturnLocRole());
@@ -255,13 +268,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
-					String description = returnOrderServiceImpl.getRmaaQualifier() + " "
-							+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Under Review' by "
-							+ updateBy + ".";
-					String title = "Return Order";
-					String highlight = "Under Review";
-					String status = "RMA Header";
-					auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);}
+						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Under Review' by "
+								+ updateBy + ".";
+						String title = "Return Order";
+						String highlight = "Under Review";
+						String status = "RMA Header";
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+					}
 
 				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
@@ -432,7 +446,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						e.printStackTrace();
 					}
 				}
-				
+
 				returnOrderRepository.save(returnOrderEntity);
 
 				// update customer to put tracking code.
