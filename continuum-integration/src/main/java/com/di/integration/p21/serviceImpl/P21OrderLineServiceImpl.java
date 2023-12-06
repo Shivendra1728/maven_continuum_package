@@ -6,18 +6,21 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -78,15 +81,21 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 		return orderItemDTOList;
 	}
 
-	private String getOrderLineData(OrderSearchParameters orderSearchParameters, int totalItem) throws Exception {
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(p21TokenServiceImpl.getToken());
-		URI fulluri = prepareOrderLineURI(orderSearchParameters, totalItem);
-		logger.info("getOrderLineData URI: " + fulluri);
-		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-		RequestEntity<Void> requestMapping = new RequestEntity<>(headers, HttpMethod.GET, fulluri);
-		ResponseEntity<String> response = restTemplate.exchange(requestMapping, String.class);
-		return response.getBody();
+	private String getOrderLineData(OrderSearchParameters orderSearchParameters, int totalItem) throws Exception {		
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+		URI fullURI = prepareOrderLineURI(orderSearchParameters, totalItem);
+
+		HttpGet request = new HttpGet(fullURI);
+
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken());
+
+		HttpResponse response = httpClient.execute(request);
+		HttpEntity entity = response.getEntity();
+
+		return EntityUtils.toString(entity);
 	}
 
 	private URI prepareOrderLineURI(OrderSearchParameters orderSearchParameters, int totalItem)
