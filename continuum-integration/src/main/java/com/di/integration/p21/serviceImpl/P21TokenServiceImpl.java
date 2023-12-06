@@ -1,8 +1,6 @@
 package com.di.integration.p21.serviceImpl;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -11,12 +9,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -48,33 +46,28 @@ public class P21TokenServiceImpl implements P21TokenSerivce {
 	@Override
 	// @Cacheable(value = "accessTokenCache", key = "#accessToken")
 	public String getToken() throws Exception {
-		//String accessToken = getAccessTokenFromCookie();
-		String accessToken=null;
+		String accessToken = getAccessTokenFromCookie();
+//		HttpResponse accessToken=null;
 		logger.info("getAccessTokenFromCookie::" + accessToken);
 		if (accessToken == null) {
-			CloseableHttpClient httpClient = HttpClients.createDefault();
-			HttpPost request = new HttpPost(TOKEN_ENDPOINT);
-
-			// Set request parameters
-			List<NameValuePair> params = new ArrayList<>();
-			params.add(new BasicNameValuePair("grant_type", "password"));
-			params.add(new BasicNameValuePair("username", USERNAME));
-			params.add(new BasicNameValuePair("password", PASSWORD));
-			// params.add(new BasicNameValuePair("scope", SCOPE));
-
+			CloseableHttpClient httpClient = HttpClients.custom()
+                    .setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+                    .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                    .build();
+			
+			URIBuilder uriBuilder = new URIBuilder(TOKEN_ENDPOINT);
+			uriBuilder.addParameter("username", USERNAME);
+			uriBuilder.addParameter("password", PASSWORD);
+			
+            HttpPost request = new HttpPost(uriBuilder.build());
+			
 			// Set request headers
-			request.setHeader(HttpHeaders.CONTENT_TYPE, IntegrationConstants.CONTENT_TYPE_FORM_URLENCODED);
-			request.setEntity(new UrlEncodedFormEntity(params));
+			request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
 			// Execute the request
 			HttpResponse response = httpClient.execute(request);
 			HttpEntity entity = response.getEntity();
-			String responseBody = EntityUtils.toString(entity);
-
-			// Extract the access token from the response
-			// Assuming the response is in JSON format
-			// Adjust the parsing logic based on the actual response format
-			accessToken = parseAccessToken(responseBody);
-			//setAccessTokenCookie(accessToken);
+			return EntityUtils.toString(entity);
 		}
 		return accessToken;
 	}

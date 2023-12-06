@@ -45,6 +45,7 @@ public final class IntegrationConstants {
     
 
     public static final String ERP_DATA_API_BASE_URL = "${erp.data_api_base_url}";
+    public static final String ERP_PRODUCT_API_BASE_URL = "${erp.product_api}";
     public static final String ERP_DATA_API_ORDER_LINE = "${erp.data_api_order_line}";
     public static final String ERP_ORDER_LINE_SELECT_FIELDS = "${erp.order_line_select_fields}";
     public static final String ERP_ORDER_FORMAT = "${erp.order_format}";

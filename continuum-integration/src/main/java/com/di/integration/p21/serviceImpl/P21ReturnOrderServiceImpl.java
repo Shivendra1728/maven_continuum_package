@@ -3,18 +3,21 @@ package com.di.integration.p21.serviceImpl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.continuum.tenant.repos.entity.ReturnOrder;
@@ -86,7 +89,6 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		p21OrderHeader.setPo_no(returnOrderDTO.getPONumber());
 		p21OrderHeader.setSales_loc_id(returnOrderDTO.getSalesLocationId());
 		p21OrderHeader.setShip_to_id(returnOrderDTO.getShipTo().getAddressId());
-		
 
 		p21OrderHeader.setTaker(IntegrationConstants.CONTINUUM);
 
@@ -118,63 +120,67 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 		// p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory);
 		// //TODO invoice linking
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(p21TokenServiceImpl.getToken());
-		logger.info("creating RMA");
-
 		String xmlPayload = p21ReturnOrderMarshller.createRMA(p21ReturnOrderDataHelper);
 		logger.info("returnOrderXmlPayload {}", xmlPayload);
-		try {
-			
-		headers.setContentType(MediaType.APPLICATION_XML);
-		ResponseEntity<String> response = restTemplate.exchange(RMA_CREATE_API, HttpMethod.POST,
-				new HttpEntity<>(xmlPayload, headers), String.class);
-		
-		String responseBody = response.getBody();
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		HttpPost request = new HttpPost(RMA_CREATE_API);
 
-		logger.info("#### RMA RESPONSE #### {}", response.getBody());
-		P21RMAResponse rmaResponse=p21ReturnOrderMarshller.umMarshall(response.getBody().replace("Keys", "resKeys"));
-		//Code for Return Order Notes
-		
-				OrderXml orderXml= new OrderXml();
-				orderXml.setCompanyId(p21ReturnOrderDataHelper.getP21OrderHeader().getCompany_id());
-				orderXml.setContactId(p21ReturnOrderDataHelper.getP21OrderHeader().getContact_id());
-				orderXml.setCustomerId(p21ReturnOrderDataHelper.getP21OrderHeader().getCustomer_id());
-				orderXml.setLocationId(p21ReturnOrderDataHelper.getP21OrderHeader().getSales_loc_id());
-				orderXml.setOrderNo(rmaResponse.getRmaOrderNo());
-				
-				List<OrderNote> orderNotes= new ArrayList<>();
-				for (P21OrderItemHelper orderItem : p21ReturnOrderDataHelper.getP21OrderItemList()) {
-					OrderNote orderNote= new OrderNote();
-					orderNote.setMandatory(true);
-					orderNote.setOrderNo(orderXml.getOrderNo());
-					orderNote.setNotepadClassId("OTHER");
-					orderNote.setTopic("ORDER NOTE : "+orderItem.getOe_order_item_id());
-					orderNote.setNote(orderItem.getNote());//reason code
-					orderNotes.add(orderNote);
-				}
-				orderXml.setOrderNotes(orderNotes);
-				String orderNoteXml=p21ReturnOrderMarshller.getXMLFromObject(orderXml);
-				logger.info("RMA_NOTES_CREATE_API ::"+RMA_NOTES_CREATE_API);
-				logger.info("Order Notes XML ::"+orderNoteXml);
-				ResponseEntity<String> response1 = restTemplate.exchange(RMA_NOTES_CREATE_API, HttpMethod.POST,
-						new HttpEntity<>(orderNoteXml, headers), String.class);
-				String responseBody1 = response1.getBody();
+		// Set request headers
+		request.addHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
+		String token = p21TokenServiceImpl.getToken();
+		logger.info("#### TOKEN #### {}", token);
 
-				logger.info("#### RMA Notes RESPONSE #### {}", responseBody1);
-				return rmaResponse;
+		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		StringEntity entity = new StringEntity(xmlPayload);
+		request.setEntity(entity);
+		CloseableHttpResponse response = httpClient.execute(request);
+		String responseBody = EntityUtils.toString(response.getEntity());
+
+		logger.info("#### RMA RESPONSE #### {}", responseBody);
+		P21RMAResponse rmaResponse = p21ReturnOrderMarshller.umMarshall(responseBody.replace("Keys", "resKeys"));
+		// Code for Return Order Notes
+
+		OrderXml orderXml = new OrderXml();
+		orderXml.setCompanyId(p21ReturnOrderDataHelper.getP21OrderHeader().getCompany_id());
+		orderXml.setContactId(p21ReturnOrderDataHelper.getP21OrderHeader().getContact_id());
+		orderXml.setCustomerId(p21ReturnOrderDataHelper.getP21OrderHeader().getCustomer_id());
+		orderXml.setLocationId(p21ReturnOrderDataHelper.getP21OrderHeader().getSales_loc_id());
+		orderXml.setOrderNo(rmaResponse.getRmaOrderNo());
+
+		List<OrderNote> orderNotes = new ArrayList<>();
+		for (P21OrderItemHelper orderItem : p21ReturnOrderDataHelper.getP21OrderItemList()) {
+			OrderNote orderNote = new OrderNote();
+			orderNote.setMandatory(true);
+			orderNote.setOrderNo(orderXml.getOrderNo());
+			orderNote.setNotepadClassId("OTHER");
+			orderNote.setTopic("ORDER NOTE : " + orderItem.getOe_order_item_id());
+			orderNote.setNote(orderItem.getNote());// reason code
+			orderNotes.add(orderNote);
 		}
-		catch (HttpClientErrorException | HttpServerErrorException ex) {
-	        
-	        ex.printStackTrace();
+		orderXml.setOrderNotes(orderNotes);
+		String orderNoteXml = p21ReturnOrderMarshller.getXMLFromObject(orderXml);
+		logger.info("RMA_NOTES_CREATE_API ::" + RMA_NOTES_CREATE_API);
+		logger.info("Order Notes XML ::" + orderNoteXml);
 
-	        P21RMAResponse p21rmaResponse = new P21RMAResponse();
+		CloseableHttpClient httpClient1 = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		HttpPost request1 = new HttpPost(RMA_NOTES_CREATE_API);
 
-	        p21rmaResponse.setRmaOrderNo(generateRmaNumber());
-	        p21rmaResponse.setStatus(IntegrationConstants.FAILED);
-	        return p21rmaResponse;
-		}
-		
+		// Set request headers
+		request1.setHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
+		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		StringEntity entity1 = new StringEntity(xmlPayload);
+		request1.setEntity(entity1);
+		CloseableHttpResponse response1 = httpClient1.execute(request1);
+		String responseBody1 = EntityUtils.toString(response1.getEntity());
+
+		logger.info("#### RMA Notes RESPONSE #### {}", responseBody1);
+		return rmaResponse;
 	}
 	
 	
