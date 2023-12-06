@@ -8,4 +8,6 @@ import com.continuum.tenant.repos.entity.StatusConfig;
 
 public interface StatusConfigRepository extends JpaRepository<StatusConfig, Long> {
 	List<StatusConfig> findBystatuslabl(String statusType);
+
+	List<StatusConfig> findByPriority(int min);
 }

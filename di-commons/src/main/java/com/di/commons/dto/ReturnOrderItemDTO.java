@@ -58,6 +58,8 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	private String note;
 	private String Notes;
 	private BigDecimal Amount;
+	private String amountNote;
+
 
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
