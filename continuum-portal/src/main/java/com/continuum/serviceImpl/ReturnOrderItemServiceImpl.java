@@ -126,8 +126,18 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			}
 
-			if (updatedItem.getAmount() != null) {
+			if (updatedItem.getAmount() != null || updatedItem.getAmountNote()!=null) {
 				existingItem.setAmount(updatedItem.getAmount());
+				existingItem.setAmountNote(updatedItem.getAmountNote());
+
+				ReturnRoom returnRoom = new ReturnRoom();
+				returnRoom.setName(updateBy);
+				returnRoom.setMessage(updatedItem.getAmountNote());
+				returnRoom.setReturnOrderItem(existingItem);
+				returnRoom.setAssignTo(null);
+				returnRoomRepository.save(returnRoom);
+				returnOrderItemRepository.save(existingItem);
+				
 				auditLog.setDescription("Amount has been updated of item - " + existingItem.getItemName()
 						+ " by " + updateBy + ".");
 				auditLog.setHighlight("Amount");
