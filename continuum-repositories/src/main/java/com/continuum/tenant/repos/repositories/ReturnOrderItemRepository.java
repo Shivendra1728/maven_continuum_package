@@ -12,5 +12,4 @@ public interface ReturnOrderItemRepository extends JpaRepository<ReturnOrderItem
 	 List<ReturnOrderItem> findAllById(Long id);
 	 List<ReturnOrderItem> findByIdIn(List<Long> ids);
 
-
 }
