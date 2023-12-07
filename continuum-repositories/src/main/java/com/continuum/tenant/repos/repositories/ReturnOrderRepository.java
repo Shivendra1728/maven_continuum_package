@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
 
 @Repository
 public interface ReturnOrderRepository extends JpaRepository<ReturnOrder, Long>, JpaSpecificationExecutor<ReturnOrder>{
@@ -18,5 +19,4 @@ public interface ReturnOrderRepository extends JpaRepository<ReturnOrder, Long>,
 
 	Optional<ReturnOrder> findByRmaOrderNo(String rmaNo);
 	ReturnOrder findFirstByRmaOrderNoStartingWithOrderByRmaOrderNoDesc(String string);
-
 }

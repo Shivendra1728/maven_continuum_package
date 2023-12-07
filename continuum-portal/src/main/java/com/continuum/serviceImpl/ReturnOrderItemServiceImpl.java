@@ -799,5 +799,36 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	public List<QuestionConfig> getQuestions() {
 		return questionConfigRepository.findAll();
 	}
+	
+	@Override
+	public String deleteItem(ReturnOrderItem orderItem, String updateBy , String rmaNo) {
+		Optional<ReturnOrderItem> returnOrderItem = returnOrderItemRepository.findById(orderItem.getId());
+		ReturnOrderItem item = returnOrderItem.get();
+		if(item !=null) {
+			item.setIsActive(false);
+			item.setDeleteNote(orderItem.getDeleteNote());
+			returnOrderItemRepository.save(item);	
+			
+			ReturnRoom returnRoom = new ReturnRoom();
+			returnRoom.setName(updateBy);
+			returnRoom.setMessage(orderItem.getDeleteNote());
+			returnRoom.setReturnOrderItem(item);
+			returnRoom.setAssignTo(null);
+			returnRoomRepository.save(returnRoom);
+
+			AuditLog auditLog = new AuditLog();
+			auditLog.setTitle("Update Activity");
+			auditLog.setDescription("Item- "+item.getItemName()+" has been deleted by "+updateBy+".;"+"Note : "+orderItem.getDeleteNote()+".");
+			auditLog.setHighlight("");
+			auditLog.setStatus("List Items");
+			auditLog.setRmaNo(rmaNo);
+			auditLog.setUserName(updateBy);
+			auditLogRepository.save(auditLog);
+			
+			return "Item Deleted";
+		}
+		return "Item Not found";
+	}
+
 
 }

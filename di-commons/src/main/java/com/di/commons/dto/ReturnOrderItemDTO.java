@@ -77,4 +77,7 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	private String vendorMessage;
 	private Boolean isEditable;
 	private Boolean isAuthorized;
+	private Boolean isActive;
+	private String deleteNote;
+
 }
