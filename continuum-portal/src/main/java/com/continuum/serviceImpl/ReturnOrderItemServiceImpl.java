@@ -279,7 +279,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 
 				}
-				
 
 				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
@@ -347,6 +346,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
+
+					try {
+						sendRestockingFeeToERP(rmaNo);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+
 				} else if (statusConfig.getStatusMap()
 						.equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
 
