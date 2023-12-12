@@ -86,7 +86,6 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 	@Autowired
 	P21OrderMapper p21OrderMapper;
-	
 
 	@Autowired
 	MasterTenantRepository masterTenantRepository;
@@ -157,13 +156,17 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 					.append(" '").append(orderSearchParameters.getCustomerId()).append("'");
 
 		}
+
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		try {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=&$filter=" + encodedFilter;
 			if (totalItem == 1) {
 				query = query + "&$top=1";
 			}
-			URI uri = new URI(DATA_API_BASE_URL + DATA_API_INVOICE_VIEW);
+			URI uri = new URI(masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_API_INVOICE_VIEW);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;
 		} catch (Exception e) {
@@ -181,7 +184,6 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 	@Override
 	public boolean linkInvoice(String rmaNo) throws Exception {
 		boolean b = false;
-		
 
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
@@ -273,7 +275,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		windowMetaDataRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 		windowMetaDataRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 		windowMetaDataRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-		
+
 		// Execute the request
 		HttpResponse windowMetaDataResponse = httpClient2.execute(windowMetaDataRequest);
 		HttpEntity entity1 = windowMetaDataResponse.getEntity();
@@ -286,7 +288,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-		String windowListURI = ""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/transaction/services?type=Window";
+		String windowListURI = "" + masterTenant.getSubdomain()
+				+ "/uiserver0/ui/full/v1/transaction/services?type=Window";
 //		URI windowListfullURi = new URIBuilder(windowListURI).addParameter("Window", "Window").build();
 		URIBuilder uriBuilder = new URIBuilder(windowListURI);
 
@@ -319,7 +322,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 		String changeDataForAFieldUri = String.format(
-				""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/changedata?datawindowName=%s&fieldName=%s",
+				"" + masterTenant.getSubdomain()
+						+ "/uiserver0/ui/full/v1/window/%s/elements/changedata?datawindowName=%s&fieldName=%s",
 				windowId, "order", "order_no");
 
 		URI changeDataForAFieldFullURI = new URIBuilder(changeDataForAFieldUri).build();
@@ -342,12 +346,13 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		logger.info("selectPagOfWindowFullURI:");
 
 		CloseableHttpClient httpClient5 = HttpClients.custom()
-		        .setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-		        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-		String selectPagOfWindowURI = ""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/select?pageName=%s";
-		URI selectPagOfWindowFullURI = new URIBuilder(String.format(selectPagOfWindowURI, URLEncoder.encode(windowId, StandardCharsets.UTF_8.toString()), "tabpage_saleshistory"))
-		        .build();
+		String selectPagOfWindowURI = "" + masterTenant.getSubdomain()
+				+ "/uiserver0/ui/full/v1/window/%s/elements/select?pageName=%s";
+		URI selectPagOfWindowFullURI = new URIBuilder(String.format(selectPagOfWindowURI,
+				URLEncoder.encode(windowId, StandardCharsets.UTF_8.toString()), "tabpage_saleshistory")).build();
 
 		HttpPost selectPagOfWindowRequest = new HttpPost(selectPagOfWindowFullURI);
 		selectPagOfWindowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -358,11 +363,11 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		selectPagOfWindowRequest.setEntity(entity4);
 
 		try (CloseableHttpResponse selectPagOfWindowResponse = httpClient5.execute(selectPagOfWindowRequest)) {
-		    HttpEntity responseEntity1 = selectPagOfWindowResponse.getEntity();
-		    String responseBody2 = EntityUtils.toString(responseEntity1);
-		    logger.info("selectPagOfWindowFullURI Response :" + responseBody2);
+			HttpEntity responseEntity1 = selectPagOfWindowResponse.getEntity();
+			String responseBody2 = EntityUtils.toString(responseEntity1);
+			logger.info("selectPagOfWindowFullURI Response :" + responseBody2);
 		} catch (IOException e) {
-		    e.printStackTrace(); // Handle exception appropriately
+			e.printStackTrace(); // Handle exception appropriately
 		}
 
 		URI activeWindowDefinition = new URI(
@@ -378,10 +383,10 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-		String getToolsOfWindowTabURI = 
-				""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s";
-		URI getToolsOfWindowTabFullURI = new URIBuilder(String.format(getToolsOfWindowTabURI, URLEncoder.encode(windowId, StandardCharsets.UTF_8.toString()), "tabpage_saleshistory"))
-		        .build();		
+		String getToolsOfWindowTabURI = "" + masterTenant.getSubdomain()
+				+ "/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s";
+		URI getToolsOfWindowTabFullURI = new URIBuilder(String.format(getToolsOfWindowTabURI,
+				URLEncoder.encode(windowId, StandardCharsets.UTF_8.toString()), "tabpage_saleshistory")).build();
 		HttpGet getToolsOfWindowTabRequest = new HttpGet(getToolsOfWindowTabFullURI);
 
 		// Set request headers
@@ -400,8 +405,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 		String toolsOfWindowFieldURI = String.format(
-				""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s", windowId,
-				"tabpage_saleshistory");
+				"" + masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s",
+				windowId, "tabpage_saleshistory");
 		URI toolsOfWindowFieldFullURI = new URIBuilder(toolsOfWindowFieldURI).build();
 
 		HttpGet toolsOfWindowFieldRequest = new HttpGet(toolsOfWindowFieldFullURI);
@@ -422,7 +427,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 		String currentRowForDataWindowURI = String.format(
-				""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/activerow?datawindowName=%s",
+				"" + masterTenant.getSubdomain()
+						+ "/uiserver0/ui/full/v1/window/%s/elements/activerow?datawindowName=%s",
 				windowId, "tabpage_saleshistory");
 		URI currentRowForDataWindowFullURI = new URIBuilder(currentRowForDataWindowURI).build();
 
@@ -480,7 +486,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 			String setFocusOnSpecifiedFieldURI = String.format(
-					""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/focus?datawindowName=%s&fieldName=%s&row=%s",
+					"" + masterTenant.getSubdomain()
+							+ "/uiserver0/ui/full/v1/window/%s/elements/focus?datawindowName=%s&fieldName=%s&row=%s",
 					windowId, "tabpage_saleshistory", "invoice_no", "3");
 			URI setFocusOnSpecifiedFieldFullURI = new URIBuilder(setFocusOnSpecifiedFieldURI).build();
 			HttpPost setFocusOnSpecifiedFieldRequest = new HttpPost(setFocusOnSpecifiedFieldFullURI);
@@ -505,8 +512,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-			String runToolOnWindowURI = String.format(
-					""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/tools/run?dwName=%s&toolName=%s&dwElementName=%s&row=%s",
+			String runToolOnWindowURI = String.format("" + masterTenant.getSubdomain()
+					+ "/uiserver0/ui/full/v1/window/%s/elements/tools/run?dwName=%s&toolName=%s&dwElementName=%s&row=%s",
 					windowId, "tabpage_saleshistory", "m_linktothisrmaline", "tabpage_saleshistory", "3");
 			URI runToolOnWindowFullURI = new URIBuilder(runToolOnWindowURI).build();
 
@@ -530,8 +537,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-			String saveWindowURI = String.format(""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/save",
-					windowId);
+			String saveWindowURI = String
+					.format("" + masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/%s/save", windowId);
 			URI saveWindowFullURI = new URIBuilder(saveWindowURI).build();
 
 			HttpPost saveWindowRequest = new HttpPost(saveWindowFullURI);
@@ -556,7 +563,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 			String performWindowActionURI = String
-					.format(""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/tools/cb_1", windowId);
+					.format("" + masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/%s/tools/cb_1", windowId);
 			URI performWindowActionFullURI = new URIBuilder(performWindowActionURI).build();
 
 			HttpPost performWindowActionRequest = new HttpPost(performWindowActionFullURI);
