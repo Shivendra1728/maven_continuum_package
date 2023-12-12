@@ -45,6 +45,9 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 
 	@Value(PortalConstants.EMAIL_RECIPIENT)
 	private String recipient;
+	
+	@Autowired
+	ReturnOrderServiceImpl returnOrderServiceImpl;
 
 	@Override
 	public String forgetPassword(String email, HttpServletRequest request) {
@@ -96,15 +99,16 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 			String templateFilePath = PortalConstants.FPasswordLink;
 			VelocityContext context = new VelocityContext();
 
-			context.put("user_name", existingUser.getFirstName().toUpperCase());
-			context.put("uuid", uuid);
-			context.put("resetUrl", link);
+			context.put("RESET_LINK", link);
+			context.put("user_name", existingUser.getFirstName());
+			context.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+			context.put("CLIENT_PHONE",String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
 
 			String renderedBody = EmailTemplateRenderer.renderFPasswordTemplate(context);
 
 			Message message = new MimeMessage(session);
 			message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
-			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(PortalConstants.EMAIL_RECIPIENT));
 			message.setSubject(templateFilePath);
 			message.setContent(renderedBody, "text/html");
 			Transport.send(message);

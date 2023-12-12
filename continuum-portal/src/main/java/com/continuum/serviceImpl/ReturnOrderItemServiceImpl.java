@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import javax.mail.MessagingException;
@@ -366,24 +367,24 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						e.printStackTrace();
 					}
 
-					String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier() + " "
+					// email
+					String subject = PortalConstants.RMAStatus + returnOrderServiceImpl.getRmaaQualifier() + " "
 							+ returnOrderEntity.getRmaOrderNo();
 					String template = emailTemplateRenderer.getRMA_AUTHORIZED_TEMPLATE();
 					HashMap<String, String> map = new HashMap<>();
-					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
-					map.put("rma_status", returnOrderEntity.getStatus());
-					map.put("rma", returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
+					map.put("RMA_NO", returnOrderEntity.getRmaOrderNo());
+					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+					map.put("CLIENT_PHONE",
+							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
 					try {
 						emailSender.sendEmail(recipient, template, subject, map);
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
-
-					try {
-						sendRestockingFeeToERP(rmaNo);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+					
+					
+					sendRestockingFeeToERP(rmaNo);
 
 				} else if (statusConfig.getStatusMap()
 						.equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
@@ -401,17 +402,23 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 					}
 
-					String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier() + " "
-							+ returnOrderEntity.getRmaOrderNo();
-					String template = emailTemplateRenderer.getREQ_MORE_CUST_INFO();
-					HashMap<String, String> map = new HashMap<>();
-					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
-					map.put("rma_status", returnOrderEntity.getStatus());
-					map.put("rma", returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
-					try {
-						emailSender.sendEmail(recipient, template, subject, map);
-					} catch (MessagingException e) {
-						e.printStackTrace();
+					if (!PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION.equals(returnOrder.getStatus())) {
+						// apply email functionality.
+						String subject = "Action Required! Return: " + returnOrderServiceImpl.getRmaaQualifier() + " "
+								+ returnOrderEntity.getRmaOrderNo() + " Requires more information";
+						String template = emailTemplateRenderer.getREQ_MORE_CUST_INFO();
+						HashMap<String, String> map = new HashMap<>();
+						map.put("RMA_NO", returnOrderEntity.getRmaOrderNo());
+						map.put("cust_name", returnOrderEntity.getCustomer().getDisplayName());
+						map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+						map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+						map.put("CLIENT_PHONE",
+								String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+						try {
+							emailSender.sendEmail(recipient, template, subject, map);
+						} catch (MessagingException e) {
+							e.printStackTrace();
+						}
 					}
 				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
 
@@ -426,13 +433,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 					}
 
-					String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier() + " "
-							+ returnOrderEntity.getRmaOrderNo();
+//					apply email functionality.
+					String subject = PortalConstants.RMAStatus;
 					String template = emailTemplateRenderer.getDENIED_TEMPLATE();
 					HashMap<String, String> map = new HashMap<>();
-					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
-					map.put("rma_status", returnOrderEntity.getStatus());
-					map.put("rma", returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
+					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+					map.put("RMA_NO", returnOrderEntity.getRmaOrderNo());
+					map.put("CUST_NAME", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+					map.put("CLIENT_PHONE",
+							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
 					try {
 						emailSender.sendEmail(recipient, template, subject, map);
 					} catch (MessagingException e) {
@@ -496,13 +506,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						System.out.println("An exception occurred while making the API request.");
 					}
 
-					String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier() + " "
+//					apply email functionality.
+					String subject = PortalConstants.RMAStatus + "" + returnOrderServiceImpl.getRmaaQualifier() + " "
 							+ returnOrderEntity.getRmaOrderNo();
 					String template = emailTemplateRenderer.getDENIED_TEMPLATE();
 					HashMap<String, String> map = new HashMap<>();
-					map.put("order_contact_name", returnOrderEntity.getCustomer().getDisplayName());
-					map.put("rma_status", returnOrderEntity.getStatus());
-					map.put("rma", returnOrderServiceImpl.getRmaaQualifier() + " " + returnOrderEntity.getRmaOrderNo());
+					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+					map.put("RMA_NO", returnOrderEntity.getRmaOrderNo());
+					map.put("CUST_NAME", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+					map.put("CLIENT_PHONE",
+							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
 					try {
 						emailSender.sendEmail(recipient, template, subject, map);
 					} catch (MessagingException e) {
@@ -513,9 +527,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderRepository.save(returnOrderEntity);
 
 				// update customer to put tracking code.
-				String subject = PortalConstants.RMAStatus;
+				String subject = "Return: " + existingItem.getItemName() + " is Ready and Awaiting Transit";
 				HashMap<String, String> map1 = new HashMap<>();
-				map1.put("LineItemStatus", updatedItem.getStatus());
+				map1.put("RMA_NO", rmaNo);
+				map1.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+
+				map1.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+				map1.put("CLIENT_PHONE",
+						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
 
 				String template1 = emailTemplateRenderer.getEMAIL_LINE_ITEM_STATUS_IN_TRANSIT();
 
@@ -587,20 +606,21 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ "Vendor Message added and Email has been sent to the " + contactEmail);
 				}
 
-				String subject = PortalConstants.NOTE_STATUS_CUSTOMER;
-				String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
-				HashMap<String, String> map = new HashMap<>();
+					String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier()
+							+ " " + rmaNo;
+					String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
+					HashMap<String, String> map = new HashMap<>();
 
-				map.put("AssignedUser", user.getFirstName());
-				map.put("partNumber", existingItem.getItemName());
-				map.put("vendorName", updateBy);
-				map.put("LineItemStatus", updateNote.getStatus());
-				map.put("note", updateNote.getNote());
-				map.put("date", formattedDate);
-				try {
-					emailSender.sendEmail(recipient, template2, subject, map);
-				} catch (MessagingException e) {
-					e.printStackTrace();
+				map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+					map.put("RMA_NO", rmaNo);
+					map.put("note", updateNote.getNote());
+					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+					map.put("CLIENT_PHONE",
+							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+					try {
+						emailSender.sendEmail(recipient, template2, subject, map);
+					} catch (MessagingException e) {
+						e.printStackTrace();
 				}
 			} else {
 				if (updateBy.equalsIgnoreCase(user.getFirstName() + " " + user.getLastName())) {
@@ -612,15 +632,28 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ user.getLastName() + " of item - " + existingItem.getItemName()
 							+ ". Please review the details and take necessary action.");
 				}
-				String subject = PortalConstants.NOTE_STATUS;
-				String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS();
+				String subject = PortalConstants.NOTE_STATUS + returnOrderServiceImpl.getRmaaQualifier() + " " + rmaNo;
+				String template2 = emailTemplateRenderer.getRETURN_PROCESSOR_NOTE();
 				HashMap<String, String> map = new HashMap<>();
 
-				map.put("AssignedUser", user.getFirstName());
-				map.put("partNumber", existingItem.getItemName());
-				map.put("vendorName", updateBy);
-				map.put("LineItemStatus", updateNote.getStatus());
-				map.put("date", formattedDate);
+				map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+				map.put("RMA_NO", rmaNo);
+				map.put("ITEM_NAME", existingItem.getItemName());
+				map.put("ASSIGNED_TO", user.getFullName());
+				map.put("CURRENT_STATUS", updateNote.getStatus());
+				map.put("ASSIGNED_BY", updateBy);
+				map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+				map.put("CLIENT_PHONE",
+						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+//				Thu Dec 14 05:30:00 IST
+				if (updateNote.getFollowUpDate() != null) {
+					SimpleDateFormat outputFormat = new SimpleDateFormat("EEE MMM dd yyyy", Locale.ENGLISH);
+					String outputDateString = outputFormat.format(updateNote.getFollowUpDate());
+					map.put("FOLLOW_UP_DATE", " Please check and follow up on before " + outputDateString);
+				} else {
+					map.put("FOLLOW_UP_DATE", "");
+				}
+
 				try {
 					emailSender.sendEmail(recipient, template2, subject, map);
 				} catch (MessagingException e) {
