@@ -184,10 +184,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		//String recipient = returnOrder.getCustomer().getEmail();
 		String recipient = PortalConstants.EMAIL_RECIPIENT;
-		String email = returnOrderDTO.getContact().getContactEmailId();
-		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
-			recipient="alex@gocontinuum.ai";
-		}
+//		String email = returnOrderDTO.getContact().getContactEmailId();
+//		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
+//			recipient="alex@gocontinuum.ai";
+//		}
 		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX +" "+getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo()+" has been Requested";
 		
 //		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
