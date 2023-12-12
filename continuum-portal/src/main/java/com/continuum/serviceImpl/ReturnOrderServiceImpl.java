@@ -592,8 +592,18 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		Optional<ReturnType> optionalReturnType=returnTypeRepository.findById(returnTypeId);
 		if (optionalReturnOrder.isPresent() && optionalUser.isPresent()) {	
 			ReturnOrder returnOrder = optionalReturnOrder.get();
+			String previousNote = "";
+			Long previousReturnType = 0L;
+			Long previousAssignTo = 0L;
+			if (returnOrder.getNote() != null && returnOrder.getReturnType().getId() != null) {
+				previousNote = returnOrder.getNote();
+				previousReturnType = returnOrder.getReturnType().getId();
+				previousAssignTo = returnOrder.getUser().getId();
+			}
+
+			Optional<ReturnType> returnTypes = returnTypeRepository.findById(returnTypeId);
 			User user = optionalUser.get();
-			ReturnType returnType=optionalReturnType.get();
+			ReturnType returnType = optionalReturnType.get();
 			List<ReturnOrderItem> returnOrderItemList = returnOrder.getReturnOrderItem();
 			for (ReturnOrderItem returnOrderItem : returnOrderItemList) {
 				if (returnOrderItem.getUser() == null) {
@@ -647,13 +657,73 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Assign RMA");
-			auditLog.setDescription(getRmaaQualifier()+" "+returnOrder.getRmaOrderNo() + " has been assigned to the " + user.getFirstName()
-					+ " " + user.getLastName() + "." + ";" +getRmaaQualifier()+" "+ rmaNo + " is now at 'Under Review'.;"+"Return type of the "+getRmaaQualifier()+" "+rmaNo+" is set to as '"+returnType.getType()+"'.");
+
+			if (!previousNote.equalsIgnoreCase(note.getNote()) && previousReturnType == returnTypeId
+					&& assignToId == previousAssignTo) {
+				auditLog.setDescription("Note Added while assigning RMA " + getRmaaQualifier() + " " + rmaNo + ".;"
+						+ "Note : " + note.getNote() + ".;" + "Email has been sent to "
+						+ note.getContact().getContactEmailId());
+				auditLog.setStatus("Inbox");
+				logger.info("condition 1");
+				;
+
+			} else if (previousReturnType != returnTypeId && previousNote.equalsIgnoreCase(note.getNote())
+					&& assignToId == previousAssignTo) {
+				auditLog.setDescription("Return type of the " + getRmaaQualifier() + " " + rmaNo + " is set to '"
+						+ returnTypes.get().getType() + "'.;" + "Email has been sent to "
+						+ note.getContact().getContactEmailId());
+				auditLog.setStatus("Inbox");
+				logger.info("condition 2");
+
+			} else if (previousReturnType != returnTypeId && !previousNote.equalsIgnoreCase(note.getNote())
+					&& assignToId == previousAssignTo) {
+				auditLog.setDescription("Return type of the " + getRmaaQualifier() + " " + rmaNo + " is set to '"
+						+ returnTypes.get().getType() + "'.;" + "Note Added while assigning RMA "
+						+ getRmaaQualifier() + " " + rmaNo + ".;" + "Note : " + note.getNote() + ".;"
+						+ "Email has been sent to " + note.getContact().getContactEmailId() + ".;");
+				auditLog.setStatus("Inbox");
+				logger.info("condition 3");
+
+			} else if (previousAssignTo != assignToId && previousReturnType != returnTypeId) {
+				auditLog.setDescription(
+						getRmaaQualifier() + " " + returnOrder.getRmaOrderNo() + " has been assigned to "
+								+ user.getFirstName() + " " + user.getLastName() + "." + ";" + "Return type of the "
+								+ getRmaaQualifier() + " " + rmaNo + " is set to '" + returnTypes.get().getType()
+								+ "'.;" + "Email has been sent to " + note.getContact().getContactEmailId() + ".;");
+				auditLog.setStatus("Inbox");
+				logger.info("condition 4");
+
+			} else if (previousAssignTo != assignToId && !previousNote.equalsIgnoreCase(note.getNote())) {
+				auditLog.setDescription(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
+						+ " has been assigned to the " + user.getFirstName() + " " + user.getLastName() + "." + ";"
+						+"Note Added while assigning RMA " + getRmaaQualifier() + " "
+						+ rmaNo + ".;" + "Note : " + note.getNote() + ".;" + "Email has been sent to "
+						+ note.getContact().getContactEmailId() + ".;");
+				logger.info("condition 5");
+
+			} else if (previousAssignTo != assignToId && !previousNote.equalsIgnoreCase(note.getNote())) {
+				auditLog.setDescription(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
+						+ " has been assigned to the " + user.getFirstName() + " " + user.getLastName() + "." + ";"
+						+ getRmaaQualifier() + " " + rmaNo + " is now at 'Under Review'.;" + "Return type of the "
+						+ getRmaaQualifier() + " " + rmaNo + " is set to as '" + returnTypes.get().getType() + "'."
+						+ ";" + "Email has been sent to " + note.getContact().getContactEmailId());
+				auditLog.setStatus("Inbox");
+				logger.info("condition 6");
+
+			} else {
+				auditLog.setDescription(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
+						+ " has been assigned to the " + user.getFirstName() + " " + user.getLastName() + "." + ";"
+						+ getRmaaQualifier() + " " + rmaNo + " is now at 'Under Review'.;" + "Return type of the "
+						+ getRmaaQualifier() + " " + rmaNo + " is set to as '" + returnTypes.get().getType() + "'."
+						+ ";" + "Email has been sent to " + note.getContact().getContactEmailId());
+				auditLog.setStatus("Inbox");
+				logger.info("condition 7");
+
+			}
 			auditLog.setHighlight("Under Review");
-			auditLog.setStatus("RMA Header");
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditLog.setUserName(updateBy);
-			auditLogRepository.save(auditLog); // capture in audit log
+			auditLogRepository.save(auditLog);
 
 			return "Assiged RMA to User";
 
