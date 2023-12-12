@@ -55,6 +55,8 @@ import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.p21.service.P21UpdateRMAService;
 import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
 
+import ch.qos.logback.classic.Logger;
+
 @Service
 public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	@Autowired
@@ -414,6 +416,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
 						map.put("CLIENT_PHONE",
 								String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+						
+						//Database name fetching
+						String db_name = httpServletRequest.getHeader("host").split("\\.")[0];
+						map.put("SUB_DOMAIN", db_name);
 						try {
 							emailSender.sendEmail(recipient, template, subject, map);
 						} catch (MessagingException e) {
