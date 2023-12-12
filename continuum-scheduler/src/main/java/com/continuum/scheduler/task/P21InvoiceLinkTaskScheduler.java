@@ -58,7 +58,7 @@ public class P21InvoiceLinkTaskScheduler {
 	P21DocumentService p21DocumentService;
 
 
-	@Scheduled(cron = "*/30 * * * * *")
+	@Scheduled(cron = "* */30 * * * *")
 	public void runTasks() throws Exception {
 		List<MasterTenant> masterTenants = masterTenantRepo.findAll();
 		if (null == masterTenants) {

@@ -2,6 +2,14 @@ package com.di.integration.p21.serviceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,19 +54,25 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		
-		totalRestocking = -totalRestocking;
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
-		headers.setContentType(MediaType.APPLICATION_XML);
-		
+		totalRestocking = -totalRestocking;		
 		String updateRestockingXml = getXml(rmaNumber, poNumber, totalRestocking);
-		HttpEntity<String> requestEntity = new HttpEntity<>(updateRestockingXml, headers);
-		
-		logger.info("Order Search URI:" +masterTenant.getSubdomain()+ RMA_UPDATE_RESTOCKING_API);
-		
-		ResponseEntity<String> responseEntity = restTemplate.postForEntity(masterTenant.getSubdomain()+RMA_UPDATE_RESTOCKING_API, requestEntity, String.class);
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		HttpPost request = new HttpPost(masterTenant.getSubdomain()+RMA_UPDATE_RESTOCKING_API);
 
-		return responseEntity.getBody();
+		// Set request headers
+		request.addHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
+		String token = p21TokenServiceImpl.getToken(masterTenant);
+		logger.info("#### TOKEN #### {}", token);
+
+		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		StringEntity entity = new StringEntity(updateRestockingXml);
+		request.setEntity(entity);
+		CloseableHttpResponse response = httpClient.execute(request);
+		return EntityUtils.toString(response.getEntity());
+
 		
 	}
 	

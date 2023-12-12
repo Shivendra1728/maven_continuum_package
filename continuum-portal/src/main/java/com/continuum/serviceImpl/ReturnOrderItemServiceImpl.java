@@ -1,6 +1,8 @@
 package com.continuum.serviceImpl;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,12 +13,18 @@ import javax.mail.MessagingException;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -317,21 +325,45 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					// Save in ERP
 					String apiUrl = masterTenant.getSubdomain() + "/api/sales/orders/"
 							+ returnOrderEntity.getRmaOrderNo() + "/approve";
-					RestTemplate restTemplate = new RestTemplate();
-					HttpHeaders headers = new HttpHeaders();
+//					RestTemplate restTemplate = new RestTemplate();
+//					HttpHeaders headers = new HttpHeaders();
+//					try {
+//						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//					HttpEntity<String> entity = new HttpEntity<>(headers);
+//					ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PUT, entity,
+//							String.class);
+//
+//					if (response.getStatusCode() == HttpStatus.OK) {
+//						System.out.println("Saving Status Approved In ERP.");
+//					} else {
+//						System.out.println("There was an error while saving status in ERP.");
+//					}
 					try {
-						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					HttpEntity<String> entity = new HttpEntity<>(headers);
-					ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PUT, entity,
-							String.class);
+						// Your existing HTTP request code here
+						CloseableHttpClient httpClient = HttpClients.custom()
+								.setSSLContext(
+										SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+								.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-					if (response.getStatusCode() == HttpStatus.OK) {
-						System.out.println("Saving Status Approved In ERP.");
-					} else {
-						System.out.println("There was an error while saving status in ERP.");
+						HttpPut request = new HttpPut(apiUrl);
+						try {
+							String token = p21TokenServiceImpl.getToken(masterTenant);
+							request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+							request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
+						try (CloseableHttpResponse response = httpClient.execute(request)) {
+							String responseBody = EntityUtils.toString(response.getEntity());
+							System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
+							System.out.println("Response Body: " + responseBody);
+						}
+					} catch (IOException | GeneralSecurityException e) {
+						e.printStackTrace();
 					}
 
 					String subject = PortalConstants.RMAStatus + " : " + returnOrderServiceImpl.getRmaaQualifier() + " "
