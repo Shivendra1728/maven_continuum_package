@@ -132,6 +132,13 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		} else {
 			returnOrderDTO.setStatus(PortalConstants.FAILED);
+			returnOrderDTO.setIsAuthorized(false);
+			returnOrderDTO.setIsEditable(false);
+			for(ReturnOrderItemDTO returnOrderItem : returnOrderDTO.getReturnOrderItem()) {
+				returnOrderItem.setIsAuthorized(false);
+				returnOrderItem.setIsEditable(false);
+				returnOrderItem.setStatus(PortalConstants.FAILED);
+			}
 			logger.info("Setting status to:: '{}'", PortalConstants.FAILED);
 		}
 		logger.info(returnOrderDTO.getCustomer().getCustomerId());
@@ -181,14 +188,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
 			recipient="alex@gocontinuum.ai";
 		}
-		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX +" "+getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo();
-		String body = PortalConstants.EMAIL_BODY_PREFIX + returnOrderDTO.getStatus();
-
+		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX +" "+getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo()+" has been Requested";
+		
 //		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
 		HashMap<String, String> map = new HashMap<>();
 		if (returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
-			map.put("status", returnOrderDTO.getStatus());
-			map.put("rma_order_no", getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo());	
+			map.put("RMA_QUALIFIER", getRmaaQualifier());
+			map.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
+			map.put("CUST_NAME", returnOrderDTO.getCustomer().getDisplayName());
+			map.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
+			map.put("CLIENT_PHONE",String.valueOf(getClientConfig().getClient().getContactNo()));
 		} else {
 			map.put("status", returnOrderDTO.getStatus());
 			map.put("rma_order_no", null);
@@ -518,22 +527,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			auditlog.setUserName(updateBy);
 			auditLogRepository.save(auditlog);
 
-			// send email to customer-RMA processor
-		//	String recipient = returnOrder.getCustomer().getEmail();
-			String recipient=PortalConstants.EMAIL_RECIPIENT;
-			String subject = PortalConstants.RMAStatus +" : "+getRmaaQualifier()+" "+returnOrder.getRmaOrderNo();
-			String template = emailTemplateRenderer.getEMAIL_RMA_STATUS();
 			
-			try {
-
-//				emailSender.sendEmail2(recipient, returnOrder.getStatus());
-				HashMap<String, String> map = new HashMap<>();
-				map.put("rma_status", returnOrder.getStatus());
-				map.put("message", "Sample Message");
-				emailSender.sendEmail(recipient, template, subject, map);
-			} catch (MessagingException e) {
-				e.printStackTrace();
-			}
 
 			return "RMA Status Updated Successfully.";
 		   
@@ -621,14 +615,32 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 //			apply email functionality.
 			//String recipient = user.getEmail();
 			String recipient=PortalConstants.EMAIL_RECIPIENT;
-			String subject = PortalConstants.ASSIGN_RMA+" : "+getRmaaQualifier()+" "+returnOrder.getRmaOrderNo();
+			String subject = PortalConstants.ASSIGN_RMA+getRmaaQualifier()+" "+returnOrder.getRmaOrderNo();
 			HashMap<String, String> map = new HashMap<>();
-			map.put("rma", getRmaaQualifier()+" "+returnOrder.getRmaOrderNo());
-			map.put("assigned_person", user.getFirstName());
-			map.put("rma", getRmaaQualifier()+" "+returnOrder.getRmaOrderNo());
+			map.put("RMA_QUALIFIER", getRmaaQualifier());
+			map.put("RMA_NO", rmaNo);
+			map.put("STATUS", PortalConstants.UNDER_REVIEW);
+			map.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
+			map.put("CLIENT_PHONE",String.valueOf(getClientConfig().getClient().getContactNo()));
 			String template = emailTemplateRenderer.getAssignRMATemplate();
 			try {
 				emailSender.sendEmail(recipient, template, subject, map);
+			} catch (MessagingException e) {
+				e.printStackTrace();	
+			}
+			
+			String recipient1=PortalConstants.EMAIL_RECIPIENT;
+			String subject1 = "Your Return "+getRmaaQualifier()+" "+rmaNo+ " is Under Review";
+			HashMap<String, String> map1 = new HashMap<>();
+			map1.put("RMA_QUALIFIER", getRmaaQualifier());
+			map1.put("RMA_NO", rmaNo);
+			map1.put("CUST_NAME", returnOrder.getCustomer().getDisplayName());
+			map1.put("RP_NAME", returnOrder.getUser().getFullName());
+			map1.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
+			map1.put("CLIENT_PHONE",String.valueOf(getClientConfig().getClient().getContactNo()));
+			String template1 = emailTemplateRenderer.getCUSTMER_UNDER_REVIEW_TEMPLATE();
+			try {
+				emailSender.sendEmail(recipient1, template1, subject1, map1);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -670,6 +682,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		} else {
 
 			return "No RMA Qualifier";
+		}
+	}
+	public ClientConfig getClientConfig() {
+		ClientConfig clientConfig = clientConfigRepository.findById(1L).orElse(null);
+
+		if (clientConfig != null) {
+			return clientConfig;
+		} else {
+
+			return null;
 		}
 	}
 }
