@@ -67,7 +67,7 @@ public class P21ProductServiceImpl implements P21ProductService {
             HttpGet request = new HttpGet(fullURI);
 
             try {
-                request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken());
+                request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
 
             }catch(Exception e) {
             	e.printStackTrace();

@@ -3,6 +3,8 @@ package com.di.integration.p21.serviceImpl;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -20,6 +22,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.di.commons.dto.ReturnOrderDTO;
@@ -61,6 +65,14 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 	
 	@Value("${erp.rma.notes.create}")
 	String RMA_NOTES_CREATE_API;
+	
+
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
+
+	@Autowired
+	HttpServletRequest httpServletRequest;
+
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
 
@@ -121,15 +133,21 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		// p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory);
 		// //TODO invoice linking
 		String xmlPayload = p21ReturnOrderMarshller.createRMA(p21ReturnOrderDataHelper);
-		logger.info("returnOrderXmlPayload {}", xmlPayload);
+		logger.info("returnOrderXmlPayload {}", xmlPayload);	
+		
+
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+		
 		CloseableHttpClient httpClient = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-		HttpPost request = new HttpPost(RMA_CREATE_API);
+		HttpPost request = new HttpPost(masterTenant.getSubdomain()+RMA_CREATE_API);
 
 		// Set request headers
 		request.addHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
-		String token = p21TokenServiceImpl.getToken();
+		String token = p21TokenServiceImpl.getToken(masterTenant);
 		logger.info("#### TOKEN #### {}", token);
 
 		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
@@ -168,7 +186,7 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		CloseableHttpClient httpClient1 = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-		HttpPost request1 = new HttpPost(RMA_NOTES_CREATE_API);
+		HttpPost request1 = new HttpPost(masterTenant.getSubdomain()+RMA_NOTES_CREATE_API);
 
 		// Set request headers
 		request1.setHeader(HttpHeaders.CONTENT_TYPE, "application/xml");

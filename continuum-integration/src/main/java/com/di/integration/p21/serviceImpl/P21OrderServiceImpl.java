@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -31,6 +33,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.tenant.repos.entity.ClientConfig;
 import com.continuum.tenant.repos.repositories.ClientConfigRepository;
 import com.continuum.tenant.repos.repositories.CustomerRepository;
@@ -42,8 +46,10 @@ import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21ContactMapper;
 import com.di.commons.p21.mapper.P21InvoiceMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
+import com.di.integration.config.TenantInfoHolderContext;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21OrderService;
+import com.di.integration.p21.service.TenantInfoProviderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -101,7 +107,14 @@ public class P21OrderServiceImpl implements P21OrderService {
 	
 	@Autowired
 	P21InvoiceServiceImpl p21InvoiceServiceImpl;
+	
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
 
+	@Autowired
+	HttpServletRequest httpServletRequest;
+
+	
 	@Override
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
 		List<OrderDTO> orderDTOList = new ArrayList<>();
@@ -188,7 +201,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 		
 		 HttpGet request = new HttpGet(fullURI);
 
-		 request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken());
+		 request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
 
 		HttpResponse response = httpClient.execute(request);
 		HttpEntity entity = response.getEntity();
@@ -206,7 +219,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 		HttpGet request = new HttpGet(fullURI);
 
-		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken());
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
 
 		HttpResponse response = httpClient.execute(request);
 		HttpEntity entity = response.getEntity();
@@ -227,6 +240,11 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 		// p21_view_contacts?$select=&$filter=email_address eq
 		// 'SOUSADA.SALINTHONE@AZZUR.COM'&$format=json
+		
+
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
 		try {
 
@@ -235,7 +253,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter;
 
-			URI uri = new URI(DATA_API_BASE_URL + IntegrationConstants.ENDPOINT_VIEW_CONTACTS);
+			URI uri = new URI(masterTenant.getSubdomain()+DATA_API_BASE_URL + IntegrationConstants.ENDPOINT_VIEW_CONTACTS);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;
 		} catch (Exception e) {
@@ -288,8 +306,13 @@ public class P21OrderServiceImpl implements P21OrderService {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter
 					+ "&$top=1&$orderby=order_date";
+			
 
-			URI uri = new URI(DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
+			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+
+			URI uri = new URI(masterTenant.getSubdomain()+DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			logger.info("Filtering orders with order_date greater than or equal to: {}", localDate);
 			logger.info("Current date: {}", LocalDate.now());

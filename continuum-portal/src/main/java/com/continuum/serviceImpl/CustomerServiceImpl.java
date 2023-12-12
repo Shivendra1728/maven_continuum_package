@@ -5,6 +5,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -16,13 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.apache.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.service.CustomerService;
 import com.continuum.tenant.repos.entity.Customer;
 import com.continuum.tenant.repos.entity.Role;
@@ -70,6 +74,12 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Value(IntegrationConstants.ERP_DATA_API_ORDER_VIEW)
 	String DATA_API_ORDER_VIEW;
+	
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
+
+	@Autowired
+	HttpServletRequest httpServletRequest;
 
 	LocalDate localDate;
 
@@ -138,7 +148,7 @@ public class CustomerServiceImpl implements CustomerService {
 		logger.info("Order Search URI:" + fullURI);
 		HttpGet request = new HttpGet(fullURI);
 
-		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken());
+		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
 		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
 		HttpResponse response = httpClient.execute(request);
@@ -156,6 +166,12 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	private URI prepareOrderURI(String email) {
+		
+		
+
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
 		try {
 			String filter = "contact_email_address eq '" + email + "'";
@@ -163,7 +179,7 @@ public class CustomerServiceImpl implements CustomerService {
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter
 					+ "&$top=1&$orderby=order_date";
 
-			URI uri = new URI(DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
+			URI uri = new URI(masterTenant.getSubdomain()+DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			logger.info("Filtering orders with order_date greater than or equal to: {}", localDate);
 			logger.info("Current date: {}", LocalDate.now());

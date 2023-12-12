@@ -18,6 +18,9 @@ import org.springframework.web.filter.CorsFilter;
 import com.continuum.multitenant.mastertenant.config.MasterDatabaseConfig;
 import com.continuum.multitenant.tenant.config.DataSourceBasedMultiTenantConnectionProviderImpl;
 import com.continuum.multitenant.tenant.config.TenantDatabaseConfig;
+import com.continuum.serviceImpl.IntegrationConstantsProvider;
+import com.di.integration.config.TenantInfoHolderContext;
+import com.di.integration.p21.service.TenantInfoProviderService;
 
 @Configuration
 //@EntityScan(basePackages = {"com.continuum.repos.entity"}) 
@@ -26,6 +29,11 @@ import com.continuum.multitenant.tenant.config.TenantDatabaseConfig;
 //@EnableAsync
 //@Import({MasterDatabaseConfig.class,TenantDatabaseConfig.class,DataSourceBasedMultiTenantConnectionProviderImpl.class})
 public class ContinuumConfig {
+	
+	@Bean
+	public TenantInfoProviderService tenantInfoProvider() {
+		return new IntegrationConstantsProvider();
+	}
 
 	@Bean
 	public ModelMapper modelMapper() {

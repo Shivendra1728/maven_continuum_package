@@ -19,6 +19,6 @@ public class P21DocumentController {
 
 	@PostMapping("/link")
 	public void linkInvoice(@RequestBody DocumentLinkDTO documentLinkDTO) throws URISyntaxException, Exception {
-		documentService.linkDocument(documentLinkDTO);
+		documentService.linkDocument(documentLinkDTO,null);
 	}
 }

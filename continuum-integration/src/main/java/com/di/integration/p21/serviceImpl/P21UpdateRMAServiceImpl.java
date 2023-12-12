@@ -1,8 +1,6 @@
 package com.di.integration.p21.serviceImpl;
 
-import java.math.BigDecimal;
-import java.net.URI;
-import java.util.Collections;
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,14 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.di.commons.helper.OrderSearchParameters;
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21UpdateRMAService;
 
@@ -35,20 +32,31 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
 	
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
+
+	@Autowired
+	HttpServletRequest httpServletRequest;
+
 	@Override
 	public String updateRMARestocking(Integer rmaNumber, Integer poNumber, Double totalRestocking) throws Exception {
 		
+
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+		
 		totalRestocking = -totalRestocking;
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(p21TokenServiceImpl.getToken());
+		headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
 		headers.setContentType(MediaType.APPLICATION_XML);
 		
 		String updateRestockingXml = getXml(rmaNumber, poNumber, totalRestocking);
 		HttpEntity<String> requestEntity = new HttpEntity<>(updateRestockingXml, headers);
 		
-		logger.info("Order Search URI:" + RMA_UPDATE_RESTOCKING_API);
+		logger.info("Order Search URI:" +masterTenant.getSubdomain()+ RMA_UPDATE_RESTOCKING_API);
 		
-		ResponseEntity<String> responseEntity = restTemplate.postForEntity(RMA_UPDATE_RESTOCKING_API, requestEntity, String.class);
+		ResponseEntity<String> responseEntity = restTemplate.postForEntity(masterTenant.getSubdomain()+RMA_UPDATE_RESTOCKING_API, requestEntity, String.class);
 
 		return responseEntity.getBody();
 		

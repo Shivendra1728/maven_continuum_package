@@ -46,5 +46,13 @@ public class MasterTenant implements Serializable {
     @Size(max = 10)
     @Column(name = "status",nullable = false)
     private String status;
+    
+    @Column(name="subdomain")
+    private String subdomain;
 
+    @Column(name="domain_username")
+    private String domainUsername;
+    
+    @Column(name="domain_password")
+    private String domainPassword;
 }

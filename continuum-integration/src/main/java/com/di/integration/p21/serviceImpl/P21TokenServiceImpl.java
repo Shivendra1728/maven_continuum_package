@@ -21,11 +21,15 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
+import com.di.integration.config.TenantInfoHolderContext;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21TokenSerivce;
 
@@ -33,34 +37,50 @@ import com.di.integration.p21.service.P21TokenSerivce;
 public class P21TokenServiceImpl implements P21TokenSerivce {
 
 	private static final Logger logger = LoggerFactory.getLogger(P21TokenServiceImpl.class);
-
-	@Value(IntegrationConstants.ERP_USERNAME)
-	String USERNAME;
-
-	@Value(IntegrationConstants.ERP_PASSWORD)
-	String PASSWORD;
+//
+//	@Autowired
+//	TenantInfoHolderContext tenantInfoHolderContext;
 
 	@Value(IntegrationConstants.ERP_TOKEN_ENDPOINT)
-	String TOKEN_ENDPOINT;
+	private String TOKEN_ENDPOINT;
+
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
+
+	@Autowired
+	HttpServletRequest httpServletRequest;
 
 	@Override
 	// @Cacheable(value = "accessTokenCache", key = "#accessToken")
-	public String getToken() throws Exception {
+	public String getToken(MasterTenant masterTenantObject) throws Exception {
+
 		String accessToken = getAccessTokenFromCookie();
-//		HttpResponse accessToken=null;
 		logger.info("getAccessTokenFromCookie::" + accessToken);
 		if (accessToken == null) {
 			CloseableHttpClient httpClient = HttpClients.custom()
-                    .setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-                    .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
-                    .build();
+					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
 			
-			URIBuilder uriBuilder = new URIBuilder(TOKEN_ENDPOINT);
-			uriBuilder.addParameter("username", USERNAME);
-			uriBuilder.addParameter("password", PASSWORD);
-			
-            HttpPost request = new HttpPost(uriBuilder.build());
-			
+
+			MasterTenant masterTenant;
+
+			if (masterTenantObject == null) {
+			    String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			    masterTenant = masterTenantRepository.findByDbName(tenantId);
+			} else {
+			    masterTenant = masterTenantObject;
+			}
+		
+			URIBuilder uriBuilder = new URIBuilder(masterTenant.getSubdomain() + TOKEN_ENDPOINT);
+			logger.info(uriBuilder.toString());
+			uriBuilder.addParameter("username", masterTenant.getDomainUsername());
+			uriBuilder.addParameter("password", masterTenant.getDomainPassword());
+			HttpPost request = new HttpPost(uriBuilder.build());
+			logger.info("Subdomain: " + masterTenant.getSubdomain());
+			logger.info("Username: " + masterTenant.getDomainUsername());
+			logger.info("Password: " + masterTenant.getDomainPassword());
+
 			// Set request headers
 			request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
@@ -70,6 +90,7 @@ public class P21TokenServiceImpl implements P21TokenSerivce {
 			return EntityUtils.toString(entity);
 		}
 		return accessToken;
+
 	}
 
 	private String getAccessTokenFromCookie() {

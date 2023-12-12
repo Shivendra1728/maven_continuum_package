@@ -33,7 +33,6 @@ import com.continuum.multitenant.security.UserTenantInformation;
 import com.continuum.multitenant.util.JwtTokenUtil;
 import com.continuum.serviceImpl.ReturnOrderServiceImpl;
 import com.continuum.tenant.repos.entity.Customer;
-import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.CustomerRepository;
 import com.continuum.tenant.repos.repositories.RolesRepository;
@@ -41,10 +40,18 @@ import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.AuthResponse;
 import com.di.commons.dto.UserLoginDTO;
 import com.di.commons.helper.DBContextHolder;
+import com.di.integration.config.TenantInfoHolder;
+import com.di.integration.config.TenantInfoHolderContext;
+import com.di.integration.p21.service.TenantInfoProviderService;
+import com.di.integration.p21.service.TenantInfoService;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author RK
  */
+
+@Slf4j
 @RestController
 public class AuthenticationController implements Serializable {
 
@@ -69,6 +76,21 @@ public class AuthenticationController implements Serializable {
 	CustomerRepository customerRepository;
 	@Autowired
 	ReturnOrderServiceImpl returnOrderServiceImpl;
+	
+	@Autowired
+	private TenantInfoProviderService tenantInfoProvider;
+	
+	@Autowired
+    private TenantInfoService tenantInfoService;
+	
+
+//    @Autowired
+//    private TenantInfoHolderContext tenantInfoHolderContext;
+
+//	@Autowired
+//	private TenantInfoHolder tenantInfoHolder;
+
+	public static String domain = "";
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public ResponseEntity<?> userLogin(@RequestBody @NotNull UserLoginDTO userLoginDTO, HttpServletRequest request,
@@ -84,6 +106,34 @@ public class AuthenticationController implements Serializable {
 		if (null == masterTenant || masterTenant.getStatus().toUpperCase().equals(UserStatus.INACTIVE)) {
 			throw new RuntimeException("Please contact service provider.");
 		}
+
+		domain = masterTenant.getSubdomain();
+
+//		IntegrationConstants.DomainUsername = masterTenant.getDomainUsername();
+//		
+//		IntegrationConstants.DomainPassword = masterTenant.getDomainPassword();
+				
+		
+//		httpSession.setAttribute("subdomain", masterTenant.getSubdomain());
+//		httpSession.setAttribute("domainUsername", masterTenant.getDomainUsername());
+//		httpSession.setAttribute("domainPassword", masterTenant.getDomainPassword());	
+		
+		 TenantInfoHolder tenantInfoHolder = new TenantInfoHolder();
+	        tenantInfoHolder.setDomain(masterTenant.getSubdomain());
+	        tenantInfoHolder.setDomainUsername(masterTenant.getDomainUsername());
+	        tenantInfoHolder.setDomainPassword(masterTenant.getDomainPassword());
+
+	        // Set in ThreadLocal
+	        TenantInfoHolderContext.setCurrentTenantInfo(tenantInfoHolder);
+	                
+	        log.info("Subdomain : - "+ TenantInfoHolderContext.getCurrentTenantInfo().getDomain());
+	//TenantInfoHolderContext.setCurrentTenantInfo(tenantInfoHolder);		
+
+//		log.info(tenantInfoHolder.getDomainUsername());
+//
+//		tenantInfoProvider.updateTenantInfo(tenantInfoHolder.getDomain(), tenantInfoHolder.getDomainUsername(),
+//				tenantInfoHolder.getDomainPassword());
+
 		// Entry Client Wise value dbName store into bean.
 		loadCurrentDatabaseInstance(masterTenant.getDbName(), userLoginDTO.getUserName());
 		final Authentication authentication = authenticationManager.authenticate(
@@ -93,11 +143,11 @@ public class AuthenticationController implements Serializable {
 		final String token = jwtTokenUtil.generateToken(userDetails.getUsername(), tenentId);
 		User user = userRepository.findByUserName(userDetails.getUsername());
 		String rmaQualifier = returnOrderServiceImpl.getRmaaQualifier();
-		
+
 		if (!user.getStatus()) {
 			throw new RuntimeException("User account is inactive.");
 		}
-		
+
 		String name = user.getFirstName() + " " + user.getLastName();
 		long userId = user.getId();
 
@@ -128,7 +178,7 @@ public class AuthenticationController implements Serializable {
 		// Map the value into applicationScope bean
 		setMetaDataAfterLogin();
 		return ResponseEntity.ok(new AuthResponse(userDetails.getUsername(), name, token, user.getRole(), userId,
-				user.getCustomer().getCustomerId(), jwtTokenUtil.getExpirationDateFromToken(token),rmaQualifier));
+				user.getCustomer().getCustomerId(), jwtTokenUtil.getExpirationDateFromToken(token), rmaQualifier));
 	}
 
 	private void loadCurrentDatabaseInstance(String databaseName, String userName) {

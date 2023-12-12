@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -24,13 +25,17 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.di.commons.dto.DocumentLinkDTO;
 import com.di.commons.helper.DocumentLinkHelper;
 import com.di.integration.constants.IntegrationConstants;
@@ -65,30 +70,55 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 	String ORDER_FORMAT;
 
 	@Autowired
+	MasterTenantRepository masterTenantRepository;
+
+	@Autowired
+	HttpServletRequest httpServletRequest;
+
+	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
 
 	@Override
-	public boolean linkDocument(DocumentLinkDTO documentLinkDTO) throws Exception {
+	public boolean linkDocument(DocumentLinkDTO documentLinkDTO,@RequestParam(required = false) MasterTenant masterTenantObject) throws Exception {
 		boolean b = false;
+		
+		// Assuming masterTenantRepository is an autowired bean
 
-		URI sessionEnd = new URI("https://65.154.203.155:8443" + "/uiserver0/ui/common/v1/sessions/");
+		MasterTenant masterTenant;
+
+		if (masterTenantObject == null) {
+		    String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+		    masterTenant = masterTenantRepository.findByDbName(tenantId);
+
+		    if (masterTenant == null) {
+		        // Handle the case where the tenant is not found in the database
+		        // You might want to throw an exception or handle it according to your application's requirements
+		    }
+		} else {
+		    masterTenant = masterTenantObject;
+		}
+
+		// Now you can use the masterTenant object in your logic
+
+
+		URI sessionEnd = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 		URI sessionEndFullURI = sessionEnd.resolve(sessionEnd.getRawPath());
 
-		URI sessionCreate = new URI("https://65.154.203.155:8443" + "/uiserver0/ui/common/v1/sessions/");
+		URI sessionCreate = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 		URI sessionCreatefullURI = sessionCreate.resolve(sessionCreate.getRawPath());
 
-		URI openWindow = new URI("https://65.154.203.155:8443" + "/uiserver0/ui/full/v1/window/");
+		URI openWindow = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/");
 		URI openWindowfullURI = openWindow.resolve(openWindow.getRawPath());
 
-		URI windowMetaData = new URI("https://65.154.203.155:8443" + "/uiserver0/ui/full/v1/transaction/metadata/RMA");
+		URI windowMetaData = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/transaction/metadata/RMA");
 		URI windowMetaDatafullURI = windowMetaData.resolve(windowMetaData.getRawPath());
 
 		URI windowList = new URI(
-				"https://65.154.203.155:8443" + "/uiserver0/ui/full/v1/transaction/services?type=Window");
+				masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/transaction/services?type=Window");
 		URI windowListfullURI = windowList.resolve(windowList.getRawPath());
 
 		System.out.println(windowListfullURI.toString());
-		String token = p21TokenServiceImpl.getToken();
+		String token = p21TokenServiceImpl.getToken(masterTenant);
 		logger.info("#### TOKEN #### {}", token);
 		try {
 
@@ -156,7 +186,8 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 			String changeDataForAFieldUri = String.format(
-					"https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/changedata?datawindowName=%s&fieldName=%s",
+					masterTenant.getSubdomain()
+							+ "/uiserver0/ui/full/v1/window/%s/elements/changedata?datawindowName=%s&fieldName=%s",
 					windowId, "order", "order_no");
 			URI changeDataForAFieldFullURI = new URIBuilder(changeDataForAFieldUri).build();
 
@@ -178,8 +209,8 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 			String selectPagOfWindowURI = String.format(
-					"https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/select?pageName=%s", windowId,
-					"DOCUMENT_LINK_DETAIL");
+					masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/%s/elements/select?pageName=%s",
+					windowId, "DOCUMENT_LINK_DETAIL");
 			URI selectPagOfWindowFullURI = new URIBuilder(selectPagOfWindowURI).build();
 
 			HttpPost selectPagOfWindowRequest = new HttpPost(selectPagOfWindowFullURI);
@@ -202,7 +233,7 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 				String runToolOnWindowURI = String.format(
-						"https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/tools/run", windowId);
+						masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/%s/elements/tools/run", windowId);
 				URIBuilder uriBuilder = new URIBuilder(runToolOnWindowURI)
 						.addParameter("dwName", "document_link_detail_detail").addParameter("toolName", "m_addlink")
 						.addParameter("dwElementName", "document_link_detail_detail").addParameter("row", "1");
@@ -242,7 +273,8 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-			String changeDataForALinkNameFieldURI = "https://65.154.203.155:8443/uiserver0/ui/full/v1/window/{windowId}/elements/changedata?datawindowName={_dw_link}&fieldName={link_name}";
+			String changeDataForALinkNameFieldURI = masterTenant.getSubdomain()
+					+ "/uiserver0/ui/full/v1/window/{windowId}/elements/changedata?datawindowName={_dw_link}&fieldName={link_name}";
 
 			// Use URLEncoder to encode placeholders
 			String encodedUri = changeDataForALinkNameFieldURI
@@ -276,7 +308,8 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-			String changeDataForALinkPathFieldURI = "https://65.154.203.155:8443/uiserver0/ui/full/v1/window/{windowId}/elements/changedata?datawindowName={_dw_link}&fieldName={link_path}";
+			String changeDataForALinkPathFieldURI = masterTenant.getSubdomain()
+					+ "/uiserver0/ui/full/v1/window/{windowId}/elements/changedata?datawindowName={_dw_link}&fieldName={link_path}";
 			changeDataForALinkPathFieldURI = changeDataForALinkPathFieldURI
 					.replace("{windowId}", URLEncoder.encode(childWindowId, StandardCharsets.UTF_8))
 					.replace("{_dw_link}", URLEncoder.encode("_dw_link", StandardCharsets.UTF_8))
@@ -307,7 +340,8 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-				String saveWindowURI = "https://65.154.203.155:8443/uiserver0/ui/full/v1/window/{childWindowId}/save";
+				String saveWindowURI = masterTenant.getSubdomain()
+						+ "/uiserver0/ui/full/v1/window/{childWindowId}/save";
 				saveWindowURI = saveWindowURI.replace("{childWindowId}",
 						URLEncoder.encode(childWindowId, StandardCharsets.UTF_8));
 
@@ -333,7 +367,7 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-			String pressOkURI = "https://65.154.203.155:8443/uiserver0/ui/full/v1/window/{windowId}/tools/cb_ok";
+			String pressOkURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/{windowId}/tools/cb_ok";
 			pressOkURI = pressOkURI.replace("{windowId}", URLEncoder.encode(childWindowId, StandardCharsets.UTF_8));
 
 			HttpPut pressOkRequest = new HttpPut(pressOkURI);
@@ -356,7 +390,7 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-				String saveWindowURI = "https://65.154.203.155:8443/uiserver0/ui/full/v1/window/{windowId}/save";
+				String saveWindowURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/{windowId}/save";
 				saveWindowURI = saveWindowURI.replace("{windowId}",
 						URLEncoder.encode(windowId, StandardCharsets.UTF_8));
 
@@ -383,7 +417,7 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-				String saveWindowURI = "https://65.154.203.155:8443/uiserver0/ui/full/v1/window/{windowId}";
+				String saveWindowURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/{windowId}";
 				saveWindowURI = saveWindowURI.replace("{windowId}",
 						URLEncoder.encode(windowId, StandardCharsets.UTF_8));
 

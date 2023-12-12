@@ -46,8 +46,9 @@ public class MasterDatabaseConfig {
     public MasterDatabaseConfig(MasterDatabaseConfigProperties masterDbProperties) {
         this.masterDbProperties = masterDbProperties;
     }
+   
+    
 
-    //Create Master Data Source using master properties and also configure HikariCP
     @Bean(name = "masterDataSource")
     public DataSource masterDataSource() {
         HikariDataSource hikariDataSource = new HikariDataSource();

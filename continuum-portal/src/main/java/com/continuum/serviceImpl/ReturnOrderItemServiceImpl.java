@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import javax.mail.MessagingException;
 import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.continuum.constants.PortalConstants;
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.service.AuditLogService;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
@@ -47,6 +50,7 @@ import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
 public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	@Autowired
 	ReturnOrderItemRepository returnOrderItemRepository;
+
 	@Autowired
 	UserRepository userRepository;
 
@@ -96,6 +100,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	@Autowired
 	AuditLogService auditLogService;
 
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
+
+	@Autowired
+	HttpServletRequest httpServletRequest;
+
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
 
@@ -126,7 +136,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			}
 
-			if (updatedItem.getAmount() != null || updatedItem.getAmountNote()!=null) {
+			if (updatedItem.getAmount() != null || updatedItem.getAmountNote() != null) {
 				existingItem.setAmount(updatedItem.getAmount());
 				existingItem.setAmountNote(updatedItem.getAmountNote());
 
@@ -137,9 +147,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnRoom.setAssignTo(null);
 				returnRoomRepository.save(returnRoom);
 				returnOrderItemRepository.save(existingItem);
-				
-				auditLog.setDescription("Amount has been updated of item - " + existingItem.getItemName()
-						+ " by " + updateBy + ".");
+
+				auditLog.setDescription(
+						"Amount has been updated of item - " + existingItem.getItemName() + " by " + updateBy + ".");
 				auditLog.setHighlight("Amount");
 				auditLog.setTitle("Update Activity");
 				auditLog.setStatus("Line Items");
@@ -269,6 +279,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 
 				}
+				
+
+				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+				MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
 				StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
 
@@ -301,12 +316,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 
 					// Save in ERP
-					String apiUrl = "https://apiplay.labdepotinc.com/api/sales/orders/"
+					String apiUrl = masterTenant.getSubdomain() + "/api/sales/orders/"
 							+ returnOrderEntity.getRmaOrderNo() + "/approve";
 					RestTemplate restTemplate = new RestTemplate();
 					HttpHeaders headers = new HttpHeaders();
 					try {
-						headers.setBearerAuth(p21TokenServiceImpl.getToken());
+						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -399,7 +414,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 
 					// save in ERP while rma denied
-					String apiUrl = "https://apiplay.labdepotinc.com/uiserver0/api/v2/transaction";
+					String apiUrl = masterTenant.getSubdomain() + "/uiserver0/api/v2/transaction";
 					String xmlData = "<TransactionSet xmlns=\"http://schemas.datacontract.org/2004/07/P21.Transactions.Model.V2\">\r\n"
 							+ "    <IgnoreDisabled>true</IgnoreDisabled>\r\n" + "    <Name>RMA</Name>\r\n"
 							+ "    <Transactions>\r\n" + "        <Transaction>\r\n" + "            <DataElements>\r\n"
@@ -425,7 +440,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					HttpHeaders headers = new HttpHeaders();
 					try {
 						headers.setContentType(MediaType.APPLICATION_XML);
-						headers.setBearerAuth(p21TokenServiceImpl.getToken());
+						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -799,16 +814,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	public List<QuestionConfig> getQuestions() {
 		return questionConfigRepository.findAll();
 	}
-	
+
 	@Override
-	public String deleteItem(ReturnOrderItem orderItem, String updateBy , String rmaNo) {
+	public String deleteItem(ReturnOrderItem orderItem, String updateBy, String rmaNo) {
 		Optional<ReturnOrderItem> returnOrderItem = returnOrderItemRepository.findById(orderItem.getId());
 		ReturnOrderItem item = returnOrderItem.get();
-		if(item !=null) {
+		if (item != null) {
 			item.setIsActive(false);
 			item.setDeleteNote(orderItem.getDeleteNote());
-			returnOrderItemRepository.save(item);	
-			
+			returnOrderItemRepository.save(item);
+
 			ReturnRoom returnRoom = new ReturnRoom();
 			returnRoom.setName(updateBy);
 			returnRoom.setMessage(orderItem.getDeleteNote());
@@ -818,13 +833,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
-			auditLog.setDescription("Item- "+item.getItemName()+" has been deleted by "+updateBy+".;"+"Note : "+orderItem.getDeleteNote()+".");
+			auditLog.setDescription("Item- " + item.getItemName() + " has been deleted by " + updateBy + ".;"
+					+ "Note : " + orderItem.getDeleteNote() + ".");
 			auditLog.setHighlight("");
 			auditLog.setStatus("List Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
-			
+
 			return "Item Deleted";
 		}
 		return "Item Not found";

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +57,8 @@ public class P21InvoiceLinkTaskScheduler {
 	@Autowired
 	P21DocumentService p21DocumentService;
 
-	@Scheduled(cron = "* */30 * * * *")
+
+	@Scheduled(cron = "*/30 * * * * *")
 	public void runTasks() throws Exception {
 		List<MasterTenant> masterTenants = masterTenantRepo.findAll();
 		if (null == masterTenants) {
@@ -64,12 +67,12 @@ public class P21InvoiceLinkTaskScheduler {
 		}
 		for (MasterTenant masterTenant : masterTenants) {
 			DBContextHolder.setCurrentDb(masterTenant.getDbName());
-			linkInvoice();
+			linkInvoice(masterTenant);
 		}
 
 	}
 
-	public void linkInvoice() throws Exception {
+	public void linkInvoice(MasterTenant masterTenant) throws Exception {
 		logger.info("In  document linking started");
 		List<RmaInvoiceInfo> rma = rmaInvoiceInfoRepository.findAll();
 
@@ -78,7 +81,7 @@ public class P21InvoiceLinkTaskScheduler {
 		for (RmaInvoiceInfo rmaInvoiceInfo : rma) {
 			try {
 				if (!rmaInvoiceInfo.isDocumentLinked() && rmaInvoiceInfo.getRetryCount() < 3) {
-					linkDocuments(rmaInvoiceInfo);
+					linkDocuments(rmaInvoiceInfo,masterTenant);
 					rmaInvoiceInfo.setDocumentLinked(true);
 					Optional<ReturnOrder> roo = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 					if (roo.isPresent()) {
@@ -134,7 +137,7 @@ public class P21InvoiceLinkTaskScheduler {
 		return str != null && !str.trim().isEmpty();
 	}
 
-	private boolean linkDocuments(RmaInvoiceInfo rmaInvoiceInfo) throws Exception {
+	private boolean linkDocuments(RmaInvoiceInfo rmaInvoiceInfo,MasterTenant masterTenant) throws Exception {
 		boolean docLinked = false;
 
 		Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
@@ -157,7 +160,7 @@ public class P21InvoiceLinkTaskScheduler {
 			}
 		}
 		docmentLinkDto.setDocumentLinkHelperList(documentList);
-		p21DocumentService.linkDocument(docmentLinkDto);
+		p21DocumentService.linkDocument(docmentLinkDto,masterTenant);
 
 		docLinked = true;
 		return docLinked;

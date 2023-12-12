@@ -7,6 +7,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -32,6 +34,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.di.commons.dto.StoreDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21InvoiceMapper;
@@ -82,6 +86,13 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 	@Autowired
 	P21OrderMapper p21OrderMapper;
+	
+
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
+
+	@Autowired
+	HttpServletRequest httpServletRequest;
 
 	@Autowired
 	StoreDTO storeDTO;
@@ -97,7 +108,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 		HttpGet request = new HttpGet(fullURI);
 
-		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken());
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
 
 		HttpResponse response = httpClient.execute(request);
 		HttpEntity entity = response.getEntity();
@@ -170,25 +181,30 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 	@Override
 	public boolean linkInvoice(String rmaNo) throws Exception {
 		boolean b = false;
+		
 
-		URI sessionEnd = new URI("https://65.154.203.155:8443" + "/uiserver0/ui/common/v1/sessions/");
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+
+		URI sessionEnd = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 		URI sessionEndFullURI = sessionEnd.resolve(sessionEnd.getRawPath());
 
-		URI sessionCreate = new URI("https://65.154.203.155:8443" + "/uiserver0/ui/common/v1/sessions/");
+		URI sessionCreate = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 		URI sessionCreatefullURI = sessionCreate.resolve(sessionCreate.getRawPath());
 
-		URI openWindow = new URI("https://65.154.203.155:8443" + "/uiserver0/ui/full/v1/window/");
+		URI openWindow = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/");
 		URI openWindowfullURI = openWindow.resolve(openWindow.getRawPath());
 
-		URI windowMetaData = new URI("https://65.154.203.155:8443" + "/uiserver0/ui/full/v1/transaction/metadata/RMA");
+		URI windowMetaData = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/transaction/metadata/RMA");
 		URI windowMetaDatafullURI = windowMetaData.resolve(windowMetaData.getRawPath());
 
 		URI windowList = new URI(
-				"https://65.154.203.155:8443" + "/uiserver0/ui/full/v1/transaction/services?type=Window");
+				masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/transaction/services?type=Window");
 		URI windowListfullURI = windowList.resolve(windowList.getRawPath());
 
 		System.out.println(windowListfullURI.toString());
-		String token = p21TokenServiceImpl.getToken();
+		String token = p21TokenServiceImpl.getToken(masterTenant);
 		logger.info("#### TOKEN #### {}", token);
 		try {
 
@@ -257,6 +273,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		windowMetaDataRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 		windowMetaDataRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 		windowMetaDataRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		
 		// Execute the request
 		HttpResponse windowMetaDataResponse = httpClient2.execute(windowMetaDataRequest);
 		HttpEntity entity1 = windowMetaDataResponse.getEntity();
@@ -269,7 +286,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-		String windowListURI = "https://65.154.203.155:8443/uiserver0/ui/full/v1/transaction/services?type=Window";
+		String windowListURI = ""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/transaction/services?type=Window";
 //		URI windowListfullURi = new URIBuilder(windowListURI).addParameter("Window", "Window").build();
 		URIBuilder uriBuilder = new URIBuilder(windowListURI);
 
@@ -302,7 +319,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 		String changeDataForAFieldUri = String.format(
-				"https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/changedata?datawindowName=%s&fieldName=%s",
+				""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/changedata?datawindowName=%s&fieldName=%s",
 				windowId, "order", "order_no");
 
 		URI changeDataForAFieldFullURI = new URIBuilder(changeDataForAFieldUri).build();
@@ -328,7 +345,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		        .setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 		        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-		String selectPagOfWindowURI = "https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/select?pageName=%s";
+		String selectPagOfWindowURI = ""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/select?pageName=%s";
 		URI selectPagOfWindowFullURI = new URIBuilder(String.format(selectPagOfWindowURI, URLEncoder.encode(windowId, StandardCharsets.UTF_8.toString()), "tabpage_saleshistory"))
 		        .build();
 
@@ -349,10 +366,10 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		}
 
 		URI activeWindowDefinition = new URI(
-				"https://65.154.203.155:8443" + "/uiserver0/ui/full/v1/window/" + windowId + "/active");
+				masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId + "/active");
 		URI activeWindowDefinitionfullURI = activeWindowDefinition.resolve(activeWindowDefinition.getRawPath());
 
-		URI getActiveWindows = new URI("https://65.154.203.155:8443" + "/uiserver0/ui/common/v1/sessions/window/all");
+		URI getActiveWindows = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/window/all");
 		URI getActiveWindowsfullURI = getActiveWindows.resolve(getActiveWindows.getRawPath());
 
 		logger.info("getToolsOfWindowTab:");
@@ -362,7 +379,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 		String getToolsOfWindowTabURI = 
-				"https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s";
+				""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s";
 		URI getToolsOfWindowTabFullURI = new URIBuilder(String.format(getToolsOfWindowTabURI, URLEncoder.encode(windowId, StandardCharsets.UTF_8.toString()), "tabpage_saleshistory"))
 		        .build();		
 		HttpGet getToolsOfWindowTabRequest = new HttpGet(getToolsOfWindowTabFullURI);
@@ -383,7 +400,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 		String toolsOfWindowFieldURI = String.format(
-				"https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s", windowId,
+				""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s", windowId,
 				"tabpage_saleshistory");
 		URI toolsOfWindowFieldFullURI = new URIBuilder(toolsOfWindowFieldURI).build();
 
@@ -405,7 +422,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 		String currentRowForDataWindowURI = String.format(
-				"https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/activerow?datawindowName=%s",
+				""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/activerow?datawindowName=%s",
 				windowId, "tabpage_saleshistory");
 		URI currentRowForDataWindowFullURI = new URIBuilder(currentRowForDataWindowURI).build();
 
@@ -463,7 +480,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 			String setFocusOnSpecifiedFieldURI = String.format(
-					"https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/focus?datawindowName=%s&fieldName=%s&row=%s",
+					""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/focus?datawindowName=%s&fieldName=%s&row=%s",
 					windowId, "tabpage_saleshistory", "invoice_no", "3");
 			URI setFocusOnSpecifiedFieldFullURI = new URIBuilder(setFocusOnSpecifiedFieldURI).build();
 			HttpPost setFocusOnSpecifiedFieldRequest = new HttpPost(setFocusOnSpecifiedFieldFullURI);
@@ -489,7 +506,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 			String runToolOnWindowURI = String.format(
-					"https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/elements/tools/run?dwName=%s&toolName=%s&dwElementName=%s&row=%s",
+					""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/elements/tools/run?dwName=%s&toolName=%s&dwElementName=%s&row=%s",
 					windowId, "tabpage_saleshistory", "m_linktothisrmaline", "tabpage_saleshistory", "3");
 			URI runToolOnWindowFullURI = new URIBuilder(runToolOnWindowURI).build();
 
@@ -513,7 +530,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
-			String saveWindowURI = String.format("https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/save",
+			String saveWindowURI = String.format(""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/save",
 					windowId);
 			URI saveWindowFullURI = new URIBuilder(saveWindowURI).build();
 
@@ -539,7 +556,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 			String performWindowActionURI = String
-					.format("https://65.154.203.155:8443/uiserver0/ui/full/v1/window/%s/tools/cb_1", windowId);
+					.format(""+masterTenant.getSubdomain()+"/uiserver0/ui/full/v1/window/%s/tools/cb_1", windowId);
 			URI performWindowActionFullURI = new URIBuilder(performWindowActionURI).build();
 
 			HttpPost performWindowActionRequest = new HttpPost(performWindowActionFullURI);
