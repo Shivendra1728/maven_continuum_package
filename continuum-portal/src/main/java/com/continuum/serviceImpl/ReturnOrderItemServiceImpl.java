@@ -24,6 +24,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -65,6 +67,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Service
 public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
+	private static final Logger logger = LoggerFactory.getLogger(ReturnOrderItemServiceImpl.class);
+	
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	@Autowired
 	ReturnOrderItemRepository returnOrderItemRepository;
@@ -471,7 +475,28 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						e.printStackTrace();
 					}
 
-					sendRestockingFeeToERP(rmaNo);
+//					sendRestockingFeeToERP(rmaNo);
+					try {
+						String recieptNumber =processRMAAndGetReceiptNumber(Integer.parseInt(rmaNo));
+						System.err.println("Reciept : " +recieptNumber);
+						auditLog.setTitle("Inbox");
+						auditLog.setDescription(recieptNumber);
+						auditLog.setHighlight("");
+						auditLog.setStatus("RMA Header");
+						auditLog.setRmaNo(rmaNo);
+						auditLog.setUserName(updateBy);
+						auditLogRepository.save(auditLog);
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+						auditLog.setTitle("Inbox");
+						auditLog.setDescription("RMA Reciept not created");
+						auditLog.setHighlight("");
+						auditLog.setStatus("RMA Header");
+						auditLog.setRmaNo(rmaNo);
+						auditLog.setUserName(updateBy);
+						auditLogRepository.save(auditLog);
+					}
 
 				} else if (statusConfig.getStatusMap()
 						.equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {

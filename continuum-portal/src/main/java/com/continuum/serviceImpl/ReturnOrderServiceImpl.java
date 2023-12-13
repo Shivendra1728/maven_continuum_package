@@ -127,15 +127,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String Status = p21RMARespo.getStatus();
 		if (Status.equals(PortalConstants.SUCCESS)) {
 			returnOrderDTO.setStatus(PortalConstants.RETURN_REQUESTED);
-			RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
-
-			rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
-			rmaInvoiceInfo.setInvoiceLinked(false);
-			rmaInvoiceInfo.setDescription("none");
-			rmaInvoiceInfo.setRetryCount(0);
-			rmaInvoiceInfo.setDocumentLinked(false);
-			rmaInvoiceInfo.setReturnOrder(returnOrder);
-			rmaInvoiceInfoRepository.save(rmaInvoiceInfo);
 			logger.info("Setting status to:: '{}'", PortalConstants.RETURN_REQUESTED);
 
 		} else {
@@ -164,7 +155,15 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		returnOrderRepository.save(returnOrder);
+		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
 
+		rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
+		rmaInvoiceInfo.setInvoiceLinked(false);
+		rmaInvoiceInfo.setDescription("none");
+		rmaInvoiceInfo.setRetryCount(0);
+		rmaInvoiceInfo.setDocumentLinked(false);
+		rmaInvoiceInfo.setReturnOrder(returnOrder);
+		rmaInvoiceInfoRepository.save(rmaInvoiceInfo);
 
 		// audit log
 
