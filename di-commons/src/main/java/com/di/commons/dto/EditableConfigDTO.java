@@ -25,5 +25,6 @@ public class EditableConfigDTO {
 	private String trackingCode;
 	private String amountAddition;
 	private String itemDeletion;
+	private String recievedStatus;
 
 }

@@ -388,6 +388,82 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					
 					sendRestockingFeeToERP(rmaNo);
 
+				}else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RECIEVED)) {
+					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
+
+						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Recieved' by " + updateBy
+								+ ". The return is approved. Please proceed with the necessary steps." + "; "
+								+ "Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
+						String title = "Return Order";
+						String highlight = "Recieved";
+						String status = "Inbox";
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+					}
+
+					// Save in ERP
+					String apiUrl = masterTenant.getSubdomain() + "/api/sales/orders/"
+							+ returnOrderEntity.getRmaOrderNo() + "/approve";
+//					RestTemplate restTemplate = new RestTemplate();
+//					HttpHeaders headers = new HttpHeaders();
+//					try {
+//						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//					HttpEntity<String> entity = new HttpEntity<>(headers);
+//					ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PUT, entity,
+//							String.class);
+//
+//					if (response.getStatusCode() == HttpStatus.OK) {
+//						System.out.println("Saving Status Approved In ERP.");
+//					} else {
+//						System.out.println("There was an error while saving status in ERP.");
+//					}
+					try {
+						// Your existing HTTP request code here
+						CloseableHttpClient httpClient = HttpClients.custom()
+								.setSSLContext(
+										SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+								.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+						HttpPut request = new HttpPut(apiUrl);
+						try {
+							String token = p21TokenServiceImpl.getToken(masterTenant);
+							request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+							request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
+						try (CloseableHttpResponse response = httpClient.execute(request)) {
+							String responseBody = EntityUtils.toString(response.getEntity());
+							System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
+							System.out.println("Response Body: " + responseBody);
+						}
+					} catch (IOException | GeneralSecurityException e) {
+						e.printStackTrace();
+					}
+
+					// email
+					String subject = PortalConstants.RMAStatus + returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo();
+					String template = emailTemplateRenderer.getRMA_AUTHORIZED_TEMPLATE();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("RMA_NO", returnOrderEntity.getRmaOrderNo());
+					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+					map.put("CLIENT_PHONE",
+							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+					try {
+						emailSender.sendEmail(recipient, template, subject, map);
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
+					
+					
+					sendRestockingFeeToERP(rmaNo);
+
 				} else if (statusConfig.getStatusMap()
 						.equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
 
