@@ -19,6 +19,6 @@ public class P21InvoiceController {
 
 	@GetMapping("/link")
 	public void linkInvoice(@RequestParam(required = true) String rmaNo) throws URISyntaxException, Exception {
-		invoiceService.linkInvoice(rmaNo);
+		invoiceService.linkInvoice(rmaNo,null);
 	}
 }

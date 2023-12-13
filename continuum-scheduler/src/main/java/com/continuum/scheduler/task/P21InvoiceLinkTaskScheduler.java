@@ -58,7 +58,7 @@ public class P21InvoiceLinkTaskScheduler {
 	P21DocumentService p21DocumentService;
 
 
-	@Scheduled(cron = "* */30 * * * *")
+	@Scheduled(cron = "* */15 * * * *")
 	public void runTasks() throws Exception {
 		List<MasterTenant> masterTenants = masterTenantRepo.findAll();
 		if (null == masterTenants) {
@@ -108,7 +108,7 @@ public class P21InvoiceLinkTaskScheduler {
 			Integer retryCount = rmaInvoiceInfoDTO.getRetryCount();
 			if (retryCount < 3) {
 				logger.info("In  document linking started");
-				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo);
+				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo, masterTenant);
 				if (bln) {
 					Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 

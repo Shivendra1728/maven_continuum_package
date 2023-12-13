@@ -127,7 +127,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String Status = p21RMARespo.getStatus();
 		if (Status.equals(PortalConstants.SUCCESS)) {
 			returnOrderDTO.setStatus(PortalConstants.RETURN_REQUESTED);
-
 			logger.info("Setting status to:: '{}'", PortalConstants.RETURN_REQUESTED);
 
 		} else {
@@ -156,7 +155,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 		returnOrderRepository.save(returnOrder);
-
 		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
 
 		rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
@@ -559,7 +557,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			String rmaOrderNo = rmaInvoiceInfoDTO.getRmaOrderNo();
 			Integer retryCount = rmaInvoiceInfoDTO.getRetryCount();
 			if (retryCount < 3) {
-				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo);
+				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo,null);
 				if (bln) {
 					Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 

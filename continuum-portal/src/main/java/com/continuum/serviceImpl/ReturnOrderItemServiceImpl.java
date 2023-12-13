@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -15,8 +16,10 @@ import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
@@ -56,16 +59,27 @@ import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
 import com.continuum.tenant.repos.repositories.StatusConfigRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ReturnOrderItemDTO;
+import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21UpdateRMAService;
 import com.di.integration.p21.serviceImpl.P21OrderServiceImpl;
 import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
+
 import com.di.integration.p21.serviceImpl.P21UpdateRMAServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+
 @Service
 public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
+	private static final Logger logger = LoggerFactory.getLogger(ReturnOrderItemServiceImpl.class);
+	
+	private final ObjectMapper objectMapper = new ObjectMapper();
 	@Autowired
 	ReturnOrderItemRepository returnOrderItemRepository;
 
@@ -118,6 +132,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	@Autowired
 	AuditLogService auditLogService;
 
+	@Value(IntegrationConstants.ERP_RMA_UPDATE_RESTOCKING_API)
+	private String rmaGetEndPoint;
+
 	@Autowired
 	MasterTenantRepository masterTenantRepository;
 
@@ -150,8 +167,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			String CourierName = existingItem.getCourierName();
 
 			// Update only the fields that are not null in updatedItem
-			if (updatedItem.getProblemDescNote() != null) {
+			if (updatedItem.getProblemDescNote() != null || updatedItem.getProblemDesc() != null) {
 				existingItem.setProblemDescNote(updatedItem.getProblemDescNote());
+				existingItem.setProblemDesc(updatedItem.getProblemDesc());
 				ReturnRoom returnRoom = new ReturnRoom();
 				returnRoom.setName(updateBy);
 				returnRoom.setMessage(updatedItem.getProblemDescNote());
@@ -376,6 +394,103 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
 					}
 
+
+				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RECIEVED)) {
+					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
+
+						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Recieved' by " + updateBy
+								+ ". The return is approved. Please proceed with the necessary steps." + "; "
+								+ "Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
+						String title = "Return Order";
+						String highlight = "Recieved";
+						String status = "Inbox";
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+					}
+
+					// Save in ERP
+					String apiUrl = masterTenant.getSubdomain() + "/api/sales/orders/"
+							+ returnOrderEntity.getRmaOrderNo() + "/approve";
+//					RestTemplate restTemplate = new RestTemplate();
+//					HttpHeaders headers = new HttpHeaders();
+//					try {
+//						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//					HttpEntity<String> entity = new HttpEntity<>(headers);
+//					ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PUT, entity,
+//							String.class);
+//
+//					if (response.getStatusCode() == HttpStatus.OK) {
+//						System.out.println("Saving Status Approved In ERP.");
+//					} else {
+//						System.out.println("There was an error while saving status in ERP.");
+//					}
+					try {
+						// Your existing HTTP request code here
+						CloseableHttpClient httpClient = HttpClients.custom()
+								.setSSLContext(
+										SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+								.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+						HttpPut request = new HttpPut(apiUrl);
+						try {
+							String token = p21TokenServiceImpl.getToken(masterTenant);
+							request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+							request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
+						try (CloseableHttpResponse response = httpClient.execute(request)) {
+							String responseBody = EntityUtils.toString(response.getEntity());
+							System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
+							System.out.println("Response Body: " + responseBody);
+						}
+					} catch (IOException | GeneralSecurityException e) {
+						e.printStackTrace();
+					}
+
+					// email
+					String subject = PortalConstants.RMAStatus + returnOrderServiceImpl.getRmaaQualifier() + " "
+							+ returnOrderEntity.getRmaOrderNo();
+					String template = emailTemplateRenderer.getRMA_AUTHORIZED_TEMPLATE();
+					HashMap<String, String> map = new HashMap<>();
+					map.put("RMA_NO", returnOrderEntity.getRmaOrderNo());
+					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+					map.put("CLIENT_PHONE",
+							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+					try {
+						emailSender.sendEmail(recipient, template, subject, map);
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
+
+//					sendRestockingFeeToERP(rmaNo);
+					try {
+						String recieptNumber =processRMAAndGetReceiptNumber(Integer.parseInt(rmaNo));
+						System.err.println("Reciept : " +recieptNumber);
+						auditLog.setTitle("Inbox");
+						auditLog.setDescription(recieptNumber);
+						auditLog.setHighlight("");
+						auditLog.setStatus("RMA Header");
+						auditLog.setRmaNo(rmaNo);
+						auditLog.setUserName(updateBy);
+						auditLogRepository.save(auditLog);
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+						auditLog.setTitle("Inbox");
+						auditLog.setDescription("RMA Reciept not created");
+						auditLog.setHighlight("");
+						auditLog.setStatus("RMA Header");
+						auditLog.setRmaNo(rmaNo);
+						auditLog.setUserName(updateBy);
+						auditLogRepository.save(auditLog);
+					}
+
 				} else if (statusConfig.getStatusMap()
 						.equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
 
@@ -404,9 +519,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
 						map.put("CLIENT_PHONE",
 								String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
-						
-						//Database name fetching
-						String db_name = httpServletRequest.getHeader("host").split("\\.")[0]+".dev";
+
+						// Database name fetching
+						String db_name = httpServletRequest.getHeader("host").split("\\.")[0] + ".dev";
 						map.put("SUB_DOMAIN", db_name);
 						try {
 							emailSender.sendEmail(recipient, template, subject, map);
@@ -600,21 +715,21 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ "Vendor Message added and Email has been sent to the " + contactEmail);
 				}
 
-					String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier()
-							+ " " + rmaNo;
-					String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
-					HashMap<String, String> map = new HashMap<>();
+				String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier() + " "
+						+ rmaNo;
+				String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
+				HashMap<String, String> map = new HashMap<>();
 
 				map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
-					map.put("RMA_NO", rmaNo);
-					map.put("note", updateNote.getNote());
-					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
-					map.put("CLIENT_PHONE",
-							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
-					try {
-						emailSender.sendEmail(recipient, template2, subject, map);
-					} catch (MessagingException e) {
-						e.printStackTrace();
+				map.put("RMA_NO", rmaNo);
+				map.put("note", updateNote.getNote());
+				map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+				map.put("CLIENT_PHONE",
+						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+				try {
+					emailSender.sendEmail(recipient, template2, subject, map);
+				} catch (MessagingException e) {
+					e.printStackTrace();
 				}
 			} else {
 				if (updateBy.equalsIgnoreCase(user.getFirstName() + " " + user.getLastName())) {
@@ -896,5 +1011,140 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			return "Item Deleted";
 		}
 		return "Item Not found";
+	}
+
+	public String processRMAAndGetReceiptNumber(int rmaNo) throws Exception {
+
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+
+		String rmaDetailsUrl = masterTenant.getSubdomain() + rmaGetEndPoint + "/get";
+		String rmaReceiptUrl = masterTenant.getSubdomain() + rmaGetEndPoint;
+		String accessToken = "Bearer: " + p21TokenServiceImpl.getToken(masterTenant);
+
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+
+			HttpPost httpPost = new HttpPost(rmaDetailsUrl);
+			httpPost.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+			httpPost.setHeader(HttpHeaders.ACCEPT, "application/json");
+			httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
+			String requestBody = constructFirstApiRequestBody(rmaNo);
+			httpPost.setEntity(new StringEntity(requestBody));
+
+			try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+				String responseBody = EntityUtils.toString(response.getEntity());
+
+				JsonNode rootNode = objectMapper.readTree(responseBody);
+
+				String orderNo = rootNode.path("Transactions").get(0).path("DataElements").get(0).path("Rows").get(0)
+						.path("Edits").get(0).path("Value").asText();
+				String rmaExpirationDate = rootNode.path("Transactions").get(0).path("DataElements").get(0).path("Rows")
+						.get(0).path("Edits").get(11).path("Value").asText();
+				String salesLocId = rootNode.path("Transactions").get(0).path("DataElements").get(0).path("Rows").get(0)
+						.path("Edits").get(3).path("Value").asText();
+
+				JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(36).path("Rows");
+				List<String> itemIdsList = new ArrayList<>();
+				for (JsonNode item : itemsNode) {
+					String itemId = item.path("Edits").get(0).path("Value").asText();
+					itemIdsList.add(itemId);
+					System.out.println("Item ID: " + itemId);
+				}
+
+				// Making request body and calling the RMA Receipt Creation API
+
+				String secondApiRequestBody = constructSecondApiRequestBody(orderNo, rmaExpirationDate, salesLocId,
+						itemIdsList);
+
+				HttpPost httpPost1 = new HttpPost(rmaReceiptUrl);
+				httpPost1.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+				httpPost1.setHeader(HttpHeaders.ACCEPT, "application/json");
+				httpPost1.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				httpPost1.setEntity(new StringEntity(secondApiRequestBody));
+				try (CloseableHttpResponse response1 = httpClient.execute(httpPost1)) {
+					String responseBody1 = EntityUtils.toString(response1.getEntity());
+					JsonNode responseNode = objectMapper.readTree(responseBody1);
+
+					int succeededCount = responseNode.path("Summary").path("Succeeded").asInt();
+					if (succeededCount > 0) {
+
+						String receiptNumber = responseNode.path("Results").path("Transactions").get(0)
+								.path("DataElements").get(0).path("Rows").get(0).path("Edits").get(0).path("Value")
+								.asText();
+
+						return "RMA Receipt created successfully. Receipt Number: " + receiptNumber;
+					} else {
+						return "RMA Receipt not generated. No successful transactions.";
+					}
+				}
+
+			}
+		}
+
+	}
+
+	private String constructSecondApiRequestBody(String orderNo, String rmaExpirationDate, String salesLocId,
+			List<String> itemIdsList) {
+
+		ObjectNode rootNode = objectMapper.createObjectNode();
+		rootNode.put("IgnoreDisabled", true);
+		rootNode.put("Name", "RMAReceipt");
+		rootNode.put("UseCodeValues", false);
+
+		ArrayNode transactionsArray = rootNode.putArray("Transactions");
+		ObjectNode transactionObject = transactionsArray.addObject();
+		transactionObject.put("Status", "New");
+
+		ArrayNode dataElementsArray = transactionObject.putArray("DataElements");
+
+		ObjectNode headerForm = dataElementsArray.addObject();
+		headerForm.put("Name", "TABPAGE_1.header");
+		headerForm.put("Type", "Form");
+
+		ArrayNode headerRowsArray = headerForm.putArray("Rows");
+		ObjectNode headerRow = headerRowsArray.addObject();
+		ArrayNode headerEditsArray = headerRow.putArray("Edits");
+
+		addEdit(headerEditsArray, "c_location_id", salesLocId);
+		addEdit(headerEditsArray, "order_no", orderNo);
+		addEdit(headerEditsArray, "confirm_receipt", "OFF");
+		addEdit(headerEditsArray, "front_counter_rma", "ON");
+		addEdit(headerEditsArray, "print_itempackage_labels", "OFF");
+		addEdit(headerEditsArray, "rma_expiration_date", rmaExpirationDate);
+		addEdit(headerEditsArray, "invoice_batch_number", "");
+		addEdit(headerEditsArray, "invoice_edi", "OFF");
+		addEdit(headerEditsArray, "c_invoice_date", "");
+		addEdit(headerEditsArray, "c_inv_period", "");
+		addEdit(headerEditsArray, "c_inv_yr_for_period", "");
+
+		ObjectNode itemsList = dataElementsArray.addObject();
+		itemsList.put("Name", "TABPAGE_17.items");
+		itemsList.put("Type", "List");
+
+		ArrayNode itemsRowsArray = itemsList.putArray("Rows");
+		for (String itemId : itemIdsList) {
+			ObjectNode itemRow = itemsRowsArray.addObject();
+			ArrayNode itemEditsArray = itemRow.putArray("Edits");
+
+			addEdit(itemEditsArray, "oe_order_item_id", itemId);
+			addEdit(itemEditsArray, "c_rma_qty_received", "");
+			addEdit(itemEditsArray, "c_rma_qty_to_return_to_stock", "");
+			addEdit(itemEditsArray, "c_complete", "OFF");
+		}
+		return rootNode.toPrettyString();
+	}
+
+	// Helper methods for making Receipt
+
+	private String constructFirstApiRequestBody(int rmaNo) {
+		return "{ \"ServiceName\":\"RMA\", " + "\"TransactionStates\":[{ \"DataElementName\":\"TABPAGE_1.order\", "
+				+ "\"Keys\":[{ \"Name\":\"order_no\", \"Value\":" + rmaNo + " }] }], " + "\"UseCodeValues\":true }";
+	}
+
+	private void addEdit(ArrayNode editsArray, String name, String value) {
+		ObjectNode editObject = editsArray.addObject();
+		editObject.put("Name", name);
+		editObject.put("Value", value);
 	}
 }
