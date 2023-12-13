@@ -135,8 +135,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			String CourierName = existingItem.getCourierName();
 
 			// Update only the fields that are not null in updatedItem
-			if (updatedItem.getProblemDescNote() != null) {
+			if (updatedItem.getProblemDescNote() != null || updatedItem.getProblemDesc()!=null) {
 				existingItem.setProblemDescNote(updatedItem.getProblemDescNote());
+				existingItem.setProblemDesc(updatedItem.getProblemDesc());
 				ReturnRoom returnRoom = new ReturnRoom();
 				returnRoom.setName(updateBy);
 				returnRoom.setMessage(updatedItem.getProblemDescNote());
