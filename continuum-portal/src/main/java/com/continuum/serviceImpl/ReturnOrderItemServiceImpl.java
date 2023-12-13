@@ -21,6 +21,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -37,6 +39,7 @@ import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.service.AuditLogService;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
+import com.continuum.tenant.repos.entity.EditableConfig;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.ReturnOrder;
@@ -45,6 +48,7 @@ import com.continuum.tenant.repos.entity.ReturnRoom;
 import com.continuum.tenant.repos.entity.StatusConfig;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
+import com.continuum.tenant.repos.repositories.EditableConfigRepository;
 import com.continuum.tenant.repos.repositories.QuestionConfigRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
@@ -53,9 +57,12 @@ import com.continuum.tenant.repos.repositories.StatusConfigRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.p21.service.P21UpdateRMAService;
+import com.di.integration.p21.serviceImpl.P21OrderServiceImpl;
 import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
+import com.di.integration.p21.serviceImpl.P21UpdateRMAServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-import ch.qos.logback.classic.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
@@ -116,9 +123,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	HttpServletRequest httpServletRequest;
+	
+	@Autowired
+	EditableConfigRepository editableConfigRepository;
+	
+	@Autowired
+	P21UpdateRMAServiceImpl p21UpdateRMAServiceImpl;
 
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
+		
+		final Logger logger = LoggerFactory.getLogger(ReturnOrderItemServiceImpl.class);
 
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
 		Optional<ReturnOrder> findByRmaOrderNo = returnOrderRepository.findByRmaOrderNo(rmaNo);
@@ -158,7 +173,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnRoom.setAssignTo(null);
 				returnRoomRepository.save(returnRoom);
 				returnOrderItemRepository.save(existingItem);
-
+				
 				auditLog.setDescription(
 						"Amount has been updated of item - " + existingItem.getItemName() + " by " + updateBy + ".");
 				auditLog.setHighlight("Amount");
@@ -169,28 +184,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLogRepository.save(auditLog);
 				returnOrderItemRepository.save(existingItem);
 			}
-
-//			if (updatedItem.getReturnLocNote() != null && updatedItem.getReturnLocRole() != null) {
-//				existingItem.setReturnLocNote(updatedItem.getReturnLocNote());
-//				existingItem.setReturnLocRole(updatedItem.getReturnLocRole());
-//				ReturnRoom returnRoom = new ReturnRoom();
-//				returnRoom.setName(updateBy);
-//				returnRoom.setMessage(updatedItem.getReturnLocNote());
-//				returnRoom.setReturnOrderItem(existingItem);
-//				returnRoom.setAssignTo(null);
-//				returnRoomRepository.save(returnRoom);
-//
-//				auditLog.setDescription(updateBy + " added a new vendor as " + updatedItem.getReturnLocRole()
-//						+ " for item - " + existingItem.getItemName() + ".");
-//				auditLog.setHighlight("");
-//				auditLog.setTitle("Update Activity");
-//				auditLog.setStatus("Ordered Items");
-//				auditLog.setRmaNo(rmaNo);
-//				auditLog.setUserName(updateBy);
-//				auditLogRepository.save(auditLog);
-//				returnOrderItemRepository.save(existingItem);
-//
-//			}
 
 			if (updatedItem.getTrackingNumber() != null || updatedItem.getCourierName() != null
 					|| updatedItem.getTrackingUrl() != null) {
@@ -328,22 +321,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					// Save in ERP
 					String apiUrl = masterTenant.getSubdomain() + "/api/sales/orders/"
 							+ returnOrderEntity.getRmaOrderNo() + "/approve";
-//					RestTemplate restTemplate = new RestTemplate();
-//					HttpHeaders headers = new HttpHeaders();
-//					try {
-//						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-//					HttpEntity<String> entity = new HttpEntity<>(headers);
-//					ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PUT, entity,
-//							String.class);
-//
-//					if (response.getStatusCode() == HttpStatus.OK) {
-//						System.out.println("Saving Status Approved In ERP.");
-//					} else {
-//						System.out.println("There was an error while saving status in ERP.");
-//					}
 					try {
 						// Your existing HTTP request code here
 						CloseableHttpClient httpClient = HttpClients.custom()
@@ -385,8 +362,19 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						e.printStackTrace();
 					}
 					
+					String db_name = httpServletRequest.getHeader("host").split("\\.")[0]+".dev";
+					if(!db_name.equals("pace.dev")) {
+						sendRestockingFeeToERP(rmaNo);
+					}
 					
-					sendRestockingFeeToERP(rmaNo);
+					List<EditableConfig> findAll = editableConfigRepository.findAll();
+					EditableConfig editableConfig = findAll.get(0);
+					if(editableConfig.isAmountAddition() == true) {
+						Optional<ReturnOrder> findByRmaOrderNo1 = returnOrderRepository.findByRmaOrderNo(rmaNo);
+						ReturnOrder returnOrder1 = findByRmaOrderNo1.get();
+						logger.info("Updating amount to REP");
+						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
+					}
 
 				} else if (statusConfig.getStatusMap()
 						.equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
@@ -682,27 +670,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
-//			if(existingItem.getUser().getId() != assignToId) {
-//				
-//			}else {
-//				Date followUpDate = updateNote.getFollowUpDate();
-//				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
-//				String formattedDate = simpleDateFormat.format(followUpDate);
-//				String recipient = existingItem.getUser().getEmail();
-//				System.out.println(recipient);
-//				String template = emailTemplateRenderer.getEMAIL_NOTE_STATUS();
-//				
-//				HashMap<String, String> map1 = new HashMap<>();
-//				map1.put("name", updateBy);
-//				map1.put("date", formattedDate);
-//				
-//				try {
-////					emailSender.emailToCustomer(recipient, updateBy, formattedDate);
-//					emailSender.sendEmail(recipient, template, subject, map1);
-//				} catch (MessagingException e) {
-//					e.printStackTrace();
-//				}
-//			}
 
 			return "Updated Note Details and capture in return room and audit log";
 
@@ -872,12 +839,20 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				}
 			}
 			Integer rmaNumber = Integer.parseInt(returnOrder.getRmaOrderNo());
-			Integer poNumber = Integer.parseInt(returnOrder.getPONumber());
+//			Integer poNumber = Integer.parseInt(returnOrder.getPONumber());
 			try {
-				p21UpdateRMAService.updateRMARestocking(rmaNumber, poNumber, totalRestocking);
+				p21UpdateRMAService.updateRMARestocking(rmaNumber, returnOrder.getPONumber(), totalRestocking);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public void sendAmountToErp(String rmaNo, List<ReturnOrderItem> list){
+		try {
+			p21UpdateRMAService.updateAmount(rmaNo, list);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
