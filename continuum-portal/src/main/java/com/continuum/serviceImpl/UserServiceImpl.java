@@ -33,7 +33,9 @@ public class UserServiceImpl implements UserService {
 	public Long createUser(User user) throws Exception {
 
 		if (userRepository.existsByEmail(user.getEmail())) {
+			
 			throw new Exception("Email already exists. Cannot create a user with the same email.");
+			
 		} else {
 			String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
 			user.setPassword(hashedPassword);

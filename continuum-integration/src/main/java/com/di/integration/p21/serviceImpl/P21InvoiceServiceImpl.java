@@ -182,12 +182,17 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 	}
 
 	@Override
-	public boolean linkInvoice(String rmaNo) throws Exception {
+	public boolean linkInvoice(String rmaNo, MasterTenant masterTenantObject) throws Exception {
 		boolean b = false;
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		MasterTenant masterTenant;
 
-		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+		if (masterTenantObject == null) {
+			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			masterTenant = masterTenantRepository.findByDbName(tenantId);
+		} else {
+			masterTenant = masterTenantObject;
+		}
 
 		URI sessionEnd = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 		URI sessionEndFullURI = sessionEnd.resolve(sessionEnd.getRawPath());

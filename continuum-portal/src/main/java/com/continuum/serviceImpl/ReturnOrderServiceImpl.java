@@ -559,7 +559,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			String rmaOrderNo = rmaInvoiceInfoDTO.getRmaOrderNo();
 			Integer retryCount = rmaInvoiceInfoDTO.getRetryCount();
 			if (retryCount < 3) {
-				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo);
+				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo,null);
 				if (bln) {
 					Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 
