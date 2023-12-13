@@ -418,7 +418,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 								String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
 						
 						//Database name fetching
-						String db_name = httpServletRequest.getHeader("host").split("\\.")[0];
+						String db_name = httpServletRequest.getHeader("host").split("\\.")[0]+".dev";
 						map.put("SUB_DOMAIN", db_name);
 						try {
 							emailSender.sendEmail(recipient, template, subject, map);
