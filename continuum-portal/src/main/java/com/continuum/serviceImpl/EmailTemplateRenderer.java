@@ -1661,7 +1661,7 @@ public class EmailTemplateRenderer {
 			+ "                                <p class=\"main-para\">After reviewing your return, we require some additional information\r\n"
 			+ "                                    from you to\r\n"
 			+ "                                    continue forward. Please login to the link below to see more</p>\r\n"
-			+ "                                <button class=\"button\" ><a href=\"http://${SUB_DOMAIN}.gocontinuum.ai\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">View RMA</a></button>\r\n"
+			+ "                                <button class=\"button\" ><a href=\"http://${SUB_DOMAIN}gocontinuum.ai\" target=\"_blank\" style=\"text-decoration: none; color: inherit;\">View RMA</a></button>\r\n"
 			+ "                                <p class=\"sec-para\">Your return reference number is: ${RMA_QUALIFIER} ${RMA_NO} Please\r\n"
 			+ "                                    keep this number for your\r\n"
 			+ "                                    records</p>\r\n"

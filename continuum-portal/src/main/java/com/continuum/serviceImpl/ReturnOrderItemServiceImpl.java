@@ -385,9 +385,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						if(str.equals("gocontinuum")) {
 							break;
 						}
-						db_name += str;
+						db_name += str+".";
 					}
-					if (!db_name.equals("pace.dev") && !db_name.equals("pace")) {
+					if (!db_name.equals("pace.dev.") && !db_name.equals("pace.")) {
 						sendRestockingFeeToERP(rmaNo);
 					}
 
