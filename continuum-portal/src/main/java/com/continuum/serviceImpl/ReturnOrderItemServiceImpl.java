@@ -385,9 +385,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						if(str.equals("gocontinuum")) {
 							break;
 						}
-						db_name += str;
+						db_name += str+".";
 					}
-					if (!db_name.equals("pace.dev") && !db_name.equals("pace")) {
+					if (!db_name.equals("pace.dev.") && !db_name.equals("pace.")) {
 						sendRestockingFeeToERP(rmaNo);
 					}
 
@@ -532,7 +532,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							if(str.equals("gocontinuum")) {
 								break;
 							}
-							db_name += str;
+							db_name += str+".";
 						}
 						map.put("SUB_DOMAIN", db_name);
 						try {
@@ -540,6 +540,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						} catch (MessagingException e) {
 							e.printStackTrace();
 						}
+						
 					}
 				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
 
