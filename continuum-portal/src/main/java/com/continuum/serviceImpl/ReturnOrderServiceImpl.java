@@ -434,41 +434,41 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		    	 
 		    }
 		    if(hasRMCI && !status.equalsIgnoreCase(PortalConstants.RMCI)) {
-				   return "Line item is RMCI";
+				   return "Change Line Item Status";
 			   }
 		    if(!hasRMCI && status.equalsIgnoreCase(PortalConstants.RMCI)) {
-				   return "Cannot change to RMCI";
+				   return "Change Line Item Status";
 			   }
 		    if(hasCarrier && !status.equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
-				   return "Can only change to under review";
+				   return "Change Line Item Status";
 			   }
 		    
 		  if(!allDenied && status.equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-			  return "Cannot change other than Denied";
+			  return "Change Line Item Status";
 			  
 		  }
 		  if(allDenied && !status.equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-			  return "Cannot change other than Denied";
+			  return "Change Line Item Status";
 			  
 		  }
 		  if(allUnderReview && !status.equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
-			  return "Cannot change other than Under review";
+			  return "Change Line Item Status";
 			  
 		  }
 		  if(allAuthorized && !status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
-			  return "Cannot change status";
+			  return"Change Line Item Status";
 		  }
 		  if(hasUnderReview && status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
-			   return "Can only change to under review";
+			   return"Change Line Item Status";
 		   }
 		  if (hasCancelled && hasDenied && status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
-				return "Can only change to under review";
+				return "Change Line Item Status";
 			}
 			if (!hasCancelled && status.equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
-				return "Can not change to cancelled";
+				return "Change Line Item Status";
 			}
 			if (allCancelled && !status.equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
-				return "Can not change other than cancelled";
+				return"Change Line Item Status";
 			}
 
 	    

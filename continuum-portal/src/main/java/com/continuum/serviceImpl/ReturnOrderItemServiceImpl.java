@@ -74,11 +74,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-
 @Service
 public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	private static final Logger logger = LoggerFactory.getLogger(ReturnOrderItemServiceImpl.class);
-	
+
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	@Autowired
 	ReturnOrderItemRepository returnOrderItemRepository;
@@ -140,16 +139,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	HttpServletRequest httpServletRequest;
-	
+
 	@Autowired
 	EditableConfigRepository editableConfigRepository;
-	
+
 	@Autowired
 	P21UpdateRMAServiceImpl p21UpdateRMAServiceImpl;
 
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
-		
+
 		final Logger logger = LoggerFactory.getLogger(ReturnOrderItemServiceImpl.class);
 
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
@@ -191,7 +190,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnRoom.setAssignTo(null);
 				returnRoomRepository.save(returnRoom);
 				returnOrderItemRepository.save(existingItem);
-				
+
 				auditLog.setDescription(
 						"Amount has been updated of item - " + existingItem.getItemName() + " by " + updateBy + ".");
 				auditLog.setHighlight("Amount");
@@ -379,21 +378,20 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
-					
-					String db_name = httpServletRequest.getHeader("host").split("\\.")[0]+".dev";
-					if(!db_name.equals("pace.dev")) {
+
+					String db_name = httpServletRequest.getHeader("host").split("\\.")[0] + ".dev";
+					if (!db_name.equals("pace.dev")) {
 						sendRestockingFeeToERP(rmaNo);
 					}
-					
+
 					List<EditableConfig> findAll = editableConfigRepository.findAll();
 					EditableConfig editableConfig = findAll.get(0);
-					if(editableConfig.isAmountAddition() == true) {
+					if (editableConfig.isAmountAddition() == true) {
 						Optional<ReturnOrder> findByRmaOrderNo1 = returnOrderRepository.findByRmaOrderNo(rmaNo);
 						ReturnOrder returnOrder1 = findByRmaOrderNo1.get();
 						logger.info("Updating amount to REP");
 						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
 					}
-
 
 				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RECIEVED)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
@@ -470,8 +468,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 //					sendRestockingFeeToERP(rmaNo);
 					try {
-						String recieptNumber =processRMAAndGetReceiptNumber(Integer.parseInt(rmaNo));
-						System.err.println("Reciept : " +recieptNumber);
+						String recieptNumber = processRMAAndGetReceiptNumber(Integer.parseInt(rmaNo));
+						logger.info("Reciept : " + recieptNumber);
 						auditLog.setTitle("Inbox");
 						auditLog.setDescription(recieptNumber);
 						auditLog.setHighlight("");
@@ -479,7 +477,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						auditLog.setRmaNo(rmaNo);
 						auditLog.setUserName(updateBy);
 						auditLogRepository.save(auditLog);
-						
+
 					} catch (Exception e) {
 						e.printStackTrace();
 						auditLog.setTitle("Inbox");
@@ -962,8 +960,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 		}
 	}
-	
-	public void sendAmountToErp(String rmaNo, List<ReturnOrderItem> list){
+
+	public void sendAmountToErp(String rmaNo, List<ReturnOrderItem> list) {
 		try {
 			p21UpdateRMAService.updateAmount(rmaNo, list);
 		} catch (Exception e) {
@@ -1022,7 +1020,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		String rmaReceiptUrl = masterTenant.getSubdomain() + rmaGetEndPoint;
 		String accessToken = "Bearer: " + p21TokenServiceImpl.getToken(masterTenant);
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+		logger.info("First URL" + rmaDetailsUrl);
+		logger.info("Second URL" + rmaReceiptUrl);
+		logger.info("TOKEN" + accessToken);
+
+		try (CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build()) {
 
 			HttpPost httpPost = new HttpPost(rmaDetailsUrl);
 			httpPost.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
@@ -1030,10 +1034,15 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
 			String requestBody = constructFirstApiRequestBody(rmaNo);
+
+			logger.info("This is request Body for first API" + requestBody);
+
 			httpPost.setEntity(new StringEntity(requestBody));
 
 			try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
 				String responseBody = EntityUtils.toString(response.getEntity());
+
+				logger.info("This is response Body for first API" + responseBody);
 
 				JsonNode rootNode = objectMapper.readTree(responseBody);
 
@@ -1044,7 +1053,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				String salesLocId = rootNode.path("Transactions").get(0).path("DataElements").get(0).path("Rows").get(0)
 						.path("Edits").get(3).path("Value").asText();
 
-				JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(36).path("Rows");
+				JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(42).path("Rows");
 				List<String> itemIdsList = new ArrayList<>();
 				for (JsonNode item : itemsNode) {
 					String itemId = item.path("Edits").get(0).path("Value").asText();
@@ -1052,36 +1061,51 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					System.out.println("Item ID: " + itemId);
 				}
 
-				// Making request body and calling the RMA Receipt Creation API
+				logger.info("This is orderNo: " + orderNo);
+				logger.info("This is rmaExpirationDate: " + rmaExpirationDate);
+				logger.info("This is orderNo: " + salesLocId);
+				logger.info("List of item ids: " + itemIdsList);
 
 				String secondApiRequestBody = constructSecondApiRequestBody(orderNo, rmaExpirationDate, salesLocId,
 						itemIdsList);
+
+				logger.info("Second API REQUEST BODY: " + secondApiRequestBody);
 
 				HttpPost httpPost1 = new HttpPost(rmaReceiptUrl);
 				httpPost1.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
 				httpPost1.setHeader(HttpHeaders.ACCEPT, "application/json");
 				httpPost1.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 				httpPost1.setEntity(new StringEntity(secondApiRequestBody));
+
 				try (CloseableHttpResponse response1 = httpClient.execute(httpPost1)) {
 					String responseBody1 = EntityUtils.toString(response1.getEntity());
+
+					logger.info("This is second response: " + responseBody1);
 					JsonNode responseNode = objectMapper.readTree(responseBody1);
 
 					int succeededCount = responseNode.path("Summary").path("Succeeded").asInt();
+					logger.info("This is where succedded should be 1"+ succeededCount);
+					
 					if (succeededCount > 0) {
 
 						String receiptNumber = responseNode.path("Results").path("Transactions").get(0)
 								.path("DataElements").get(0).path("Rows").get(0).path("Edits").get(0).path("Value")
 								.asText();
-
+						
+						logger.info("This is receipt Number"+receiptNumber);
+						
 						return "RMA Receipt created successfully. Receipt Number: " + receiptNumber;
 					} else {
 						return "RMA Receipt not generated. No successful transactions.";
 					}
 				}
-
+			} catch (Exception e) {
+				logger.info("First api failed.");
+				e.printStackTrace();
+				logger.info("HOLD");
 			}
 		}
-
+		return null;
 	}
 
 	private String constructSecondApiRequestBody(String orderNo, String rmaExpirationDate, String salesLocId,
