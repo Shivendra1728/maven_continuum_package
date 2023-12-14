@@ -379,8 +379,15 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						e.printStackTrace();
 					}
 
-					String db_name = httpServletRequest.getHeader("host").split("\\.")[0] + ".dev";
-					if (!db_name.equals("pace.dev")) {
+					String db_name = "";
+					String domain[] = httpServletRequest.getHeader("host").split("\\.");
+					for(String str : domain) {
+						if(str.equals("gocontinuum")) {
+							break;
+						}
+						db_name += str;
+					}
+					if (!db_name.equals("pace.dev") && !db_name.equals("pace")) {
 						sendRestockingFeeToERP(rmaNo);
 					}
 
@@ -519,7 +526,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 								String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
 
 						// Database name fetching
-						String db_name = httpServletRequest.getHeader("host").split("\\.")[0] + ".dev";
+						String db_name = "";
+						String domain[] = httpServletRequest.getHeader("host").split("\\.");
+						for(String str : domain) {
+							if(str.equals("gocontinuum")) {
+								break;
+							}
+							db_name += str;
+						}
 						map.put("SUB_DOMAIN", db_name);
 						try {
 							emailSender.sendEmail(recipient, template, subject, map);
