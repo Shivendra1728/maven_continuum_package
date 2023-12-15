@@ -383,9 +383,24 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
+
 					
 					//Updating Restocking fee to the ERP
 					sendRestockingFeeToERP(rmaNo);
+
+
+					String db_name = "";
+					String domain[] = httpServletRequest.getHeader("host").split("\\.");
+					for (String str : domain) {
+						if (str.equals("gocontinuum")) {
+							break;
+						}
+						db_name += str + ".";
+					}
+					if (!db_name.equals("pace.dev.") && !db_name.equals("pace.")) {
+						sendRestockingFeeToERP(rmaNo);
+					}
+
 
 					List<EditableConfig> findAll = editableConfigRepository.findAll();
 					EditableConfig editableConfig = findAll.get(0);
@@ -525,11 +540,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						// Database name fetching
 						String db_name = "";
 						String domain[] = httpServletRequest.getHeader("host").split("\\.");
-						for(String str : domain) {
-							if(str.equals("gocontinuum")) {
+						for (String str : domain) {
+							if (str.equals("gocontinuum")) {
 								break;
 							}
-							db_name += str+".";
+							db_name += str + ".";
 						}
 						map.put("SUB_DOMAIN", db_name);
 						try {
@@ -537,7 +552,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						} catch (MessagingException e) {
 							e.printStackTrace();
 						}
-						
+
 					}
 				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
 
@@ -804,70 +819,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		StringBuilder stringBuilder = new StringBuilder();
 		if (optionalReturnOrder.isPresent()) {
 			ReturnOrderItem returnOrderItem = optionalReturnOrder.get();
-
-//			if (orderAddress.getFirstName() != null) {
-			returnOrderItem.getShipTo().setFirstName(orderAddress.getFirstName());
-//				stringBuilder.append("First Name has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			if (orderAddress.getLastName() != null) {
-			returnOrderItem.getShipTo().setLastName(orderAddress.getLastName());
-//				stringBuilder.append("Last Name has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			if (orderAddress.getAddressType() != null) {
-			returnOrderItem.getShipTo().setAddressType(orderAddress.getAddressType());
-//				stringBuilder.append("Address Type has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			if (orderAddress.getFax() != null) {
-			returnOrderItem.getShipTo().setFax(orderAddress.getFax());
-//				stringBuilder.append("Fax has been updated in shipping information of " + returnOrderItem.getItemName() + " by "
-//						+ updateBy + ";");
-//			}
-//			if (orderAddress.getStreet1() != null) {
-			returnOrderItem.getShipTo().setStreet1(orderAddress.getStreet1());
-//				stringBuilder.append("Street1 has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			if (orderAddress.getStreet2() != null) {
-			returnOrderItem.getShipTo().setStreet2(orderAddress.getStreet2());
-//				stringBuilder.append("Street2 has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			if (orderAddress.getZipcode() != null) {
-			returnOrderItem.getShipTo().setZipcode(orderAddress.getZipcode());
-//				stringBuilder.append("Zipcode has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			if (orderAddress.getCity() != null) {
-			returnOrderItem.getShipTo().setCity(orderAddress.getCity());
-//				stringBuilder.append("City has been updated in shipping information of " + returnOrderItem.getItemName() + " by "
-//						+ updateBy + ";");
-//			}
-//			if (orderAddress.getCountry() != null) {
-			returnOrderItem.getShipTo().setCountry(orderAddress.getCountry());
-//				stringBuilder.append("Country has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			if (orderAddress.getProvince() != null) {
-			returnOrderItem.getShipTo().setProvince(orderAddress.getProvince());
-//				stringBuilder.append("Province has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			if (orderAddress.getPhoneNumber() != null) {
-			returnOrderItem.getShipTo().setPhoneNumber(orderAddress.getPhoneNumber());
-//				stringBuilder.append("Phone Number has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			if (orderAddress.getEmailAddress() != null) {
-			returnOrderItem.getShipTo().setEmailAddress(orderAddress.getEmailAddress());
-			returnOrderItem.getShipTo().setReturnLocNote(orderAddress.getReturnLocNote());
-
-//				stringBuilder.append("Email Address has been updated in shipping information of " + returnOrderItem.getItemName()
-//						+ " by " + updateBy + ";");
-//			}
-//			String res = stringBuilder.toString();
+			returnOrderItem.setShipTo(orderAddress);
 
 			returnOrderItemRepository.save(returnOrderItem);
 
@@ -1091,16 +1043,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					JsonNode responseNode = objectMapper.readTree(responseBody1);
 
 					int succeededCount = responseNode.path("Summary").path("Succeeded").asInt();
-					logger.info("This is where succedded should be 1"+ succeededCount);
-					
+					logger.info("This is where succedded should be 1" + succeededCount);
+
 					if (succeededCount > 0) {
 
 						String receiptNumber = responseNode.path("Results").path("Transactions").get(0)
 								.path("DataElements").get(0).path("Rows").get(0).path("Edits").get(0).path("Value")
 								.asText();
-						
-						logger.info("This is receipt Number"+receiptNumber);
-						
+
+						logger.info("This is receipt Number" + receiptNumber);
+
 						return "RMA Receipt created successfully. Receipt Number: " + receiptNumber;
 					} else {
 						return "RMA Receipt not generated. No successful transactions.";
