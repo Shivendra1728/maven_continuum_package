@@ -1,10 +1,12 @@
 package com.di.integration.p21.serviceImpl;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -37,6 +39,8 @@ import com.di.integration.p21.transaction.P21RMAResponse;
 import com.di.integration.p21.transaction.P21ReturnOrderDataHelper;
 import com.di.integration.p21.transaction.P21ReturnOrderHeaderHelper;
 import com.di.integration.p21.transaction.P21ReturnOrderMarshller;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
@@ -62,10 +66,9 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 
 	@Value(IntegrationConstants.ERP_RMA_CREATE_API)
 	String RMA_CREATE_API;
-	
+
 	@Value("${erp.rma.notes.create}")
 	String RMA_NOTES_CREATE_API;
-	
 
 	@Autowired
 	MasterTenantRepository masterTenantRepository;
@@ -133,17 +136,16 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		// p21ReturnOrderDataHelper.setP21OrderItemCustSalesHistory(custSalesHistory);
 		// //TODO invoice linking
 		String xmlPayload = p21ReturnOrderMarshller.createRMA(p21ReturnOrderDataHelper);
-		logger.info("returnOrderXmlPayload {}", xmlPayload);	
-		
+		logger.info("returnOrderXmlPayload {}", xmlPayload);
 
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
-		
+
 		CloseableHttpClient httpClient = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-		HttpPost request = new HttpPost(masterTenant.getSubdomain()+RMA_CREATE_API);
+		HttpPost request = new HttpPost(masterTenant.getSubdomain() + RMA_CREATE_API);
 
 		// Set request headers
 		request.addHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
@@ -186,7 +188,7 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		CloseableHttpClient httpClient1 = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-		HttpPost request1 = new HttpPost(masterTenant.getSubdomain()+RMA_NOTES_CREATE_API);
+		HttpPost request1 = new HttpPost(masterTenant.getSubdomain() + RMA_NOTES_CREATE_API);
 
 		// Set request headers
 		request1.setHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
@@ -198,11 +200,71 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 		String responseBody1 = EntityUtils.toString(response1.getEntity());
 
 		logger.info("#### RMA Notes RESPONSE #### {}", responseBody1);
+
+		// Code to put carrier from original order to RMA
+
+		String requestBody = "{\n" + "    \"IgnoreDisabled\": true,\n" + "    \"Name\": \"RMA\",\n"
+				+ "    \"UseCodeValues\": false,\n" + "    \"Transactions\": [\n" + "        {\n"
+				+ "            \"Status\": \"New\",\n" + "            \"DataElements\": [\n" + "                {\n"
+				+ "                    \"Name\": \"TABPAGE_1.order\",\n" + "                    \"Type\": \"Form\",\n"
+				+ "                    \"Keys\": [],\n" + "                    \"Rows\": [\n"
+				+ "                        {\n" + "                            \"Edits\": [\n"
+				+ "                                {\n"
+				+ "                                    \"Name\": \"order_no\",\n"
+				+ "                                    \"Value\": " + rmaResponse.getRmaOrderNo() + "\n"
+				+ "                                }\n" + "                            ],\n"
+				+ "                            \"RelativeDateEdits\": []\n" + "                        }\n"
+				+ "                    ]\n" + "                },\n" + "                {\n"
+				+ "                    \"Name\": \"TP_SHIPINFO.shipinfo\",\n"
+				+ "                    \"Type\": \"Form\",\n" + "                    \"Keys\": [],\n"
+				+ "                    \"Rows\": [\n" + "                        {\n"
+				+ "                            \"Edits\": [\n" + "                                {\n"
+				+ "                                    \"Name\": \"oe_hdr_carrier_id\",\n"
+				+ "                                    \"Value\": \"" + returnOrderDTO.getCarrierName() + "\"\n"
+				+ "                                }\n" + "                            ],\n"
+				+ "                            \"RelativeDateEdits\": []\n" + "                        }\n"
+				+ "                    ]\n" + "                }\n" + "            ]\n" + "        }\n" + "    ]\n"
+				+ "}";
+
+		CloseableHttpClient httpClient2 = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		HttpPost request2 = new HttpPost(masterTenant.getSubdomain() + RMA_CREATE_API);
+
+		logger.info("This is request for carrier setting in RMA" + request2);
+
+		request2.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+		request2.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+		request2.addHeader(HttpHeaders.ACCEPT, "application/json");
+
+		request2.setEntity(new StringEntity(requestBody, StandardCharsets.UTF_8));
+
+		try (CloseableHttpResponse response2 = httpClient2.execute(request2)) {
+			HttpEntity entity2 = response2.getEntity();
+			String responseString = EntityUtils.toString(entity2);
+			int isCarrierSet = parseResponse(responseString);
+			rmaResponse.setCarrierSucceded(isCarrierSet);
+		}
+
 		return rmaResponse;
 	}
-	
-	
-	
+
+	private int parseResponse(String responseString) {
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode rootNode = objectMapper.readTree(responseString);
+
+			JsonNode summaryNode = rootNode.path("Summary");
+			int succeededCount = summaryNode.path("Succeeded").asInt();
+
+			return succeededCount;
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.info("Carrier Setting is Failed.");
+			return 0;
+		}
+	}
+
 	public String generateRmaNumber() {
 		String prefix = "FAIL";
 
@@ -219,7 +281,6 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 			return String.format("%s%07d", prefix, number);
 		}
 	}
-	
 
 	@Override
 	public P21RMAResponse linkInvoice() {

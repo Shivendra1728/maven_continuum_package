@@ -7,8 +7,8 @@ public final class PortalConstants {
 
 	public static final String SUCCESS = "Success";
 	public static final String FAILED = "Failed";
-	
-	//status configurations
+
+	// status configurations
 	public static final String UNDER_REVIEW = "Under Review";
 	public static final String AUTHORIZED = "Authorized";
 	public static final String RECIEVED = "Recieved";

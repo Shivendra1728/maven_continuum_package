@@ -18,60 +18,60 @@
 	</parent>
 
 	<modules>
-		
+
 		<module>continuum-portal</module>
 		<module>continuum-repositories</module>
 		<module>di-commons</module>
 		<module>continuum-integration</module>
-		<module>continuum-scheduler</module>	
-				
+		<module>continuum-scheduler</module>
+
 	</modules>
 
 	<dependencies>
 		<!-- <dependency>
 			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-api</artifactId>
+		<artifactId>jjwt-api</artifactId>
 			<version>0.11.2</version>
 		</dependency>
 			<dependency>
 			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-impl</artifactId>
+		<artifactId>jjwt-impl</artifactId>
 			<version>0.11.2</version>
-			<scope>runtime</scope>
+		<scope>runtime</scope>
 		</dependency> -->
-			<!-- <dependency>
+		<!-- <dependency>
 			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-jackson</artifactId>
+		<artifactId>jjwt-jackson</artifactId>
 			<version>0.11.2</version>
-			<scope>runtime</scope>
+		<scope>runtime</scope>
 		</dependency> -->
-			<dependency>
+		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
-			<dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 		</dependency>
-			<dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-			<dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-        	<dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-			<dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-		</dependency> 
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -109,10 +109,10 @@
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 		</dependency>
-		 <dependency>
-        <groupId>javax.validation</groupId>
-        <artifactId>validation-api</artifactId>
-    </dependency>
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
@@ -127,7 +127,7 @@
 			<artifactId>azure-storage-blob</artifactId>
 			<version>12.21.1</version>
 		</dependency>
-			<dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
@@ -140,7 +140,7 @@
 			<artifactId>jjwt</artifactId>
 			<version>0.9.1</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -156,7 +156,7 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<scope>runtime</scope>
-			 <version>8.0.26</version>
+			<version>8.0.26</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -193,6 +193,12 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
-</dependencies>
+
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.14.3</version>
+		</dependency>
+
+	</dependencies>
 </project>
