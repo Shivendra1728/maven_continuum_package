@@ -153,8 +153,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			}
 		}
 		returnOrderDTO.setCustomer(customerDTO);
-
+		
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
+		
+		for(ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {
+			returnOrderItem.setShipTo(null);
+		}
 		returnOrderRepository.save(returnOrder);
 		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
 
@@ -371,17 +375,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		List<ReturnOrderDTO> returnOrderDTO = returnOrder.stream().map(returnOrderMapper::returnOrderToReturnOrderDTO)
 				.collect(Collectors.toList());
-		for (ReturnOrderDTO returnOrderDTO1 : returnOrderDTO) {
-			List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO1.getReturnOrderItem();
-			if (returnOrderItems != null) {
-				for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItems) {
-
-					if (returnOrderItemDTO != null) {
-						returnOrderItemDTO.setShipTo(null);
-					}
-				}
-			}
-		}
 
 		return returnOrderDTO;
 	}
