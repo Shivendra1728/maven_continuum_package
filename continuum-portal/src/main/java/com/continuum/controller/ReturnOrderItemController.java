@@ -41,8 +41,8 @@ public class ReturnOrderItemController {
 
 	@PutMapping("/update/note")
 	public String updateNote(@RequestParam long lineItemId, @RequestParam Long assignToId, @RequestParam String rmaNo,
-			@RequestParam String updateBy,@RequestParam String contactEmail,@RequestBody ReturnOrderItemDTO updatedNote) {
-		return returnOrderItemService.updateNote(lineItemId, assignToId, rmaNo, updateBy,contactEmail,updatedNote);
+			@RequestParam String updateBy,@RequestParam Long assignToRole , @RequestParam String contactEmail,@RequestBody ReturnOrderItemDTO updatedNote) {
+		return returnOrderItemService.updateNote(lineItemId, assignToId, rmaNo, updateBy,assignToRole,contactEmail,updatedNote);
 	}
 
 	@PutMapping("/UpdateShipTo")

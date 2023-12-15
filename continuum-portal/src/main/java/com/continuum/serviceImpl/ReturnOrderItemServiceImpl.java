@@ -42,6 +42,7 @@ import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.service.AuditLogService;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
+import com.continuum.tenant.repos.entity.Customer;
 import com.continuum.tenant.repos.entity.EditableConfig;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.QuestionConfig;
@@ -51,6 +52,7 @@ import com.continuum.tenant.repos.entity.ReturnRoom;
 import com.continuum.tenant.repos.entity.StatusConfig;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
+import com.continuum.tenant.repos.repositories.CustomerRepository;
 import com.continuum.tenant.repos.repositories.EditableConfigRepository;
 import com.continuum.tenant.repos.repositories.QuestionConfigRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
@@ -61,14 +63,8 @@ import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21UpdateRMAService;
-import com.di.integration.p21.serviceImpl.P21OrderServiceImpl;
 import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
-
 import com.di.integration.p21.serviceImpl.P21UpdateRMAServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -99,6 +95,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	@Autowired
 	ReturnOrderRepository returnOrderRepository;
 
+	@Autowired
+	CustomerRepository customerRepository;
+	
 	@Autowired
 	EmailSender emailSender;
 
@@ -678,80 +677,75 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String updateNote(Long lineItemId, Long assignToId, String rmaNo, String updateBy, String contactEmail,
+	public String updateNote(Long lineItemId, Long assignToId, String rmaNo, String updateBy, Long assignToRole , String contactEmail,
 			ReturnOrderItemDTO updateNote) {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(lineItemId);
-		Optional<User> optionalUser = userRepository.findById(assignToId);
-		if (optionalItem.isPresent() && optionalUser.isPresent()) {
-			ReturnOrderItem existingItem = optionalItem.get();
-			User user = optionalUser.get();
-			user.setUserName(user.getUserName());
-			user.setFirstName(user.getFirstName());
-			user.setLastName(user.getLastName());
-			user.setEmail(user.getEmail());
-			user.setRole(user.getRole());
-			userRepository.save(user);
-
-			if (updateNote.getFollowUpDate() == null) {
-				existingItem.setFollowUpDate(null);
-			} else {
-				existingItem.setFollowUpDate(updateNote.getFollowUpDate());
-			}
-			existingItem.setNote(updateNote.getNote());
-			existingItem.setUser(user);
-			returnOrderItemRepository.save(existingItem);
-
-			String formattedDate = "";
-			if (updateNote.getFollowUpDate() != null) {
-				Date followUpDate = updateNote.getFollowUpDate();
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
-				formattedDate = simpleDateFormat.format(followUpDate);
-			} else {
-				formattedDate = null;
-			}
+		Optional<Customer> optionalCustomer = customerRepository.findById(assignToId);
 			AuditLog auditLog = new AuditLog();
-			if (user.getRole().getId() == 4) {
+			if(optionalItem.isPresent()) {
+			ReturnOrderItem existingItem = optionalItem.get();
+			if (optionalCustomer.isPresent()&&assignToRole==4) {
+				Optional<User> optionalUser = userRepository.findByCustomerId(optionalCustomer.get().getId());
+				User user = optionalUser.get();
+
+				if (updateNote.getFollowUpDate() == null) {
+					existingItem.setFollowUpDate(null);
+				} else {
+					existingItem.setFollowUpDate(updateNote.getFollowUpDate());
+				}
+				existingItem.setNote(updateNote.getNote());
 				existingItem.setVendorMessage(updateNote.getNote());
+				existingItem.setUser(user);
 				returnOrderItemRepository.save(existingItem);
 
-				if (updateBy.equalsIgnoreCase(user.getFirstName() + " " + user.getLastName())) {
-					auditLog.setDescription("A note has been assigned to " + user.getFirstName() + " "
-							+ user.getLastName() + " of item - " + existingItem.getItemName()
-							+ ". Please review the details and take necessary action." + ";"
-							+ "Vendor Message added and Email has been sent to the " + contactEmail);
+				String formattedDate = "";
+				if (updateNote.getFollowUpDate() != null) {
+					Date followUpDate = updateNote.getFollowUpDate();
+					SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E MMM dd yyyy");
+					formattedDate = simpleDateFormat.format(followUpDate);
 				} else {
-					auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
-							+ user.getLastName() + " of item - " + existingItem.getItemName()
-							+ ". Please review the details and take necessary action."
-							+ "Vendor Message added and Email has been sent to the " + contactEmail);
+					formattedDate = null;
 				}
+						auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
+								+ user.getLastName() + " of item - " + existingItem.getItemName()
+								+ ". Please review the details and take necessary action.;"
+								+ "Vendor Message added and Email has been sent to the " + contactEmail);
 
-				String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier() + " "
-						+ rmaNo;
-				String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
-				HashMap<String, String> map = new HashMap<>();
+					String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier()
+							+ " " + rmaNo;
+					String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
+					HashMap<String, String> map = new HashMap<>();
 
-				map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
-				map.put("RMA_NO", rmaNo);
-				map.put("note", updateNote.getNote());
-				map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
-				map.put("CLIENT_PHONE",
-						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
-				try {
-					emailSender.sendEmail(recipient, template2, subject, map);
-				} catch (MessagingException e) {
-					e.printStackTrace();
-				}
+					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+					map.put("RMA_NO", rmaNo);
+					map.put("note", updateNote.getNote());
+					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+					map.put("CLIENT_PHONE",
+							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+					try {
+						emailSender.sendEmail(recipient, template2, subject, map);
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
+					ReturnRoom returnRoom = new ReturnRoom();
+					returnRoom.setName(updateBy);
+					returnRoom.setMessage(updateNote.getNote());
+					returnRoom.setAssignTo(user);
+					returnRoom.setFollowUpDate(
+							updateNote.getFollowUpDate() != null ? updateNote.getFollowUpDate() : null);
+					returnRoom.setStatus(updateNote.getStatus());
+					returnRoom.setReturnOrderItem(existingItem);
+					returnRoomRepository.save(returnRoom);
+
 			} else {
-				if (updateBy.equalsIgnoreCase(user.getFirstName() + " " + user.getLastName())) {
-					auditLog.setDescription("A note has been assigned to " + user.getFirstName() + " "
-							+ user.getLastName() + " of item - " + existingItem.getItemName()
-							+ ". Please review the details and take necessary action.");
-				} else {
+				Optional<User> optionalUser = userRepository.findById(assignToId);
+				User user = optionalUser.get();
+				existingItem.setNote(updateNote.getNote());
+				existingItem.setUser(user);
+				returnOrderItemRepository.save(existingItem);
 					auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
 							+ user.getLastName() + " of item - " + existingItem.getItemName()
 							+ ". Please review the details and take necessary action.");
-				}
 				String subject = PortalConstants.NOTE_STATUS + returnOrderServiceImpl.getRmaaQualifier() + " " + rmaNo;
 				String template2 = emailTemplateRenderer.getRETURN_PROCESSOR_NOTE();
 				HashMap<String, String> map = new HashMap<>();
@@ -779,16 +773,15 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
+				ReturnRoom returnRoom = new ReturnRoom();
+				returnRoom.setName(updateBy);
+				returnRoom.setMessage(updateNote.getNote());
+				returnRoom.setAssignTo(user);
+				returnRoom.setFollowUpDate(updateNote.getFollowUpDate() != null ? updateNote.getFollowUpDate() : null);
+				returnRoom.setStatus(updateNote.getStatus());
+				returnRoom.setReturnOrderItem(existingItem);
+				returnRoomRepository.save(returnRoom);
 			}
-
-			ReturnRoom returnRoom = new ReturnRoom();
-			returnRoom.setName(updateBy);
-			returnRoom.setMessage(updateNote.getNote());
-			returnRoom.setAssignTo(user);
-			returnRoom.setFollowUpDate(updateNote.getFollowUpDate() != null ? updateNote.getFollowUpDate() : null);
-			returnRoom.setStatus(updateNote.getStatus());
-			returnRoom.setReturnOrderItem(existingItem);
-			returnRoomRepository.save(returnRoom);
 
 			auditLog.setTitle("Update Activity");
 			auditLog.setHighlight("");
@@ -798,12 +791,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLogRepository.save(auditLog);
 
 			return "Updated Note Details and capture in return room and audit log";
-
-		} else {
-			return "Not Found";
-
-		}
-
+			}
+			else {
+				return "Not found";
+			}
 	}
 
 	@Override
