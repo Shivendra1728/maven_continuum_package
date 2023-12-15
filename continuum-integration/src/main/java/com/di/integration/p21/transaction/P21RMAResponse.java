@@ -12,4 +12,5 @@ public class P21RMAResponse {
 	private String status;
 	private String rmaOrderNo;
     private List<Object> messages;
+	public int carrierSucceded;
 }

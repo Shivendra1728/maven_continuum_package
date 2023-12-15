@@ -1,13 +1,13 @@
 package com.di.integration.p21.serviceImpl;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,7 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
@@ -26,10 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -46,12 +44,12 @@ import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21ContactMapper;
 import com.di.commons.p21.mapper.P21InvoiceMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
-import com.di.integration.config.TenantInfoHolderContext;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21OrderService;
-import com.di.integration.p21.service.TenantInfoProviderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class P21OrderServiceImpl implements P21OrderService {
@@ -62,6 +60,9 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 	@Value(IntegrationConstants.ERP_DATA_API_BASE_URL)
 	String DATA_API_BASE_URL;
+
+	@Value(IntegrationConstants.ERP_DATA_P21_OE_ORDER_VIEW)
+	String DATA_OE_ORDER;
 
 	@Value(IntegrationConstants.ERP_DATA_API_ORDER_VIEW)
 	String DATA_API_ORDER_VIEW;
@@ -74,6 +75,9 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 	@Value(IntegrationConstants.ERP_ORDER_FORMAT)
 	String ORDER_FORMAT;
+
+	@Value(IntegrationConstants.ERP_RMA_UPDATE_RESTOCKING_API)
+	String UI_SERVER;
 
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
@@ -96,118 +100,199 @@ public class P21OrderServiceImpl implements P21OrderService {
 	StoreRepository storeRepository;
 
 	LocalDate localDate;
-	
+
 	@Autowired
 	ClientConfigRepository clientConfigRepository;
-	
+
 	ClientConfig clientConfig;
-	
+
 	@Autowired
 	P21InvoiceMapper p21InvoiceMapper;
-	
+
 	@Autowired
 	P21InvoiceServiceImpl p21InvoiceServiceImpl;
-	
+
 	@Autowired
 	MasterTenantRepository masterTenantRepository;
 
 	@Autowired
 	HttpServletRequest httpServletRequest;
 
-	
 	@Override
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
 		List<OrderDTO> orderDTOList = new ArrayList<>();
-		List<OrderItemDTO> orderItemDTOList  = new ArrayList<>();
-		if (!isNotNullAndNotEmpty(orderSearchParameters.getOrderNo()) && isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
+		List<OrderItemDTO> orderItemDTOList = new ArrayList<>();
+		if (!isNotNullAndNotEmpty(orderSearchParameters.getOrderNo())
+				&& isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
 			int totalItem = 1;
-			List<OrderItemDTO> invoiceItemDTOList = p21InvoiceMapper
-					.mapP21InvoiceResponseToData(p21InvoiceServiceImpl.getInvoiceLineData(orderSearchParameters, totalItem)); // Invoice header
-			//int totalItem = 1; // fetching one item to get invoice no from item
+			List<OrderItemDTO> invoiceItemDTOList = p21InvoiceMapper.mapP21InvoiceResponseToData(
+					p21InvoiceServiceImpl.getInvoiceLineData(orderSearchParameters, totalItem)); // Invoice header
+			// int totalItem = 1; // fetching one item to get invoice no from item
 			// orderItemDTOList = p21OrderLineServiceImpl
-				//	.getordersLineBySearchcriteria(orderSearchParameters, totalItem,orderSearchParameters.getInvoiceNo());
+			// .getordersLineBySearchcriteria(orderSearchParameters,
+			// totalItem,orderSearchParameters.getInvoiceNo());
 			if (invoiceItemDTOList.size() > 0) {
 				orderSearchParameters.setOrderNo(invoiceItemDTOList.get(0).getOrderNo());
-				orderDTOList = getAllOrdersBySearch(orderSearchParameters,orderItemDTOList);
+				orderDTOList = getAllOrdersBySearch(orderSearchParameters, orderItemDTOList);
 			}
 
 		} else {
-			orderDTOList = getAllOrdersBySearch(orderSearchParameters,orderItemDTOList);
+			orderDTOList = getAllOrdersBySearch(orderSearchParameters, orderItemDTOList);
 		}
-		
-		
+		if (!orderDTOList.isEmpty()) {
+
+			// First we parse carrier id
+			String orderNumber = orderDTOList.get(0).getOrderNo();
+			String CarrierIdData = getCarrierData(orderNumber);
+			String carrierId = parseCarrierId(CarrierIdData);
+
+			// Secondly we fetch name from carrier now
+			String CarrierNameData = getCarrierNameData(carrierId);
+			String CarrierName = parseCarrierName(CarrierNameData);
+			orderDTOList.get(0).setCarrierName(CarrierName);
+
+		}
+
 		return orderDTOList;
 	}
 
-	private List<OrderDTO> getAllOrdersBySearch(OrderSearchParameters orderSearchParameters,List<OrderItemDTO> orderItemDTOList)
+	private List<OrderDTO> getAllOrdersBySearch(OrderSearchParameters orderSearchParameters,
+			List<OrderItemDTO> orderItemDTOList)
 			throws JsonMappingException, JsonProcessingException, ParseException, Exception {
 		List<OrderDTO> orderDTOList = new ArrayList<>();
 		orderDTOList = p21OrderMapper.convertP21OrderObjectToOrderDTO(getOrderData(orderSearchParameters));
-	
-		if(orderDTOList.size()>0) {
-			 clientConfig = clientConfigRepository.findByErpCompanyId(orderDTOList.get(0).getCompanyId());
+
+		if (orderDTOList.size() > 0) {
+			clientConfig = clientConfigRepository.findByErpCompanyId(orderDTOList.get(0).getCompanyId());
 		}
-			for (OrderDTO orderDTO : orderDTOList) {
+		for (OrderDTO orderDTO : orderDTOList) {
 			int totalItem = -1; // fetch all items in case of -1
 			OrderSearchParameters orderSearchParams = new OrderSearchParameters();
 			orderSearchParams.setOrderNo(orderDTO.getOrderNo());
-			if(orderItemDTOList.size()==0) {
-				orderItemDTOList = p21OrderLineServiceImpl
-						.getordersLineBySearchcriteria(orderSearchParams, totalItem,orderSearchParameters.getInvoiceNo());
+			if (orderItemDTOList.size() == 0) {
+				orderItemDTOList = p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParams, totalItem,
+						orderSearchParameters.getInvoiceNo());
 			}
-			
-			if(isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())){
-				orderItemDTOList=	orderItemDTOList.stream().filter(item->item.getInvoiceNo()!=null).collect(Collectors.toList());
+
+			if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
+				orderItemDTOList = orderItemDTOList.stream().filter(item -> item.getInvoiceNo() != null)
+						.collect(Collectors.toList());
 			}
 			orderDTO.setOrderItems(orderItemDTOList);
-			orderDTO.setContactDTO(p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
-		
-			if (clientConfig != null && clientConfig.getReturnPolicyPeriod()!=null) {
-					localDate = LocalDate.now().minusDays(clientConfig.getReturnPolicyPeriod());
-					logger.info("Return policy period: " + clientConfig.getReturnPolicyPeriod());
+			orderDTO.setContactDTO(
+					p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
 
-			if (localDate != null) {
-				
-				for (OrderItemDTO orderItemDTO : orderItemDTOList) {
-					if(orderItemDTO.getInvoiceDate()!=null) {
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+			if (clientConfig != null && clientConfig.getReturnPolicyPeriod() != null) {
+				localDate = LocalDate.now().minusDays(clientConfig.getReturnPolicyPeriod());
+				logger.info("Return policy period: " + clientConfig.getReturnPolicyPeriod());
 
-					        LocalDate invoiceDate = LocalDate.parse(orderItemDTO.getInvoiceDate(), formatter);
-					        int comparisonResult = invoiceDate.compareTo(localDate);
-					        if (comparisonResult < 0) {
-					        	orderItemDTO.setEligibleForReturn(false);
-					        	logger.info("invoiceDate is before Return policy period");
-					        } else if (comparisonResult >= 0) {
-					        	orderItemDTO.setEligibleForReturn(true);
-					            System.out.println("invoiceDate is after Return policy period");
+				if (localDate != null) {
+
+					for (OrderItemDTO orderItemDTO : orderItemDTOList) {
+						if (orderItemDTO.getInvoiceDate() != null) {
+							DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+							LocalDate invoiceDate = LocalDate.parse(orderItemDTO.getInvoiceDate(), formatter);
+							int comparisonResult = invoiceDate.compareTo(localDate);
+							if (comparisonResult < 0) {
+								orderItemDTO.setEligibleForReturn(false);
+								logger.info("invoiceDate is before Return policy period");
+							} else if (comparisonResult >= 0) {
+								orderItemDTO.setEligibleForReturn(true);
+								System.out.println("invoiceDate is after Return policy period");
+							}
+						}
 					}
 				}
 			}
+
+		}
+
+		return orderDTOList;
+	}
+
+	private String parseCarrierName(String carrierNameData) {
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode rootNode = objectMapper.readTree(carrierNameData);
+
+			JsonNode editsArray = rootNode.path("Transactions").path(0).path("DataElements").path(0).path("Rows")
+					.path(0).path("Edits");
+
+			for (JsonNode editNode : editsArray) {
+				JsonNode nameNode = editNode.path("Name");
+				JsonNode valueNode = editNode.path("Value");
+
+				if ("name".equalsIgnoreCase(nameNode.asText())) {
+					return valueNode.asText();
+				}
+			}
+
+			return "Carrier Name not found";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Error parsing carrier name";
 		}
 	}
-			
- }
-		return orderDTOList;
-}
+
+	private String getCarrierNameData(String carrierId) throws Exception {
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+		URI fullURI = prepareCarrierNameURI();
+
+		HttpPost request = new HttpPost(fullURI);
+		logger.info("Carrier NAME DATA URL" + request);
+
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+		request.setHeader(HttpHeaders.ACCEPT, "application/json");
+		String requestBody = "{\n" + "  \"ServiceName\": \"Carrier\",\n" + "  \"TransactionStates\": [\n" + "    {\n"
+				+ "      \"DataElementName\": \"FORM.form\",\n" + "      \"Keys\": [\n" + "        {\n"
+				+ "          \"Name\": \"id\",\n" + "          \"Value\": " + carrierId + "\n" + "        }\n"
+				+ "      ]\n" + "    }\n" + "  ],\n" + "  \"UseCodeValues\": true\n" + "}";
+
+		request.setEntity(new StringEntity(requestBody, StandardCharsets.UTF_8));
+		HttpResponse response = httpClient.execute(request);
+		HttpEntity entity = response.getEntity();
+
+		return EntityUtils.toString(entity);
+
+	}
+
+	private URI prepareCarrierNameURI() {
+
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+
+		try {
+			URI uri = new URI(masterTenant.getSubdomain() + "/uiserver0/api/v2/transaction" + "/get");
+			return uri;
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+	}
 
 	private String getOrderData(OrderSearchParameters orderSearchParameters) throws Exception {
-		
-		CloseableHttpClient httpClient = HttpClients.custom()
-                .setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
-                .build();
-		
-		URI fullURI = prepareOrderURI(orderSearchParameters);
-		
-		 HttpGet request = new HttpGet(fullURI);
 
-		 request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+		URI fullURI = prepareOrderURI(orderSearchParameters);
+
+		HttpGet request = new HttpGet(fullURI);
+
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
 
 		HttpResponse response = httpClient.execute(request);
 		HttpEntity entity = response.getEntity();
-		
+
 		return EntityUtils.toString(entity);
-		 
+
 	}
 
 	private String getContactData(String email) throws Exception {
@@ -225,8 +310,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 		HttpEntity entity = response.getEntity();
 
 		return EntityUtils.toString(entity);
-		
-		
+
 		// Process the API response
 		/*
 		 * if (response.getStatusCode().is2xxSuccessful()) { responseBody =
@@ -240,7 +324,6 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 		// p21_view_contacts?$select=&$filter=email_address eq
 		// 'SOUSADA.SALINTHONE@AZZUR.COM'&$format=json
-		
 
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
@@ -253,7 +336,8 @@ public class P21OrderServiceImpl implements P21OrderService {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter;
 
-			URI uri = new URI(masterTenant.getSubdomain()+DATA_API_BASE_URL + IntegrationConstants.ENDPOINT_VIEW_CONTACTS);
+			URI uri = new URI(
+					masterTenant.getSubdomain() + DATA_API_BASE_URL + IntegrationConstants.ENDPOINT_VIEW_CONTACTS);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;
 		} catch (Exception e) {
@@ -306,13 +390,12 @@ public class P21OrderServiceImpl implements P21OrderService {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter
 					+ "&$top=1&$orderby=order_date";
-			
 
 			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
 			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
-			URI uri = new URI(masterTenant.getSubdomain()+DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
+			URI uri = new URI(masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			logger.info("Filtering orders with order_date greater than or equal to: {}", localDate);
 			logger.info("Current date: {}", LocalDate.now());
@@ -323,6 +406,70 @@ public class P21OrderServiceImpl implements P21OrderService {
 			logger.error("An error occurred while preparing the order URI: {}", e.getMessage());
 
 		}
+		return null;
+	}
+
+	private String getCarrierData(String orderNo) throws Exception {
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+		URI fullURI = prepareCarrierURI(orderNo);
+
+		HttpGet request = new HttpGet(fullURI);
+		logger.info("Carrier DATA URL" + request);
+
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+
+		HttpResponse response = httpClient.execute(request);
+		HttpEntity entity = response.getEntity();
+
+		return EntityUtils.toString(entity);
+
+	}
+
+	private URI prepareCarrierURI(String orderNo) {
+		StringBuilder filter = new StringBuilder();
+		if (isNotNullAndNotEmpty(orderNo)) {
+			filter.append("order_no eq '" + orderNo + "'");
+		}
+		try {
+			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
+			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter;
+
+			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+
+			URI uri = new URI(masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_OE_ORDER);
+			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
+			logger.info("Filtering Carrier ID with order_date greater than or equal to: {}", localDate);
+			logger.info("Current date: {}", LocalDate.now());
+
+			return fullURI;
+		} catch (Exception e) {
+
+			logger.error("An error occurred while preparing the Carrier URI: {}", e.getMessage());
+
+		}
+
+		return null;
+	}
+
+	private String parseCarrierId(String responseString) throws JsonProcessingException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		JsonNode rootNode = objectMapper.readTree(responseString);
+
+		JsonNode valueNode = rootNode.get("value");
+		if (valueNode != null && valueNode.isArray() && valueNode.size() > 0) {
+			JsonNode firstItem = valueNode.get(0);
+			JsonNode carrierIdNode = firstItem.get("carrier_id");
+
+			if (carrierIdNode != null && carrierIdNode.isTextual()) {
+				return carrierIdNode.asText();
+			}
+		}
+
 		return null;
 	}
 

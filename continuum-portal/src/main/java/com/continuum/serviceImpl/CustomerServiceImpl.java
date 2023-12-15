@@ -132,7 +132,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 		} else {
 
-			return "You are not a customer of Us!";
+			return "You are not a customer of us!";
 
 		}
 

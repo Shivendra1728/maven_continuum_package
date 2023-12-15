@@ -89,16 +89,16 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	P21ReturnOrderService p21ReturnOrderService;
-	
+
 	@Autowired
 	CustomerService customerService;
 
 	@Autowired
 	EmailSender emailSender;
-	
+
 	@Autowired
 	ReturnTypeRepository returnTypeRepository;
-	
+
 	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
 
 	ReturnOrder returnOrder;
@@ -106,11 +106,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	@Autowired
 	ClientConfig clientConfig;
 
-
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
 		P21RMAResponse p21RMARespo = p21ReturnOrderService.createReturnOrder(returnOrderDTO);
+
 		logger.info("orderNo::: " + p21RMARespo.getRmaOrderNo() + " status: " + p21RMARespo.getStatus());
+
 		return p21RMARespo;
 	}
 
@@ -133,7 +134,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrderDTO.setStatus(PortalConstants.FAILED);
 			returnOrderDTO.setIsAuthorized(false);
 			returnOrderDTO.setIsEditable(false);
-			for(ReturnOrderItemDTO returnOrderItem : returnOrderDTO.getReturnOrderItem()) {
+			for (ReturnOrderItemDTO returnOrderItem : returnOrderDTO.getReturnOrderItem()) {
 				returnOrderItem.setIsAuthorized(false);
 				returnOrderItem.setIsEditable(false);
 				returnOrderItem.setStatus(PortalConstants.FAILED);
@@ -170,8 +171,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		AuditLog auditlog = new AuditLog();
 
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-		String described = getRmaaQualifier()+" "+ returnOrder.getRmaOrderNo()
-		+ " has been updated to 'Return Requested'."+";"+"Email has been sent to the "+returnOrderDTO.getContact().getContactEmailId();
+		String described = getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
+				+ " has been updated to 'Return Requested'." + ";" + "Email has been sent to the "
+				+ returnOrderDTO.getContact().getContactEmailId();
 		auditlog.setDescription(described);
 		auditlog.setHighlight("Return Requested");
 		auditlog.setStatus("Inbox");
@@ -180,14 +182,15 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		auditlog.setUserName(customerDTO.getDisplayName());
 		auditLogRepository.save(auditlog);
 
-		//String recipient = returnOrder.getCustomer().getEmail();
+		// String recipient = returnOrder.getCustomer().getEmail();
 		String recipient = PortalConstants.EMAIL_RECIPIENT;
 //		String email = returnOrderDTO.getContact().getContactEmailId();
 //		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
 //			recipient="alex@gocontinuum.ai";
 //		}
-		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX +" "+getRmaaQualifier()+" "+returnOrderDTO.getRmaOrderNo()+" has been Requested";
-		
+		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + " " + getRmaaQualifier() + " "
+				+ returnOrderDTO.getRmaOrderNo() + " has been Requested";
+
 //		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
 		HashMap<String, String> map = new HashMap<>();
 		if (returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
@@ -195,7 +198,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			map.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
 			map.put("CUST_NAME", returnOrderDTO.getCustomer().getDisplayName());
 			map.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
-			map.put("CLIENT_PHONE",String.valueOf(getClientConfig().getClient().getContactNo()));
+			map.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
 		} else {
 			map.put("status", returnOrderDTO.getStatus());
 			map.put("rma_order_no", null);
@@ -205,7 +208,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		map.put("order_no", returnOrderDTO.getOrderNo());
 		String template = emailTemplateRenderer.getTemplateContent();
 		emailSender.sendEmail(recipient, template, subject, map);
-		
+
 	}
 
 	@Override
@@ -368,6 +371,17 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		List<ReturnOrderDTO> returnOrderDTO = returnOrder.stream().map(returnOrderMapper::returnOrderToReturnOrderDTO)
 				.collect(Collectors.toList());
+		for (ReturnOrderDTO returnOrderDTO1 : returnOrderDTO) {
+			List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO1.getReturnOrderItem();
+			if (returnOrderItems != null) {
+				for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItems) {
+
+					if (returnOrderItemDTO != null) {
+						returnOrderItemDTO.setShipTo(null);
+					}
+				}
+			}
+		}
 
 		return returnOrderDTO;
 	}
@@ -379,100 +393,98 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		if (optionalItem.isPresent()) {
 			ReturnOrder returnOrder = optionalItem.get();
-			
+
 			List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository.findByReturnOrderId(returnOrder.getId());
-			boolean hasRMCI=false;
-			boolean hasCarrier =false;
+			boolean hasRMCI = false;
+			boolean hasCarrier = false;
 			boolean hasUnderReview = false;
-			boolean allAuthorized=true;
-			boolean allDenied=true;
-			boolean allUnderReview=true;
+			boolean allAuthorized = true;
+			boolean allDenied = true;
+			boolean allUnderReview = true;
 			boolean hasCancelled = false;
 			boolean hasDenied = false;
 			boolean allCancelled = true;
-			
 
-		    for (ReturnOrderItem returnOrderItem : returnOrderItems) {
-		    	 if(PortalConstants.RMCI.equalsIgnoreCase(returnOrderItem.getStatus())){
-		    		 hasRMCI=true;
-		    		 break;
-		    	 }
-		    	 if(PortalConstants.AWAITING_CARRIER_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus()) ||PortalConstants.AWAITING_VENDOR_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus()) ){
-		    		 hasCarrier=true;
-		    		 
-		    	 }
-		    	 if(PortalConstants.UNDER_REVIEW.equalsIgnoreCase(returnOrderItem.getStatus())){
-		    		 hasUnderReview=true;
-		    	 }
-		    	 if(!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())){
-		    		 allDenied=false;
-		    		 
-		    	 }
-		    	 if(!PortalConstants.UNDER_REVIEW.equalsIgnoreCase(returnOrderItem.getStatus())){
-		    		 allUnderReview=false;
-		    		 
-		    	 }
-		    	 if(PortalConstants.RMA_CANCLED.equals(returnOrderItem.getStatus())) {
-		    		 hasCancelled = true;
-		    	 }
-				if(PortalConstants.RMA_DENIED.equals(returnOrderItem.getStatus())) {
-		    		 hasDenied = true;
-		    	 }
+			for (ReturnOrderItem returnOrderItem : returnOrderItems) {
+				if (PortalConstants.RMCI.equalsIgnoreCase(returnOrderItem.getStatus())) {
+					hasRMCI = true;
+					break;
+				}
+				if (PortalConstants.AWAITING_CARRIER_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus())
+						|| PortalConstants.AWAITING_VENDOR_APPROVAL.equalsIgnoreCase(returnOrderItem.getStatus())) {
+					hasCarrier = true;
 
-		    	 if(!PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
-		    		 allCancelled = false;
-		    	 }
-		    	 if(!PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())) {
-		    		 if(!PortalConstants.AUTHORIZED_AWAITING_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())) {
-		    			 if(!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())){
-		    				 if(!PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
-		    					 allAuthorized=false;
-		    				 }
-		    			 }
-			    	 }
-		    	 }
-		    	 
-		    }
-		    if(hasRMCI && !status.equalsIgnoreCase(PortalConstants.RMCI)) {
-				   return "Change Line Item Status";
-			   }
-		    if(!hasRMCI && status.equalsIgnoreCase(PortalConstants.RMCI)) {
-				   return "Change Line Item Status";
-			   }
-		    if(hasCarrier && !status.equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
-				   return "Change Line Item Status";
-			   }
-		    
-		  if(!allDenied && status.equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-			  return "Change Line Item Status";
-			  
-		  }
-		  if(allDenied && !status.equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-			  return "Change Line Item Status";
-			  
-		  }
-		  if(allUnderReview && !status.equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
-			  return "Change Line Item Status";
-			  
-		  }
-		  if(allAuthorized && !status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
-			  return"Change Line Item Status";
-		  }
-		  if(hasUnderReview && status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
-			   return"Change Line Item Status";
-		   }
-		  if (hasCancelled && hasDenied && status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
+				}
+				if (PortalConstants.UNDER_REVIEW.equalsIgnoreCase(returnOrderItem.getStatus())) {
+					hasUnderReview = true;
+				}
+				if (!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())) {
+					allDenied = false;
+
+				}
+				if (!PortalConstants.UNDER_REVIEW.equalsIgnoreCase(returnOrderItem.getStatus())) {
+					allUnderReview = false;
+
+				}
+				if (PortalConstants.RMA_CANCLED.equals(returnOrderItem.getStatus())) {
+					hasCancelled = true;
+				}
+				if (PortalConstants.RMA_DENIED.equals(returnOrderItem.getStatus())) {
+					hasDenied = true;
+				}
+
+				if (!PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
+					allCancelled = false;
+				}
+				if (!PortalConstants.AUTHORIZED_IN_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())) {
+					if (!PortalConstants.AUTHORIZED_AWAITING_TRANSIT.equalsIgnoreCase(returnOrderItem.getStatus())) {
+						if (!PortalConstants.RMA_DENIED.equalsIgnoreCase(returnOrderItem.getStatus())) {
+							if (!PortalConstants.RMA_CANCLED.equalsIgnoreCase(returnOrderItem.getStatus())) {
+								allAuthorized = false;
+							}
+						}
+					}
+				}
+
+			}
+			if (hasRMCI && !status.equalsIgnoreCase(PortalConstants.RMCI)) {
+				return "Change Line Item Status";
+			}
+			if (!hasRMCI && status.equalsIgnoreCase(PortalConstants.RMCI)) {
+				return "Change Line Item Status";
+			}
+			if (hasCarrier && !status.equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
+				return "Change Line Item Status";
+			}
+
+			if (!allDenied && status.equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
+				return "Change Line Item Status";
+
+			}
+			if (allDenied && !status.equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
+				return "Change Line Item Status";
+
+			}
+			if (allUnderReview && !status.equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
+				return "Change Line Item Status";
+
+			}
+			if (allAuthorized && !status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
+				return "Change Line Item Status";
+			}
+			if (hasUnderReview && status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
+				return "Change Line Item Status";
+			}
+			if (hasCancelled && hasDenied && status.equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
 				return "Change Line Item Status";
 			}
 			if (!hasCancelled && status.equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
 				return "Change Line Item Status";
 			}
 			if (allCancelled && !status.equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
-				return"Change Line Item Status";
+				return "Change Line Item Status";
 			}
 
-	    
-		   
 			returnOrder.setStatus(status);
 
 			returnOrderRepository.save(returnOrder);
@@ -481,55 +493,56 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			AuditLog auditlog = new AuditLog();
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
-				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Return Requested' by "+updateBy+".";
+				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Return Requested' by "
+						+ updateBy + ".";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Return Requested");
 				auditlog.setStatus("RMA Header");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
-				String described = getRmaaQualifier() + " " + rmaNo + " has been updated by 'Return Requested' by "+updateBy+".";
+				String described = getRmaaQualifier() + " " + rmaNo + " has been updated by 'Return Requested' by "
+						+ updateBy + ".";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Under Review");
 				auditlog.setStatus("RMA Header");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
-				String described = getRmaaQualifier()+" "+rmaNo
-						+ " has been updated to 'Requires More Customer Information' by "+updateBy+". Awaiting more information with customer";
+				String described = getRmaaQualifier() + " " + rmaNo
+						+ " has been updated to 'Requires More Customer Information' by " + updateBy
+						+ ". Awaiting more information with customer";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Requires More Customer Information");
 				auditlog.setStatus("RMA Header");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
-				String described = getRmaaQualifier()+" "+rmaNo
-						+ " has been updated to 'Authorized' by "+updateBy+". The return is approved. Please proceed with the necessary steps."+";"+"Email has been sent.";
+				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Authorized' by " + updateBy
+						+ ". The return is approved. Please proceed with the necessary steps." + ";"
+						+ "Email has been sent.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Authorized");
 				auditlog.setStatus("Inbox");
 			}
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'RMA Denied' by "+updateBy+"."+";"+"Email has been sent.";
+				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'RMA Denied' by " + updateBy
+						+ "." + ";" + "Email has been sent.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("RMA Denied");
 				auditlog.setStatus("Inbox");
 			}
-			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)){
-				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Cancelled' by "+updateBy+"."+";"+"Email has been sent.";
+			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
+				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Cancelled' by " + updateBy
+						+ "." + ";" + "Email has been sent.";
 				auditlog.setDescription(described);
 				auditlog.setHighlight("Cancelled");
 				auditlog.setStatus("Inbox");
 			}
-
 
 			auditlog.setTitle("Return Order");
 			auditlog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditlog.setUserName(updateBy);
 			auditLogRepository.save(auditlog);
 
-			
-
 			return "RMA Status Updated Successfully.";
-		   
-		    
 
 		} else {
 
@@ -557,7 +570,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			String rmaOrderNo = rmaInvoiceInfoDTO.getRmaOrderNo();
 			Integer retryCount = rmaInvoiceInfoDTO.getRetryCount();
 			if (retryCount < 3) {
-				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo,null);
+				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo, null);
 				if (bln) {
 					Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 
@@ -584,11 +597,11 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	}
 
 	@Override
-	public String assignRMA(String rmaNo, Long assignToId, String updateBy, Long returnTypeId,ReturnOrderDTO note) {
+	public String assignRMA(String rmaNo, Long assignToId, String updateBy, Long returnTypeId, ReturnOrderDTO note) {
 		Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
 		Optional<User> optionalUser = userRepository.findById(assignToId);
-		Optional<ReturnType> optionalReturnType=returnTypeRepository.findById(returnTypeId);
-		if (optionalReturnOrder.isPresent() && optionalUser.isPresent()) {	
+		Optional<ReturnType> optionalReturnType = returnTypeRepository.findById(returnTypeId);
+		if (optionalReturnOrder.isPresent() && optionalUser.isPresent()) {
 			ReturnOrder returnOrder = optionalReturnOrder.get();
 			String previousNote = "";
 			Long previousReturnType = 0L;
@@ -621,31 +634,31 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrderRepository.save(returnOrder);
 
 //			apply email functionality.
-			//String recipient = user.getEmail();
-			String recipient=PortalConstants.EMAIL_RECIPIENT;
-			String subject = PortalConstants.ASSIGN_RMA+getRmaaQualifier()+" "+returnOrder.getRmaOrderNo();
+			// String recipient = user.getEmail();
+			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			String subject = PortalConstants.ASSIGN_RMA + getRmaaQualifier() + " " + returnOrder.getRmaOrderNo();
 			HashMap<String, String> map = new HashMap<>();
 			map.put("RMA_QUALIFIER", getRmaaQualifier());
 			map.put("RMA_NO", rmaNo);
 			map.put("STATUS", PortalConstants.UNDER_REVIEW);
 			map.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
-			map.put("CLIENT_PHONE",String.valueOf(getClientConfig().getClient().getContactNo()));
+			map.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
 			String template = emailTemplateRenderer.getAssignRMATemplate();
 			try {
 				emailSender.sendEmail(recipient, template, subject, map);
 			} catch (MessagingException e) {
-				e.printStackTrace();	
+				e.printStackTrace();
 			}
-			
-			String recipient1=PortalConstants.EMAIL_RECIPIENT;
-			String subject1 = "Your Return "+getRmaaQualifier()+" "+rmaNo+ " is Under Review";
+
+			String recipient1 = PortalConstants.EMAIL_RECIPIENT;
+			String subject1 = "Your Return " + getRmaaQualifier() + " " + rmaNo + " is Under Review";
 			HashMap<String, String> map1 = new HashMap<>();
 			map1.put("RMA_QUALIFIER", getRmaaQualifier());
 			map1.put("RMA_NO", rmaNo);
 			map1.put("CUST_NAME", returnOrder.getCustomer().getDisplayName());
 			map1.put("RP_NAME", returnOrder.getUser().getFullName());
 			map1.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
-			map1.put("CLIENT_PHONE",String.valueOf(getClientConfig().getClient().getContactNo()));
+			map1.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
 			String template1 = emailTemplateRenderer.getCUSTMER_UNDER_REVIEW_TEMPLATE();
 			try {
 				emailSender.sendEmail(recipient1, template1, subject1, map1);
@@ -676,9 +689,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			} else if (previousReturnType != returnTypeId && !previousNote.equalsIgnoreCase(note.getNote())
 					&& assignToId == previousAssignTo) {
 				auditLog.setDescription("Return type of the " + getRmaaQualifier() + " " + rmaNo + " is set to '"
-						+ returnTypes.get().getType() + "'.;" + "Note Added while assigning RMA "
-						+ getRmaaQualifier() + " " + rmaNo + ".;" + "Note : " + note.getNote() + ".;"
-						+ "Email has been sent to " + note.getContact().getContactEmailId() + ".;");
+						+ returnTypes.get().getType() + "'.;" + "Note Added while assigning RMA " + getRmaaQualifier()
+						+ " " + rmaNo + ".;" + "Note : " + note.getNote() + ".;" + "Email has been sent to "
+						+ note.getContact().getContactEmailId() + ".;");
 				auditLog.setStatus("Inbox");
 				logger.info("condition 3");
 
@@ -694,9 +707,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			} else if (previousAssignTo != assignToId && !previousNote.equalsIgnoreCase(note.getNote())) {
 				auditLog.setDescription(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
 						+ " has been assigned to the " + user.getFirstName() + " " + user.getLastName() + "." + ";"
-						+"Note Added while assigning RMA " + getRmaaQualifier() + " "
-						+ rmaNo + ".;" + "Note : " + note.getNote() + ".;" + "Email has been sent to "
-						+ note.getContact().getContactEmailId() + ".;");
+						+ "Note Added while assigning RMA " + getRmaaQualifier() + " " + rmaNo + ".;" + "Note : "
+						+ note.getNote() + ".;" + "Email has been sent to " + note.getContact().getContactEmailId()
+						+ ".;");
 				logger.info("condition 5");
 
 			} else if (previousAssignTo != assignToId && !previousNote.equalsIgnoreCase(note.getNote())) {
@@ -752,6 +765,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			return "No RMA Qualifier";
 		}
 	}
+
 	public ClientConfig getClientConfig() {
 		ClientConfig clientConfig = clientConfigRepository.findById(1L).orElse(null);
 
