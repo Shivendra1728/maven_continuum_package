@@ -384,18 +384,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
-
-					String db_name = "";
-					String domain[] = httpServletRequest.getHeader("host").split("\\.");
-					for(String str : domain) {
-						if(str.equals("gocontinuum")) {
-							break;
-						}
-						db_name += str+".";
-					}
-					if (!db_name.equals("pace.dev.") && !db_name.equals("pace.")) {
-						sendRestockingFeeToERP(rmaNo);
-					}
+					
+					//Updating Restocking fee to the ERP
+					sendRestockingFeeToERP(rmaNo);
 
 					List<EditableConfig> findAll = editableConfigRepository.findAll();
 					EditableConfig editableConfig = findAll.get(0);
@@ -403,6 +394,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						Optional<ReturnOrder> findByRmaOrderNo1 = returnOrderRepository.findByRmaOrderNo(rmaNo);
 						ReturnOrder returnOrder1 = findByRmaOrderNo1.get();
 						logger.info("Updating amount to REP");
+						//Updating Amount to the ERP
 						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
 					}
 
@@ -969,13 +961,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
 			for (ReturnOrderItem returnOrderItem : returnOrderItems) {
 				if (returnOrderItem.getReStockingAmount() != null) {
-					totalRestocking += returnOrderItem.getReStockingAmount().doubleValue();
+					if(!returnOrderItem.getStatus().equals(PortalConstants.RMA_CANCLED) && !returnOrderItem.getStatus().equals(PortalConstants.RMA_DENIED)) {
+						totalRestocking += returnOrderItem.getReStockingAmount().doubleValue();
+					}
+					
 				}
 			}
-			Integer rmaNumber = Integer.parseInt(returnOrder.getRmaOrderNo());
+			String rmaNumber = returnOrder.getRmaOrderNo();
 //			Integer poNumber = Integer.parseInt(returnOrder.getPONumber());
 			try {
-				p21UpdateRMAService.updateRMARestocking(rmaNumber, returnOrder.getPONumber(), totalRestocking);
+				p21UpdateRMAService.updateRMARestocking(rmaNumber, totalRestocking);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
