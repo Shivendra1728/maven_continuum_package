@@ -64,15 +64,16 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 	HttpServletRequest httpServletRequest;
 
 	@Override
-	public String updateRMARestocking(Integer rmaNumber, String poNumber, Double totalRestocking) throws Exception {
+	public String updateRMARestocking(String rmaNumber, Double totalRestocking) throws Exception {
 		
 
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		
-		totalRestocking = -totalRestocking;		
-		String updateRestockingXml = getXml(rmaNumber, poNumber, totalRestocking);
+		totalRestocking = -totalRestocking;
+		String updateRestockingXml = prepareRestockingXML(rmaNumber, totalRestocking, masterTenant.getRestockingItemId());
+		
 		CloseableHttpClient httpClient = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
@@ -119,6 +120,88 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 		CloseableHttpResponse response = httpClient.execute(request);
 		logger.info("Amount Uddated to ERP");
 		return EntityUtils.toString(response.getEntity());
+	}
+	
+	public String prepareRestockingXML(String rmaNo, Double totalRestocking, String itemName) throws JsonProcessingException {
+		TransactionSet transactionSet = new TransactionSet();
+		transactionSet.setIgnoreDisabled(true);
+		transactionSet.setName(IntegrationConstants.RMA);
+		Transaction transaction = new Transaction();
+		
+		List<DataElement> dataElements= new ArrayList<>();
+
+		// ORDER HEADER DATA ELEMENT 1-----------------------------------------
+		DataElement dataElement1 = new DataElement();
+		dataElement1.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER);
+		dataElement1.setType(IntegrationConstants.DATA_ELEMENT_TYPE_FORM);
+		
+		List<Row> rowList = new ArrayList<Row>();
+		Row row1 = new Row();
+		List<Edit> editList = new ArrayList<Edit>();
+		Edit edit1 = new Edit();
+		edit1.setName("order_no");
+		edit1.setValue(rmaNo);
+		editList.add(edit1);
+		row1.setEdits(editList);
+		rowList.add(row1);
+		dataElement1.setRows(rowList);
+		dataElements.add(dataElement1);
+		
+		DataElement dataElement2 = new DataElement();
+		dataElement2.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER_ITEMS);
+		dataElement2.setType(IntegrationConstants.DATA_ELEMENT_TYPE_LIST);
+		
+		List<Row> rowList1 = new ArrayList<Row>();
+		
+		Row row2 = new Row();
+		List<Edit> editList1 = new ArrayList<Edit>();
+		
+		Edit edit2 = new Edit();
+		edit2.setName("oe_order_item_id");
+		edit2.setValue(itemName);
+		
+		Edit edit4 = new Edit();
+		edit4.setName("unit_quantity");
+		edit4.setValue("1");
+			
+		Edit edit3 = new Edit();
+		edit3.setName("unit_price");
+		edit3.setValue(String.valueOf(totalRestocking));
+			
+		editList1.add(edit2);
+		editList1.add(edit4);
+		editList1.add(edit3);
+		
+		row2.setEdits(editList1);
+		rowList1.add(row2);
+		
+		dataElement2.setRows(rowList1);
+		dataElements.add(dataElement2);
+		
+		transaction.setDataElements(dataElements);
+		transactionSet.setTransactions(Collections.singletonList(transaction));
+		
+		XmlMapper xmlMapper = new XmlMapper();
+		xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		// xmlMapper.disable(MapperFeature.USE_STD_BEAN_NAMING);
+		xmlMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		// xmlMapper.setDefaultUseWrapper(false);
+		String xml = xmlMapper.writeValueAsString(transactionSet);
+		
+		xml = xml.replaceAll("wstxns2:", "");
+		xml = xml.replaceAll("xmlns:wstxns2", "xmlns:a");
+
+		xml = xml.replaceAll("wstxns1:", "");
+		xml = xml.replaceAll("xmlns:wstxns1", "xmlns:a");
+
+		xml = xml.replaceAll("wstxns3:", "");
+		xml = xml.replaceAll("xmlns:wstxns3", "xmlns:a");
+		
+		xml = xml.replaceAll("wstxns4:", "");
+		xml = xml.replaceAll("xmlns:wstxns4", "xmlns:a");
+		logger.info("Updated restocking XML");
+		logger.info(xml);
+		return xml;
 	}
 	
 	public String prepareXml(String rmaNo, List<ReturnOrderItem> returnOrderItems) throws JsonProcessingException{
@@ -198,69 +281,6 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 		
 		return xml;
 		
-	}
-	
-	public String getXml(Integer rmaNumber, String poNumber, Double totalRestocking) {
-		String str = "<TransactionSet xmlns=\"http://schemas.datacontract.org/2004/07/P21.Transactions.Model.V2\">\r\n"
-				+ "    <IgnoreDisabled>true</IgnoreDisabled>\r\n"
-				+ "    <Name>RMA</Name>\r\n"
-				+ "    <Transactions>\r\n"
-				+ "        <Transaction>\r\n"
-				+ "            <DataElements>\r\n"
-				+ "                <DataElement>\r\n"
-				+ "                    <Keys xmlns:a=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\"/>\r\n"
-				+ "                    <Name>TABPAGE_1.order</Name>\r\n"
-				+ "                    <Rows>\r\n"
-				+ "                        <Row>\r\n"
-				+ "                            <Edits>\r\n"
-				+ "								<Edit>\r\n"
-				+ "                                            <Name>order_no</Name>\r\n"
-				+ "                                            <Value>"+rmaNumber+"</Value>\r\n"
-				+ "                                        </Edit>\r\n"
-				+ "										<Edit>\r\n"
-				+ "                                            <Name>po_no</Name>\r\n"
-				+ "                                            <Value>"+poNumber+"</Value>\r\n"
-				+ "                                        </Edit>\r\n"
-				+ "                            </Edits>\r\n"
-				+ "                            <RelativeDateEdits/>\r\n"
-				+ "                        </Row>\r\n"
-				+ "                    </Rows>\r\n"
-				+ "                    <Type>Form</Type>\r\n"
-				+ "                </DataElement>\r\n"
-				+ "                <DataElement>\r\n"
-				+ "						<Keys\r\n"
-				+ "							xmlns:a=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\"/>\r\n"
-				+ "							<Name>TP_ITEMS.items</Name>\r\n"
-				+ "							<Rows>\r\n"
-				+ "								<Row>\r\n"
-				+ "									<Edits>\r\n"
-				+ "										<Edit>\r\n"
-				+ "											<Name>oe_order_item_id</Name>\r\n"
-				+ "											<Value>RESTOCKING CHARGE</Value>\r\n"
-				+ "										</Edit>\r\n"
-				+ "										<Edit>\r\n"
-				+ "											<Name>unit_quantity</Name>\r\n"
-				+ "											<Value>1</Value>\r\n"
-				+ "										</Edit>\r\n"
-				+ "                                        <Edit>\r\n"
-				+ "											<Name>unit_price</Name>\r\n"
-				+ "											<Value>"+totalRestocking+"</Value>\r\n"
-				+ "										</Edit>\r\n"
-				+ "                                        <Edit>\r\n"
-				+ "											<Name>extended_price</Name>\r\n"
-				+ "											<Value>"+totalRestocking+"</Value>\r\n"
-				+ "										</Edit>\r\n"
-				+ "									</Edits>\r\n"
-				+ "									<RelativeDateEdits/>\r\n"
-				+ "								</Row>\r\n"
-				+ "							</Rows>\r\n"
-				+ "							<Type>List</Type>\r\n"
-				+ "						</DataElement>\r\n"
-				+ "            </DataElements>\r\n"
-				+ "        </Transaction>\r\n"
-				+ "    </Transactions>\r\n"
-				+ "</TransactionSet>";
-		return str;
 	}
 
 }

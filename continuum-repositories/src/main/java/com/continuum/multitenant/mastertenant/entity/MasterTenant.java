@@ -55,4 +55,7 @@ public class MasterTenant implements Serializable {
     
     @Column(name="domain_password")
     private String domainPassword;
+    
+    @Column(name="restocking_item_id")
+    private String restockingItemId;
 }

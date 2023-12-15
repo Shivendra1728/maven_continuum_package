@@ -11,6 +11,6 @@ import com.di.commons.helper.OrderSearchParameters;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public interface P21UpdateRMAService {
-	String updateRMARestocking(Integer rmaNumber, String poNumber, Double totalRestocking) throws Exception;
+	String updateRMARestocking(String rmaNumber, Double totalRestocking) throws Exception;
 	String updateAmount(String rmaNo, List<ReturnOrderItem> returnOrderItems) throws Exception;
 }
