@@ -823,12 +823,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			returnOrderItemRepository.save(returnOrderItem);
 
+			if(!orderAddress.getReturnLocNote().isEmpty()) {
 			ReturnRoom returnRoom = new ReturnRoom();
 			returnRoom.setName(updateBy);
 			returnRoom.setMessage(returnOrderItem.getShipTo().getReturnLocNote());
 			returnRoom.setStatus(returnOrderItem.getStatus());
 			returnRoom.setReturnOrderItem(returnOrderItem);
 			returnRoomRepository.save(returnRoom);
+			}
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
