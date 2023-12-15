@@ -224,7 +224,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_LINE_DENIED)
-						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RECIEVED)) {
 					List<StatusConfig> statusConfigList = statusConfigRepository
 							.findBystatuslabl(updatedItem.getStatus());
 					StatusConfig statusConfig = statusConfigList.get(0);
@@ -272,6 +273,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
 							+ " has been assigned to the 'RMA line Cancelled' by " + updateBy + ".");
 					auditLog.setHighlight("RMA line Cancelled");
+				}
+				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RECIEVED)) {
+					auditLog.setDescription("Item - " + existingItem.getItemName()
+							+ " has been assigned to the 'RMA line Recieved' by " + updateBy + ".");
+					auditLog.setHighlight("RMA line Recieved");
 				}
 				auditLog.setTitle("Update Activity");
 				auditLog.setStatus("Line Items");
