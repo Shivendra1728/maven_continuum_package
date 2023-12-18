@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.UserService;
+import com.continuum.tenant.repos.entity.TNC;
 import com.continuum.tenant.repos.entity.User;
 
 @RestController
@@ -42,4 +43,11 @@ public class UserController {
 	public String updateUser(@RequestParam("id") long id, @RequestBody User user) {
 		return userService.updateUser(id, user);
 	}
+	
+	@GetMapping("getTnc")
+	public List<TNC> getTNC(){
+		return userService.getTnc();
+	}
+	
+	
 }

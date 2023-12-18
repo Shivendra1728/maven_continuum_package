@@ -11,8 +11,10 @@ import org.springframework.stereotype.Service;
 
 import com.continuum.service.UserService;
 import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.continuum.tenant.repos.entity.TNC;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
+import com.continuum.tenant.repos.repositories.TncRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.UserDTO;
 import com.di.commons.mapper.UserMapper;
@@ -28,6 +30,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	UserMapper usermapper;
+	
+	@Autowired
+	TncRepository tncRepository;
 
 	@Override
 	public Long createUser(User user) throws Exception {
@@ -142,5 +147,10 @@ public class UserServiceImpl implements UserService {
 		} else {
 			return "User not found";
 		}
+	}
+
+	@Override
+	public List<TNC> getTnc() {
+		return tncRepository.findAll();
 	}
 }
