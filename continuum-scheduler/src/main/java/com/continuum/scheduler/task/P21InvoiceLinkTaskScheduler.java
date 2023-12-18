@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,7 @@ import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
 import com.continuum.tenant.repos.repositories.OrderItemDocumentRepository;
+import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 //import com.di.commons.dto.RmaInvoiceInfoDTO;
 import com.continuum.tenant.repos.repositories.RmaInvoiceInfoRepository;
@@ -34,6 +33,7 @@ import com.di.commons.mapper.RmaInvoiceInfoMapper;
 import com.di.integration.p21.service.P21DocumentService;
 import com.di.integration.p21.service.P21InvoiceService;
 
+import lombok.Synchronized;
 
 @Component
 public class P21InvoiceLinkTaskScheduler {
@@ -44,6 +44,8 @@ public class P21InvoiceLinkTaskScheduler {
 //	
 	@Autowired
 	ReturnOrderRepository returnOrderRepository;
+	@Autowired
+	ReturnOrderItemRepository returnOrderItemRepository;
 	@Autowired
 	RmaInvoiceInfoRepository rmaInvoiceInfoRepository;
 	@Autowired
@@ -57,8 +59,7 @@ public class P21InvoiceLinkTaskScheduler {
 	@Autowired
 	P21DocumentService p21DocumentService;
 
-
-	@Scheduled(cron = "* */15 * * * *")
+	@Scheduled(cron = "* * * * * *")
 	public void runTasks() throws Exception {
 		List<MasterTenant> masterTenants = masterTenantRepo.findAll();
 		if (null == masterTenants) {
@@ -72,7 +73,9 @@ public class P21InvoiceLinkTaskScheduler {
 
 	}
 
+	@Synchronized
 	public void linkInvoice(MasterTenant masterTenant) throws Exception {
+
 		logger.info("In  document linking started");
 		List<RmaInvoiceInfo> rma = rmaInvoiceInfoRepository.findAll();
 
@@ -81,7 +84,7 @@ public class P21InvoiceLinkTaskScheduler {
 		for (RmaInvoiceInfo rmaInvoiceInfo : rma) {
 			try {
 				if (!rmaInvoiceInfo.isDocumentLinked() && rmaInvoiceInfo.getRetryCount() < 3) {
-					linkDocuments(rmaInvoiceInfo,masterTenant);
+					linkDocuments(rmaInvoiceInfo, masterTenant);
 					rmaInvoiceInfo.setDocumentLinked(true);
 					Optional<ReturnOrder> roo = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 					if (roo.isPresent()) {
@@ -137,16 +140,19 @@ public class P21InvoiceLinkTaskScheduler {
 		return str != null && !str.trim().isEmpty();
 	}
 
-	private boolean linkDocuments(RmaInvoiceInfo rmaInvoiceInfo,MasterTenant masterTenant) throws Exception {
+	@Synchronized
+	private boolean linkDocuments(RmaInvoiceInfo rmaInvoiceInfo, MasterTenant masterTenant) throws Exception {
 		boolean docLinked = false;
 
 		Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 		ReturnOrder returnOrder = ro.get();
 
-		List<ReturnOrderItem> returnOrderItemList = returnOrder.getReturnOrderItem();
+		List<ReturnOrderItem> returnOrderItemList = returnOrderItemRepository.findByReturnOrderId(returnOrder.getId());
+
 		DocumentLinkDTO docmentLinkDto = new DocumentLinkDTO();
 		docmentLinkDto.setRmaNo(rmaInvoiceInfo.getRmaOrderNo());
 		List<DocumentLinkHelper> documentList = new ArrayList();
+
 		for (ReturnOrderItem returnOrderItem : returnOrderItemList) {
 			List<OrderItemDocuments> orderItemDocuments = orderItemDocumentRepository
 					.findByReturnOrderItem_Id(returnOrderItem.getId());
@@ -159,8 +165,9 @@ public class P21InvoiceLinkTaskScheduler {
 
 			}
 		}
+
 		docmentLinkDto.setDocumentLinkHelperList(documentList);
-		p21DocumentService.linkDocument(docmentLinkDto,masterTenant);
+		p21DocumentService.linkDocument(docmentLinkDto, masterTenant);
 
 		docLinked = true;
 		return docLinked;
