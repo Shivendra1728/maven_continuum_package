@@ -33,8 +33,6 @@ import com.di.commons.mapper.RmaInvoiceInfoMapper;
 import com.di.integration.p21.service.P21DocumentService;
 import com.di.integration.p21.service.P21InvoiceService;
 
-import lombok.Synchronized;
-
 @Component
 public class P21InvoiceLinkTaskScheduler {
 	private static final Logger logger = LoggerFactory.getLogger(P21InvoiceLinkTaskScheduler.class);
@@ -59,7 +57,7 @@ public class P21InvoiceLinkTaskScheduler {
 	@Autowired
 	P21DocumentService p21DocumentService;
 
-	@Scheduled(cron = "* * * * * *")
+	@Scheduled(cron = "* */30 * * * *")
 	public void runTasks() throws Exception {
 		List<MasterTenant> masterTenants = masterTenantRepo.findAll();
 		if (null == masterTenants) {
@@ -73,7 +71,7 @@ public class P21InvoiceLinkTaskScheduler {
 
 	}
 
-	@Synchronized
+
 	public void linkInvoice(MasterTenant masterTenant) throws Exception {
 
 		logger.info("In  document linking started");
@@ -140,7 +138,6 @@ public class P21InvoiceLinkTaskScheduler {
 		return str != null && !str.trim().isEmpty();
 	}
 
-	@Synchronized
 	private boolean linkDocuments(RmaInvoiceInfo rmaInvoiceInfo, MasterTenant masterTenant) throws Exception {
 		boolean docLinked = false;
 
