@@ -352,7 +352,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 						HttpPut request = new HttpPut(apiUrl);
 						try {
-							String token = p21TokenServiceImpl.getToken(masterTenant);
+							String token = p21TokenServiceImpl.findToken(masterTenant);
 							request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 							request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 						} catch (Exception e) {
@@ -431,7 +431,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 //					RestTemplate restTemplate = new RestTemplate();
 //					HttpHeaders headers = new HttpHeaders();
 //					try {
-//						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
+//						headers.setBearerAuth(p21TokenServiceImpl.findToken(masterTenant));
 //					} catch (Exception e) {
 //						e.printStackTrace();
 //					}
@@ -453,7 +453,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 						HttpPut request = new HttpPut(apiUrl);
 						try {
-							String token = p21TokenServiceImpl.getToken(masterTenant);
+							String token = p21TokenServiceImpl.findToken(masterTenant);
 							request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 							request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 						} catch (Exception e) {
@@ -622,7 +622,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					HttpHeaders headers = new HttpHeaders();
 					try {
 						headers.setContentType(MediaType.APPLICATION_XML);
-						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
+						headers.setBearerAuth(p21TokenServiceImpl.findToken(masterTenant));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -979,7 +979,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 		String rmaDetailsUrl = masterTenant.getSubdomain() + rmaGetEndPoint + "/get";
 		String rmaReceiptUrl = masterTenant.getSubdomain() + rmaGetEndPoint;
-		String accessToken = "Bearer: " + p21TokenServiceImpl.getToken(masterTenant);
+		String accessToken = "Bearer: " + p21TokenServiceImpl.findToken(masterTenant);
 
 		logger.info("First URL" + rmaDetailsUrl);
 		logger.info("Second URL" + rmaReceiptUrl);
