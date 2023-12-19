@@ -182,12 +182,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				existingItem.setAmount(updatedItem.getAmount());
 				existingItem.setAmountNote(updatedItem.getAmountNote());
 
-				ReturnRoom returnRoom = new ReturnRoom();
-				returnRoom.setName(updateBy);
-				returnRoom.setMessage(updatedItem.getAmountNote());
-				returnRoom.setReturnOrderItem(existingItem);
-				returnRoom.setAssignTo(null);
-				returnRoomRepository.save(returnRoom);
+				if(updatedItem.getAmountNote() != null && !updatedItem.getAmountNote().equals("")) {
+					ReturnRoom returnRoom = new ReturnRoom();
+					returnRoom.setName(updateBy);
+					returnRoom.setMessage(updatedItem.getAmountNote());
+					returnRoom.setReturnOrderItem(existingItem);
+					returnRoom.setAssignTo(null);
+					returnRoomRepository.save(returnRoom);
+				}
 				returnOrderItemRepository.save(existingItem);
 
 				auditLog.setDescription(
@@ -266,7 +268,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
 							+ " has been assigned to the 'RMA Denied' by " + updateBy + ".");
-					auditLog.setHighlight("RMA line Denied");
+					auditLog.setHighlight("RMA Denied");
 				}
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
@@ -587,10 +589,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					if (!statusConfig.getStatusMap().equals(returnOrder.getStatus())) {
 
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'DENIED' by " + updateBy
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'RMA DENIED' by " + updateBy
 								+ ".; Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
 						String title = "Return Order";
-						String highlight = "Denied";
+						String highlight = "RMA DENIED";
 						String status = "Inbox";
 						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 					}
@@ -799,7 +801,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 
 			auditLog.setTitle("Update Activity");
-			auditLog.setHighlight("");
+			auditLog.setHighlight("reassigned note");
 			auditLog.setStatus("List Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
@@ -836,7 +838,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription("Shipping Information has been updated of item - " + returnOrderItem.getItemName()
 					+ " by " + updateBy + ".");
-			auditLog.setHighlight("");
+			auditLog.setHighlight("Shipping Information");
 			auditLog.setStatus("List Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
@@ -888,7 +890,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setDescription(
 					updateBy + " has been updated the restocking fee of item - " + returnOrderItem.getItemName()
 							+ " from $" + preRestocking + " to $" + returnOrderItem.getReStockingAmount() + ".");
-			auditLog.setHighlight("");
+			auditLog.setHighlight("restocking fee");
 			auditLog.setStatus("List Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
@@ -961,7 +963,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription("Item- " + item.getItemName() + " has been deleted by " + updateBy + ".;"
 					+ "Note : " + orderItem.getDeleteNote() + ".");
-			auditLog.setHighlight("");
+			auditLog.setHighlight("deleted");
 			auditLog.setStatus("List Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
