@@ -6,5 +6,5 @@ import com.continuum.tenant.repos.entity.Warehouse;
 
 public interface WarehouseService {
 	List<Warehouse> findAll();
-	public void createWarehouse(Warehouse warehouse);
+	public String createWarehouse(Warehouse warehouse);
 }

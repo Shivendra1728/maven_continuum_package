@@ -19,8 +19,8 @@ public class WarehouseController {
 	WarehouseService warehouseService;
 	
 	@PostMapping("/createWarehouse")
-	public void createWarehouse(@RequestBody Warehouse warehouse) throws Exception{
-		warehouseService.createWarehouse(warehouse);
+	public String createWarehouse(@RequestBody Warehouse warehouse) throws Exception{
+		return warehouseService.createWarehouse(warehouse);
 	}
 	
 	@GetMapping("/getWarehouse")

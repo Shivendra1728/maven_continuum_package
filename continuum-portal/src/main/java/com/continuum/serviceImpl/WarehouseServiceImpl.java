@@ -19,8 +19,15 @@ public class WarehouseServiceImpl implements WarehouseService {
 		return warehouseRepository.findAll();
 	}
 	
-	public void createWarehouse(Warehouse warehouse) {
+	public String createWarehouse(Warehouse warehouse) {
+		List<Warehouse> findAll = warehouseRepository.findAll();
+		for(Warehouse wh : findAll) {
+			if (wh.getAddressType().equalsIgnoreCase(warehouse.getAddressType())) {
+				return wh.getAddressType()+" warehouse already existed";
+			}
+		}
 		warehouseRepository.save(warehouse);
+		return "Warehouse created successfully";
 	}
 
 }
