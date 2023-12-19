@@ -252,8 +252,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				}
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AWAITING_VENDOR_APPROVAL)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'Awaiting Vender approval' by " + updateBy + ".");
-					auditLog.setHighlight("Awaiting Vender approval");
+							+ " has been assigned to the 'Awaiting Vendor approval' by " + updateBy + ".");
+					auditLog.setHighlight("Awaiting Vendor approval");
 				}
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()

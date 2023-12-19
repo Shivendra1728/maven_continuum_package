@@ -724,7 +724,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				logger.info("condition 7");
 
 			}
-			auditLog.setHighlight("Under Review");
+			auditLog.setHighlight(returnTypes.get().getType());
 			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
