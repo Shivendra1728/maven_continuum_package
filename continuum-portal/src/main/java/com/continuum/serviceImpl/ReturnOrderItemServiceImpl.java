@@ -272,13 +272,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				}
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'RMA line Cancelled' by " + updateBy + ".");
-					auditLog.setHighlight("RMA line Cancelled");
+							+ " has been assigned to the 'RMA Cancelled' by " + updateBy + ".");
+					auditLog.setHighlight("RMA Cancelled");
 				}
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RECIEVED)) {
 					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'RMA line Recieved' by " + updateBy + ".");
-					auditLog.setHighlight("RMA line Recieved");
+							+ " has been assigned to the 'RMA Recieved' by " + updateBy + ".");
+					auditLog.setHighlight("RMA Recieved");
 				}
 				auditLog.setTitle("Update Activity");
 				auditLog.setStatus("Line Items");
@@ -888,7 +888,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(
-					updateBy + " has been updated the restocking fee of item - " + returnOrderItem.getItemName()
+					updateBy + " has updated the restocking fee of item - " + returnOrderItem.getItemName()
 							+ " from $" + preRestocking + " to $" + returnOrderItem.getReStockingAmount() + ".");
 			auditLog.setHighlight("restocking fee");
 			auditLog.setStatus("List Items");
