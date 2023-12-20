@@ -189,6 +189,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				String title = "Update Activity";
 				String highlight = "";
 				String status = "Line Items";
+				
 
 				if (updatedItem.getAmount() != null) {
 					existingItem.setAmount(updatedItem.getAmount());
@@ -209,6 +210,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					returnRoom.setAssignTo(null);
 					returnRoomRepository.save(returnRoom);
 
+				}
 				}
 				List<String> updates = new ArrayList<>();
 
