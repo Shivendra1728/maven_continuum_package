@@ -97,7 +97,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	CustomerRepository customerRepository;
-	
+
 	@Autowired
 	EmailSender emailSender;
 
@@ -182,12 +182,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				existingItem.setAmount(updatedItem.getAmount());
 				existingItem.setAmountNote(updatedItem.getAmountNote());
 
-				
-				if(existingItem.getReturnAmount() != null && existingItem.getReturnAmount() != BigDecimal.valueOf(0)) {
+				if (existingItem.getReturnAmount() != null && existingItem.getReturnAmount() != BigDecimal.valueOf(0)) {
 					BigDecimal newRefundAmount = updatedItem.getAmount().subtract(existingItem.getReStockingAmount());
 					existingItem.setReturnAmount(newRefundAmount);
 				}
-				if(updatedItem.getAmountNote() != null && !updatedItem.getAmountNote().equals("")) {
+				if (updatedItem.getAmountNote() != null && !updatedItem.getAmountNote().equals("")) {
 					ReturnRoom returnRoom = new ReturnRoom();
 					returnRoom.setName(updateBy);
 					returnRoom.setMessage(updatedItem.getAmountNote());
@@ -391,10 +390,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						e.printStackTrace();
 					}
 
-					
-					//Updating Restocking fee to the ERP
+					// Updating Restocking fee to the ERP
 					sendRestockingFeeToERP(rmaNo);
-
 
 					String db_name = "";
 					String domain[] = httpServletRequest.getHeader("host").split("\\.");
@@ -408,14 +405,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						sendRestockingFeeToERP(rmaNo);
 					}
 
-
 					List<EditableConfig> findAll = editableConfigRepository.findAll();
 					EditableConfig editableConfig = findAll.get(0);
 					if (editableConfig.isAmountAddition() == true) {
 						Optional<ReturnOrder> findByRmaOrderNo1 = returnOrderRepository.findByRmaOrderNo(rmaNo);
 						ReturnOrder returnOrder1 = findByRmaOrderNo1.get();
 						logger.info("Updating amount to REP");
-						//Updating Amount to the ERP
+						// Updating Amount to the ERP
 						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
 					}
 
@@ -699,14 +695,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String updateNote(Long lineItemId, Long assignToId, String rmaNo, String updateBy, Long assignToRole , String contactEmail,
-			ReturnOrderItemDTO updateNote) {
+	public String updateNote(Long lineItemId, Long assignToId, String rmaNo, String updateBy, Long assignToRole,
+			String contactEmail, ReturnOrderItemDTO updateNote) {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(lineItemId);
 		Optional<Customer> optionalCustomer = customerRepository.findById(assignToId);
-			AuditLog auditLog = new AuditLog();
-			if(optionalItem.isPresent()) {
+		AuditLog auditLog = new AuditLog();
+		if (optionalItem.isPresent()) {
 			ReturnOrderItem existingItem = optionalItem.get();
-			if (optionalCustomer.isPresent()&&assignToRole==4) {
+			if (optionalCustomer.isPresent() && assignToRole == 4) {
 				Optional<User> optionalUser = userRepository.findByCustomerId(optionalCustomer.get().getId());
 				User user = optionalUser.get();
 
@@ -728,36 +724,35 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				} else {
 					formattedDate = null;
 				}
-						auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
-								+ user.getLastName() + " of item - " + existingItem.getItemName()
-								+ ". Please review the details and take necessary action.;"
-								+ "Vendor Message added and Email has been sent to the " + contactEmail);
+				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
+						+ user.getLastName() + " of item - " + existingItem.getItemName()
+						+ ". Please review the details and take necessary action.;"
+						+ "Vendor Message added and Email has been sent to the " + contactEmail);
 
-					String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier()
-							+ " " + rmaNo;
-					String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
-					HashMap<String, String> map = new HashMap<>();
+				String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier() + " "
+						+ rmaNo;
+				String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
+				HashMap<String, String> map = new HashMap<>();
 
-					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
-					map.put("RMA_NO", rmaNo);
-					map.put("note", updateNote.getNote());
-					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
-					map.put("CLIENT_PHONE",
-							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
-					try {
-						emailSender.sendEmail(recipient, template2, subject, map);
-					} catch (MessagingException e) {
-						e.printStackTrace();
-					}
-					ReturnRoom returnRoom = new ReturnRoom();
-					returnRoom.setName(updateBy);
-					returnRoom.setMessage(updateNote.getNote());
-					returnRoom.setAssignTo(user);
-					returnRoom.setFollowUpDate(
-							updateNote.getFollowUpDate() != null ? updateNote.getFollowUpDate() : null);
-					returnRoom.setStatus(updateNote.getStatus());
-					returnRoom.setReturnOrderItem(existingItem);
-					returnRoomRepository.save(returnRoom);
+				map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+				map.put("RMA_NO", rmaNo);
+				map.put("note", updateNote.getNote());
+				map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+				map.put("CLIENT_PHONE",
+						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+				try {
+					emailSender.sendEmail(recipient, template2, subject, map);
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+				ReturnRoom returnRoom = new ReturnRoom();
+				returnRoom.setName(updateBy);
+				returnRoom.setMessage(updateNote.getNote());
+				returnRoom.setAssignTo(user);
+				returnRoom.setFollowUpDate(updateNote.getFollowUpDate() != null ? updateNote.getFollowUpDate() : null);
+				returnRoom.setStatus(updateNote.getStatus());
+				returnRoom.setReturnOrderItem(existingItem);
+				returnRoomRepository.save(returnRoom);
 
 			} else {
 				Optional<User> optionalUser = userRepository.findById(assignToId);
@@ -765,9 +760,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				existingItem.setNote(updateNote.getNote());
 				existingItem.setUser(user);
 				returnOrderItemRepository.save(existingItem);
-					auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
-							+ user.getLastName() + " of item - " + existingItem.getItemName()
-							+ ". Please review the details and take necessary action.");
+				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
+						+ user.getLastName() + " of item - " + existingItem.getItemName()
+						+ ". Please review the details and take necessary action.");
 				String subject = PortalConstants.NOTE_STATUS + returnOrderServiceImpl.getRmaaQualifier() + " " + rmaNo;
 				String template2 = emailTemplateRenderer.getRETURN_PROCESSOR_NOTE();
 				HashMap<String, String> map = new HashMap<>();
@@ -813,10 +808,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLogRepository.save(auditLog);
 
 			return "Updated Note Details and capture in return room and audit log";
-			}
-			else {
-				return "Not found";
-			}
+		} else {
+			return "Not found";
+		}
 	}
 
 	@Override
@@ -830,13 +824,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			returnOrderItemRepository.save(returnOrderItem);
 
-			if(!orderAddress.getReturnLocNote().isEmpty()) {
-			ReturnRoom returnRoom = new ReturnRoom();
-			returnRoom.setName(updateBy);
-			returnRoom.setMessage(returnOrderItem.getShipTo().getReturnLocNote());
-			returnRoom.setStatus(returnOrderItem.getStatus());
-			returnRoom.setReturnOrderItem(returnOrderItem);
-			returnRoomRepository.save(returnRoom);
+			if (!orderAddress.getReturnLocNote().isEmpty()) {
+				ReturnRoom returnRoom = new ReturnRoom();
+				returnRoom.setName(updateBy);
+				returnRoom.setMessage(returnOrderItem.getShipTo().getReturnLocNote());
+				returnRoom.setStatus(returnOrderItem.getStatus());
+				returnRoom.setReturnOrderItem(returnOrderItem);
+				returnRoomRepository.save(returnRoom);
 			}
 
 			AuditLog auditLog = new AuditLog();
@@ -893,8 +887,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(
-					updateBy + " has updated the restocking fee of item - " + returnOrderItem.getItemName()
-							+ " from $" + preRestocking + " to $" + returnOrderItem.getReStockingAmount() + ".");
+					updateBy + " has updated the restocking fee of item - " + returnOrderItem.getItemName() + " from $"
+							+ preRestocking + " to $" + returnOrderItem.getReStockingAmount() + ".");
 			auditLog.setHighlight("restocking fee");
 			auditLog.setStatus("List Items");
 			auditLog.setRmaNo(rmaNo);
@@ -913,10 +907,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
 			for (ReturnOrderItem returnOrderItem : returnOrderItems) {
 				if (returnOrderItem.getReStockingAmount() != null) {
-					if(!returnOrderItem.getStatus().equals(PortalConstants.RMA_CANCLED) && !returnOrderItem.getStatus().equals(PortalConstants.RMA_DENIED)) {
+					if (!returnOrderItem.getStatus().equals(PortalConstants.RMA_CANCLED)
+							&& !returnOrderItem.getStatus().equals(PortalConstants.RMA_DENIED)) {
 						totalRestocking += returnOrderItem.getReStockingAmount().doubleValue();
 					}
-					
+
 				}
 			}
 			String rmaNumber = returnOrder.getRmaOrderNo();
@@ -1023,10 +1018,19 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(42).path("Rows");
 				List<String> itemIdsList = new ArrayList<>();
+				List<String> itemQuantitiesList = new ArrayList<>();
 				for (JsonNode item : itemsNode) {
+					// Picking up item id/item ids from rma
+
 					String itemId = item.path("Edits").get(0).path("Value").asText();
 					itemIdsList.add(itemId);
 					System.out.println("Item ID: " + itemId);
+
+					// Picking up rma quantity from Unit_Quantity field
+
+					String itemQuantity = item.path("Edits").get(3).path("Value").asText();
+					itemQuantitiesList.add(itemQuantity);
+					System.out.println("Item Quantity: " + itemQuantity);
 				}
 
 				logger.info("This is orderNo: " + orderNo);
@@ -1035,7 +1039,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				logger.info("List of item ids: " + itemIdsList);
 
 				String secondApiRequestBody = constructSecondApiRequestBody(orderNo, rmaExpirationDate, salesLocId,
-						itemIdsList);
+						itemIdsList, itemQuantitiesList);
 
 				logger.info("Second API REQUEST BODY: " + secondApiRequestBody);
 
@@ -1077,7 +1081,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	private String constructSecondApiRequestBody(String orderNo, String rmaExpirationDate, String salesLocId,
-			List<String> itemIdsList) {
+			List<String> itemIdsList, List<String> itemQuantitiesList) {
 
 		ObjectNode rootNode = objectMapper.createObjectNode();
 		rootNode.put("IgnoreDisabled", true);
@@ -1115,13 +1119,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		itemsList.put("Type", "List");
 
 		ArrayNode itemsRowsArray = itemsList.putArray("Rows");
-		for (String itemId : itemIdsList) {
+		for (int i = 0; i < itemIdsList.size(); i++) {
+			String itemId = itemIdsList.get(i);
+			String itemQuantity = itemQuantitiesList.get(i);
+
 			ObjectNode itemRow = itemsRowsArray.addObject();
 			ArrayNode itemEditsArray = itemRow.putArray("Edits");
 
 			addEdit(itemEditsArray, "oe_order_item_id", itemId);
-			addEdit(itemEditsArray, "c_rma_qty_received", "");
-			addEdit(itemEditsArray, "c_rma_qty_to_return_to_stock", "");
+			addEdit(itemEditsArray, "c_rma_qty_received", itemQuantity);
+			addEdit(itemEditsArray, "c_rma_qty_to_return_to_stock", itemQuantity);
 			addEdit(itemEditsArray, "c_complete", "OFF");
 		}
 		return rootNode.toPrettyString();
