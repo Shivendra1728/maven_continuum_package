@@ -196,6 +196,19 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (!updatedItem.getAmountNote().isEmpty()) {
 					existingItem.setAmountNote(updatedItem.getAmountNote());
+
+				if (existingItem.getReturnAmount() != null && existingItem.getReturnAmount() != BigDecimal.valueOf(0)) {
+					BigDecimal newRefundAmount = updatedItem.getAmount().subtract(existingItem.getReStockingAmount());
+					existingItem.setReturnAmount(newRefundAmount);
+				}
+				if (updatedItem.getAmountNote() != null && !updatedItem.getAmountNote().equals("")) {
+					ReturnRoom returnRoom = new ReturnRoom();
+					returnRoom.setName(updateBy);
+					returnRoom.setMessage(updatedItem.getAmountNote());
+					returnRoom.setReturnOrderItem(existingItem);
+					returnRoom.setAssignTo(null);
+					returnRoomRepository.save(returnRoom);
+
 				}
 				List<String> updates = new ArrayList<>();
 
@@ -361,7 +374,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 						HttpPut request = new HttpPut(apiUrl);
 						try {
-							String token = p21TokenServiceImpl.getToken(masterTenant);
+							String token = p21TokenServiceImpl.findToken(masterTenant);
 							request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 							request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 						} catch (Exception e) {
@@ -434,6 +447,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					// Save in ERP
 					String apiUrl = masterTenant.getSubdomain() + "/api/sales/orders/"
 							+ returnOrderEntity.getRmaOrderNo() + "/approve";
+
 					try {
 						// Your existing HTTP request code here
 						CloseableHttpClient httpClient = HttpClients.custom()
@@ -443,7 +457,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 						HttpPut request = new HttpPut(apiUrl);
 						try {
-							String token = p21TokenServiceImpl.getToken(masterTenant);
+							String token = p21TokenServiceImpl.findToken(masterTenant);
 							request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 							request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 						} catch (Exception e) {
@@ -612,7 +626,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					HttpHeaders headers = new HttpHeaders();
 					try {
 						headers.setContentType(MediaType.APPLICATION_XML);
-						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
+						headers.setBearerAuth(p21TokenServiceImpl.findToken(masterTenant));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -968,7 +982,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 		String rmaDetailsUrl = masterTenant.getSubdomain() + rmaGetEndPoint + "/get";
 		String rmaReceiptUrl = masterTenant.getSubdomain() + rmaGetEndPoint;
-		String accessToken = "Bearer: " + p21TokenServiceImpl.getToken(masterTenant);
+		String accessToken = "Bearer: " + p21TokenServiceImpl.findToken(masterTenant);
 
 		logger.info("First URL" + rmaDetailsUrl);
 		logger.info("Second URL" + rmaReceiptUrl);
@@ -1005,10 +1019,19 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(42).path("Rows");
 				List<String> itemIdsList = new ArrayList<>();
+				List<String> itemQuantitiesList = new ArrayList<>();
 				for (JsonNode item : itemsNode) {
+					// Picking up item id/item ids from rma
+
 					String itemId = item.path("Edits").get(0).path("Value").asText();
 					itemIdsList.add(itemId);
 					System.out.println("Item ID: " + itemId);
+
+					// Picking up rma quantity from Unit_Quantity field
+
+					String itemQuantity = item.path("Edits").get(3).path("Value").asText();
+					itemQuantitiesList.add(itemQuantity);
+					System.out.println("Item Quantity: " + itemQuantity);
 				}
 
 				logger.info("This is orderNo: " + orderNo);
@@ -1017,7 +1040,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				logger.info("List of item ids: " + itemIdsList);
 
 				String secondApiRequestBody = constructSecondApiRequestBody(orderNo, rmaExpirationDate, salesLocId,
-						itemIdsList);
+						itemIdsList, itemQuantitiesList);
 
 				logger.info("Second API REQUEST BODY: " + secondApiRequestBody);
 
@@ -1059,7 +1082,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	private String constructSecondApiRequestBody(String orderNo, String rmaExpirationDate, String salesLocId,
-			List<String> itemIdsList) {
+			List<String> itemIdsList, List<String> itemQuantitiesList) {
 
 		ObjectNode rootNode = objectMapper.createObjectNode();
 		rootNode.put("IgnoreDisabled", true);
@@ -1097,13 +1120,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		itemsList.put("Type", "List");
 
 		ArrayNode itemsRowsArray = itemsList.putArray("Rows");
-		for (String itemId : itemIdsList) {
+		for (int i = 0; i < itemIdsList.size(); i++) {
+			String itemId = itemIdsList.get(i);
+			String itemQuantity = itemQuantitiesList.get(i);
+
 			ObjectNode itemRow = itemsRowsArray.addObject();
 			ArrayNode itemEditsArray = itemRow.putArray("Edits");
 
 			addEdit(itemEditsArray, "oe_order_item_id", itemId);
-			addEdit(itemEditsArray, "c_rma_qty_received", "");
-			addEdit(itemEditsArray, "c_rma_qty_to_return_to_stock", "");
+			addEdit(itemEditsArray, "c_rma_qty_received", itemQuantity);
+			addEdit(itemEditsArray, "c_rma_qty_to_return_to_stock", itemQuantity);
 			addEdit(itemEditsArray, "c_complete", "OFF");
 		}
 		return rootNode.toPrettyString();

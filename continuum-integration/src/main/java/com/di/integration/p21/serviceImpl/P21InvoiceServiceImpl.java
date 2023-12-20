@@ -107,7 +107,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 		HttpGet request = new HttpGet(fullURI);
 
-		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
 
 		HttpResponse response = httpClient.execute(request);
 		HttpEntity entity = response.getEntity();
@@ -211,7 +211,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		URI windowListfullURI = windowList.resolve(windowList.getRawPath());
 
 		System.out.println(windowListfullURI.toString());
-		String token = p21TokenServiceImpl.getToken(masterTenant);
+		String token = p21TokenServiceImpl.findToken(masterTenant);
 		logger.info("#### TOKEN #### {}", token);
 		try {
 

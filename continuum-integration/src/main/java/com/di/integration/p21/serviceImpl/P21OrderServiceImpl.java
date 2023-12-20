@@ -245,7 +245,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 		HttpPost request = new HttpPost(fullURI);
 		logger.info("Carrier NAME DATA URL" + request);
 
-		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
 		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 		request.setHeader(HttpHeaders.ACCEPT, "application/json");
 		String requestBody = "{\n" + "  \"ServiceName\": \"Carrier\",\n" + "  \"TransactionStates\": [\n" + "    {\n"
@@ -286,7 +286,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 		HttpGet request = new HttpGet(fullURI);
 
-		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
 
 		HttpResponse response = httpClient.execute(request);
 		HttpEntity entity = response.getEntity();
@@ -304,7 +304,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 		HttpGet request = new HttpGet(fullURI);
 
-		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
 
 		HttpResponse response = httpClient.execute(request);
 		HttpEntity entity = response.getEntity();
@@ -419,7 +419,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 		HttpGet request = new HttpGet(fullURI);
 		logger.info("Carrier DATA URL" + request);
 
-		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
 
 		HttpResponse response = httpClient.execute(request);
 		HttpEntity entity = response.getEntity();

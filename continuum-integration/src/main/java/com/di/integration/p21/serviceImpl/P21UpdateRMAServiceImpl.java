@@ -81,7 +81,7 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 
 		// Set request headers
 		request.addHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
-		String token = p21TokenServiceImpl.getToken(masterTenant);
+		String token = p21TokenServiceImpl.findToken(masterTenant);
 		logger.info("#### TOKEN #### {}", token);
 
 		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
@@ -109,7 +109,7 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 
 		// Set request headers
 		request.addHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
-		String token = p21TokenServiceImpl.getToken(masterTenant);
+		String token = p21TokenServiceImpl.findToken(masterTenant);
 		logger.info("#### TOKEN #### {}", token);
 
 		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
