@@ -97,7 +97,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	CustomerRepository customerRepository;
-	
+
 	@Autowired
 	EmailSender emailSender;
 
@@ -106,6 +106,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
+
+	@Autowired
+	AuditLogServiceImpl auditLogServiceImpl;
 
 	@Value(PortalConstants.MAIL_HOST)
 	private String mailHost;
@@ -179,52 +182,92 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 
 			if (updatedItem.getAmount() != null || updatedItem.getAmountNote() != null) {
-				existingItem.setAmount(updatedItem.getAmount());
-				existingItem.setAmountNote(updatedItem.getAmountNote());
+				BigDecimal existingAmount = existingItem.getAmount();
+				String existingAmountNote = existingItem.getAmountNote();
 
-				
-				if(existingItem.getReturnAmount() != null && existingItem.getReturnAmount() != BigDecimal.valueOf(0)) {
-					BigDecimal newRefundAmount = updatedItem.getAmount().subtract(existingItem.getReStockingAmount());
-					existingItem.setReturnAmount(newRefundAmount);
-				}
-				if(updatedItem.getAmountNote() != null && !updatedItem.getAmountNote().equals("")) {
-					ReturnRoom returnRoom = new ReturnRoom();
-					returnRoom.setName(updateBy);
-					returnRoom.setMessage(updatedItem.getAmountNote());
-					returnRoom.setReturnOrderItem(existingItem);
-					returnRoom.setAssignTo(null);
-					returnRoomRepository.save(returnRoom);
-				}
-				returnOrderItemRepository.save(existingItem);
+				String description = "";
+				String title = "Update Activity";
+				String highlight = "";
+				String status = "Line Items";
 
-				auditLog.setDescription(
-						"Amount has been updated of item - " + existingItem.getItemName() + " by " + updateBy + ".");
-				auditLog.setHighlight("Amount");
-				auditLog.setTitle("Update Activity");
-				auditLog.setStatus("Line Items");
-				auditLog.setRmaNo(rmaNo);
-				auditLog.setUserName(updateBy);
-				auditLogRepository.save(auditLog);
-				returnOrderItemRepository.save(existingItem);
+				if (updatedItem.getAmount() != null) {
+					existingItem.setAmount(updatedItem.getAmount());
+				}
+
+				if (!updatedItem.getAmountNote().isEmpty()) {
+					existingItem.setAmountNote(updatedItem.getAmountNote());
+				}
+				List<String> updates = new ArrayList<>();
+
+				if (updatedItem.getAmount()!=existingAmount) {
+					updates.add("Amount has been updated of item - " + existingItem.getItemName() + " from "
+							+ existingAmount + " to " + updatedItem.getAmount());
+				}
+
+				if (!updatedItem.getAmountNote().equalsIgnoreCase(existingAmountNote)) {
+					updates.add("Amount Note has been updated of item - " + existingItem.getItemName() + " from " + "'"
+							+ existingAmountNote + "'" + " to " + "'" + updatedItem.getAmountNote() + "'");
+				}
+
+				if (!updates.isEmpty()) {
+					description = String.join(" by " + updateBy + ".;", updates) + ".";
+					highlight = "Amount";
+
+					auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+					returnOrderItemRepository.save(existingItem);
+				}
 			}
 
 			if (updatedItem.getTrackingNumber() != null || updatedItem.getCourierName() != null
 					|| updatedItem.getTrackingUrl() != null) {
-				existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
-				existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
-				existingItem.setCourierName(updatedItem.getCourierName());
-				auditLog.setDescription("Tracking Detail has been updated of item - " + existingItem.getItemName()
-						+ " by " + updateBy + ".");
-				auditLog.setHighlight("Tracking Detail");
-				auditLog.setTitle("Update Activity");
-				auditLog.setStatus("Line Items");
-				auditLog.setRmaNo(rmaNo);
-				auditLog.setUserName(updateBy);
-				auditLogRepository.save(auditLog);
+				String existingTrackingNumber = existingItem.getTrackingNumber();
+				String existingTrackingUrl = existingItem.getTrackingUrl();
+				String existingCourierName = existingItem.getCourierName();
+
+				String description = "";
+				String highlight = "";
+				String title = "Update Activity";
+				String status = "Line Items";
+				if (!updatedItem.getTrackingNumber().isEmpty()) {
+					existingItem.setTrackingNumber(updatedItem.getTrackingNumber());
+				}
+
+				if (!updatedItem.getTrackingUrl().isEmpty()) {
+					existingItem.setTrackingUrl(updatedItem.getTrackingUrl());
+				}
+
+				if (!updatedItem.getCourierName().isEmpty()) {
+					existingItem.setCourierName(updatedItem.getCourierName());
+				}
+
+				List<String> updates = new ArrayList<>();
+				if (!updatedItem.getTrackingNumber().isEmpty()
+						&& !updatedItem.getTrackingNumber().equalsIgnoreCase(existingTrackingNumber)) {
+					updates.add("Tracking Number has been updated of item - " + existingItem.getItemName() + " to "
+							+ updatedItem.getTrackingNumber());
+				}
+
+				if (!updatedItem.getTrackingUrl().isEmpty()
+						&& !updatedItem.getTrackingUrl().equalsIgnoreCase(existingTrackingUrl)) {
+					updates.add("Tracking Url has been updated of item - " + existingItem.getItemName() + " to "
+							+ updatedItem.getTrackingUrl());
+				}
+
+				if (!updatedItem.getCourierName().isEmpty()
+						&& !updatedItem.getCourierName().equalsIgnoreCase(existingCourierName)) {
+					updates.add("Courier Name has been updated of item - " + existingItem.getItemName() + " to "
+							+ updatedItem.getCourierName());
+				}
+
+				description = String.join(" by " + updateBy + ".;", updates) + ".";
+				highlight = "Tracking";
+
+				auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 				returnOrderItemRepository.save(existingItem);
 
 			}
 			if (updatedItem.getStatus() != null) {
+				String existingStatus = existingItem.getStatus();
 				existingItem.setStatus(updatedItem.getStatus());
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)
@@ -239,57 +282,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					existingItem.setIsEditable(statusConfig.getIsEditable());
 					existingItem.setIsAuthorized(statusConfig.getIsAuthorized());
 				}
-				if (updatedItem.getStatus().equalsIgnoreCase("Under Review")) {
-					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'Under Review' by " + updateBy + ".");
-					auditLog.setHighlight("Under Review");
-				}
-				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
-					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'Requires more customer  information' by " + updateBy + ".");
-					auditLog.setHighlight("Requires more customer  information");
-				}
-				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AWAITING_CARRIER_APPROVAL)) {
-					auditLog.setDescription(returnOrderServiceImpl.getRmaaQualifier() + " " + rmaNo
-							+ " has been updated to 'Under Review';Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'Awaiting Carrier approval' by " + updateBy + "");
-					auditLog.setHighlight("Under Review");
-				}
-				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AWAITING_VENDOR_APPROVAL)) {
-					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'Awaiting Vendor approval' by " + updateBy + ".");
-					auditLog.setHighlight("Awaiting Vendor approval");
-				}
-				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)) {
-					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'Authorized Awaiting Transit' by " + updateBy + ".");
-					auditLog.setHighlight("Authorized Awaiting Transit");
-				}
-				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)) {
-					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'Authorized In Transit' by " + updateBy + ".");
-					auditLog.setHighlight("Authorized In Transit'");
-				}
-				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'RMA Denied' by " + updateBy + ".");
-					auditLog.setHighlight("RMA Denied");
-				}
-				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
-					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'RMA Cancelled' by " + updateBy + ".");
-					auditLog.setHighlight("RMA Cancelled");
-				}
-				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RECIEVED)) {
-					auditLog.setDescription("Item - " + existingItem.getItemName()
-							+ " has been assigned to the 'RMA Recieved' by " + updateBy + ".");
-					auditLog.setHighlight("RMA Recieved");
-				}
-				auditLog.setTitle("Update Activity");
-				auditLog.setStatus("Line Items");
-				auditLog.setRmaNo(rmaNo);
-				auditLog.setUserName(updateBy);
-				auditLogRepository.save(auditLog);
+
+				String auditLogDescription = "";
+				String auditLogStatus = "";
+				String auditLogTitle = "";
+				auditLogDescription = "Item - " + existingItem.getItemName() + " has been updated from "
+						+ existingStatus + " to " + updatedItem.getStatus() + " by " + updateBy + ".";
+				auditLogStatus = "Line Items";
+
+				auditLogServiceImpl.setAuditLog(auditLogDescription, auditLogTitle, auditLogStatus, rmaNo, updateBy,
+						updatedItem.getStatus());
 				returnOrderItemRepository.save(existingItem);
 
 				// String recipient = existingItem.getReturnOrder().getCustomer().getEmail();
@@ -318,7 +320,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
 				StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
-
+				String existingHeaderStatus = returnOrderEntity.getStatus();
 				returnOrderEntity.setStatus(statusConfig.getStatusMap());
 				returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
 				returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
@@ -326,25 +328,25 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Under Review' by "
-								+ updateBy + ".";
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
+								+ " to " + "'" + returnOrderEntity.getStatus() + "' by " + updateBy + ".";
 						String title = "Return Order";
-						String highlight = "Under Review";
 						String status = "RMA Header";
-						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy,
+								returnOrderEntity.getStatus());
 					}
 
 				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
 
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Authorized' by " + updateBy
-								+ ". The return is approved. Please proceed with the necessary steps." + "; "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
+								+ " to " + "'" + returnOrderEntity.getStatus() + "' by " + updateBy + ".;"
 								+ "Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
 						String title = "Return Order";
-						String highlight = "Authorized";
 						String status = "Inbox";
-						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy,
+								returnOrderEntity.getStatus());
 					}
 
 					// Save in ERP
@@ -391,10 +393,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						e.printStackTrace();
 					}
 
-					
-					//Updating Restocking fee to the ERP
+					// Updating Restocking fee to the ERP
 					sendRestockingFeeToERP(rmaNo);
-
 
 					String db_name = "";
 					String domain[] = httpServletRequest.getHeader("host").split("\\.");
@@ -408,14 +408,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						sendRestockingFeeToERP(rmaNo);
 					}
 
-
 					List<EditableConfig> findAll = editableConfigRepository.findAll();
 					EditableConfig editableConfig = findAll.get(0);
 					if (editableConfig.isAmountAddition() == true) {
 						Optional<ReturnOrder> findByRmaOrderNo1 = returnOrderRepository.findByRmaOrderNo(rmaNo);
 						ReturnOrder returnOrder1 = findByRmaOrderNo1.get();
 						logger.info("Updating amount to REP");
-						//Updating Amount to the ERP
+						// Updating Amount to the ERP
 						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
 					}
 
@@ -423,34 +422,18 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
 
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Recieved' by " + updateBy
-								+ ". The return is approved. Please proceed with the necessary steps." + "; "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
+								+ " to " + "'" + returnOrderEntity.getStatus() + "' by " + updateBy + ".;"
 								+ "Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
 						String title = "Return Order";
-						String highlight = "Recieved";
 						String status = "Inbox";
-						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy,
+								returnOrderEntity.getStatus());
 					}
 
 					// Save in ERP
 					String apiUrl = masterTenant.getSubdomain() + "/api/sales/orders/"
 							+ returnOrderEntity.getRmaOrderNo() + "/approve";
-//					RestTemplate restTemplate = new RestTemplate();
-//					HttpHeaders headers = new HttpHeaders();
-//					try {
-//						headers.setBearerAuth(p21TokenServiceImpl.getToken(masterTenant));
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-//					HttpEntity<String> entity = new HttpEntity<>(headers);
-//					ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PUT, entity,
-//							String.class);
-//
-//					if (response.getStatusCode() == HttpStatus.OK) {
-//						System.out.println("Saving Status Approved In ERP.");
-//					} else {
-//						System.out.println("There was an error while saving status in ERP.");
-//					}
 					try {
 						// Your existing HTTP request code here
 						CloseableHttpClient httpClient = HttpClients.custom()
@@ -521,14 +504,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
 
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo()
-								+ " has been updated to 'Requires More Customer Information' by " + updateBy
-								+ ". Awaiting more information with customer.; Email has been sent to the "
-								+ returnOrderEntity.getContact().getContactEmailId();
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
+								+ " to " + "'" + returnOrderEntity.getStatus() + "' by " + updateBy + ".;"
+								+ " Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
 						String title = "Return Order";
-						String highlight = "Requires More Customer Information";
 						String status = "Inbox";
-						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy,
+								returnOrderEntity.getStatus());
 					}
 
 					if (!PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION.equals(returnOrder.getStatus())) {
@@ -566,12 +548,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
 
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'Cancelled' by " + updateBy
-								+ "." + ";Email has been sent to" + returnOrderEntity.getContact().getContactEmailId();
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
+								+ " to " + "'" + returnOrderEntity.getStatus() + "' by " + updateBy + "."
+								+ ";Email has been sent to" + returnOrderEntity.getContact().getContactEmailId();
 						String title = "Return Order";
-						String highlight = "Cancelled";
 						String status = "RMA Header";
-						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy,
+								returnOrderEntity.getStatus());
 					}
 
 //					apply email functionality.
@@ -594,12 +577,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					if (!statusConfig.getStatusMap().equals(returnOrder.getStatus())) {
 
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
-								+ returnOrderEntity.getRmaOrderNo() + " has been updated to 'RMA DENIED' by " + updateBy
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
+								+ " to " + "'" + returnOrderEntity.getStatus() + "' by " + updateBy
 								+ ".; Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
 						String title = "Return Order";
-						String highlight = "RMA DENIED";
 						String status = "Inbox";
-						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, returnOrderEntity.getStatus());
 					}
 
 					// save in ERP while rma denied
@@ -699,14 +682,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String updateNote(Long lineItemId, Long assignToId, String rmaNo, String updateBy, Long assignToRole , String contactEmail,
-			ReturnOrderItemDTO updateNote) {
+	public String updateNote(Long lineItemId, Long assignToId, String rmaNo, String updateBy, Long assignToRole,
+			String contactEmail, ReturnOrderItemDTO updateNote) {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(lineItemId);
 		Optional<Customer> optionalCustomer = customerRepository.findById(assignToId);
-			AuditLog auditLog = new AuditLog();
-			if(optionalItem.isPresent()) {
+		AuditLog auditLog = new AuditLog();
+		if (optionalItem.isPresent()) {
 			ReturnOrderItem existingItem = optionalItem.get();
-			if (optionalCustomer.isPresent()&&assignToRole==4) {
+			if (optionalCustomer.isPresent() && assignToRole == 4) {
 				Optional<User> optionalUser = userRepository.findByCustomerId(optionalCustomer.get().getId());
 				User user = optionalUser.get();
 
@@ -728,36 +711,35 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				} else {
 					formattedDate = null;
 				}
-						auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
-								+ user.getLastName() + " of item - " + existingItem.getItemName()
-								+ ". Please review the details and take necessary action.;"
-								+ "Vendor Message added and Email has been sent to the " + contactEmail);
+				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
+						+ user.getLastName() + " of item - " + existingItem.getItemName()
+						+ ". Please review the details and take necessary action.;"
+						+ "Vendor Message added and Email has been sent to the " + contactEmail);
 
-					String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier()
-							+ " " + rmaNo;
-					String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
-					HashMap<String, String> map = new HashMap<>();
+				String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier() + " "
+						+ rmaNo;
+				String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
+				HashMap<String, String> map = new HashMap<>();
 
-					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
-					map.put("RMA_NO", rmaNo);
-					map.put("note", updateNote.getNote());
-					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
-					map.put("CLIENT_PHONE",
-							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
-					try {
-						emailSender.sendEmail(recipient, template2, subject, map);
-					} catch (MessagingException e) {
-						e.printStackTrace();
-					}
-					ReturnRoom returnRoom = new ReturnRoom();
-					returnRoom.setName(updateBy);
-					returnRoom.setMessage(updateNote.getNote());
-					returnRoom.setAssignTo(user);
-					returnRoom.setFollowUpDate(
-							updateNote.getFollowUpDate() != null ? updateNote.getFollowUpDate() : null);
-					returnRoom.setStatus(updateNote.getStatus());
-					returnRoom.setReturnOrderItem(existingItem);
-					returnRoomRepository.save(returnRoom);
+				map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+				map.put("RMA_NO", rmaNo);
+				map.put("note", updateNote.getNote());
+				map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+				map.put("CLIENT_PHONE",
+						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+				try {
+					emailSender.sendEmail(recipient, template2, subject, map);
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+				ReturnRoom returnRoom = new ReturnRoom();
+				returnRoom.setName(updateBy);
+				returnRoom.setMessage(updateNote.getNote());
+				returnRoom.setAssignTo(user);
+				returnRoom.setFollowUpDate(updateNote.getFollowUpDate() != null ? updateNote.getFollowUpDate() : null);
+				returnRoom.setStatus(updateNote.getStatus());
+				returnRoom.setReturnOrderItem(existingItem);
+				returnRoomRepository.save(returnRoom);
 
 			} else {
 				Optional<User> optionalUser = userRepository.findById(assignToId);
@@ -765,9 +747,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				existingItem.setNote(updateNote.getNote());
 				existingItem.setUser(user);
 				returnOrderItemRepository.save(existingItem);
-					auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
-							+ user.getLastName() + " of item - " + existingItem.getItemName()
-							+ ". Please review the details and take necessary action.");
+				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
+						+ user.getLastName() + " of item - " + existingItem.getItemName()
+						+ ". Please review the details and take necessary action.");
 				String subject = PortalConstants.NOTE_STATUS + returnOrderServiceImpl.getRmaaQualifier() + " " + rmaNo;
 				String template2 = emailTemplateRenderer.getRETURN_PROCESSOR_NOTE();
 				HashMap<String, String> map = new HashMap<>();
@@ -813,10 +795,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLogRepository.save(auditLog);
 
 			return "Updated Note Details and capture in return room and audit log";
-			}
-			else {
-				return "Not found";
-			}
+		} else {
+			return "Not found";
+		}
 	}
 
 	@Override
@@ -830,13 +811,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			returnOrderItemRepository.save(returnOrderItem);
 
-			if(!orderAddress.getReturnLocNote().isEmpty()) {
-			ReturnRoom returnRoom = new ReturnRoom();
-			returnRoom.setName(updateBy);
-			returnRoom.setMessage(returnOrderItem.getShipTo().getReturnLocNote());
-			returnRoom.setStatus(returnOrderItem.getStatus());
-			returnRoom.setReturnOrderItem(returnOrderItem);
-			returnRoomRepository.save(returnRoom);
+			if (!orderAddress.getReturnLocNote().isEmpty()) {
+				ReturnRoom returnRoom = new ReturnRoom();
+				returnRoom.setName(updateBy);
+				returnRoom.setMessage(returnOrderItem.getShipTo().getReturnLocNote());
+				returnRoom.setStatus(returnOrderItem.getStatus());
+				returnRoom.setReturnOrderItem(returnOrderItem);
+				returnRoomRepository.save(returnRoom);
 			}
 
 			AuditLog auditLog = new AuditLog();
@@ -893,8 +874,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(
-					updateBy + " has updated the restocking fee of item - " + returnOrderItem.getItemName()
-							+ " from $" + preRestocking + " to $" + returnOrderItem.getReStockingAmount() + ".");
+					updateBy + " has updated the restocking fee of item - " + returnOrderItem.getItemName() + " from $"
+							+ preRestocking + " to $" + returnOrderItem.getReStockingAmount() + ".");
 			auditLog.setHighlight("restocking fee");
 			auditLog.setStatus("List Items");
 			auditLog.setRmaNo(rmaNo);
@@ -913,10 +894,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
 			for (ReturnOrderItem returnOrderItem : returnOrderItems) {
 				if (returnOrderItem.getReStockingAmount() != null) {
-					if(!returnOrderItem.getStatus().equals(PortalConstants.RMA_CANCLED) && !returnOrderItem.getStatus().equals(PortalConstants.RMA_DENIED)) {
+					if (!returnOrderItem.getStatus().equals(PortalConstants.RMA_CANCLED)
+							&& !returnOrderItem.getStatus().equals(PortalConstants.RMA_DENIED)) {
 						totalRestocking += returnOrderItem.getReStockingAmount().doubleValue();
 					}
-					
+
 				}
 			}
 			String rmaNumber = returnOrder.getRmaOrderNo();

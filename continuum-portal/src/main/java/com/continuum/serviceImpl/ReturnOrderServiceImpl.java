@@ -106,6 +106,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	@Autowired
 	ClientConfig clientConfig;
 
+	@Autowired
+	AuditLogServiceImpl auditLogServiceImpl;
+
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
 		P21RMAResponse p21RMARespo = p21ReturnOrderService.createReturnOrder(returnOrderDTO);
@@ -153,10 +156,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			}
 		}
 		returnOrderDTO.setCustomer(customerDTO);
-		
+
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
-		
-		for(ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {
+
+		for (ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {
 			returnOrderItem.setShipTo(null);
 		}
 		returnOrderRepository.save(returnOrder);
@@ -386,6 +389,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		if (optionalItem.isPresent()) {
 			ReturnOrder returnOrder = optionalItem.get();
+			String existingStatus = returnOrder.getStatus();
 
 			List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository.findByReturnOrderId(returnOrder.getId());
 			boolean hasRMCI = false;
@@ -484,57 +488,21 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			// audit log saving
 
-			AuditLog auditlog = new AuditLog();
-			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
-				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Return Requested' by "
-						+ updateBy + ".";
-				auditlog.setDescription(described);
-				auditlog.setHighlight("Return Requested");
-				auditlog.setStatus("RMA Header");
-			}
+			String title = "Return Order";
+			String auditLogStatus = "";
+			String description = "";
 			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.UNDER_REVIEW)) {
-				String described = getRmaaQualifier() + " " + rmaNo + " has been updated by 'Return Requested' by "
-						+ updateBy + ".";
-				auditlog.setDescription(described);
-				auditlog.setHighlight("Under Review");
-				auditlog.setStatus("RMA Header");
+				auditLogStatus = "RMA Header";
+				description = getRmaaQualifier() + rmaNo + " has been updated from " + existingStatus + " to "
+						+ returnOrder.getStatus() + " by " + updateBy + ".";
+			} else {
+				auditLogStatus = "Inbox";
+				description = getRmaaQualifier() + rmaNo + " has been updated from " + existingStatus + " to "
+						+ returnOrder.getStatus() + " by " + updateBy + ".; Email has been sent to "
+						+ returnOrder.getContact().getContactEmailId() + ".";
 			}
-			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.REQUIRES_MORE_CUSTOMER_INFORMATION)) {
-				String described = getRmaaQualifier() + " " + rmaNo
-						+ " has been updated to 'Requires More Customer Information' by " + updateBy
-						+ ". Awaiting more information with customer";
-				auditlog.setDescription(described);
-				auditlog.setHighlight("Requires More Customer Information");
-				auditlog.setStatus("RMA Header");
-			}
-			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
-				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Authorized' by " + updateBy
-						+ ". The return is approved. Please proceed with the necessary steps." + ";"
-						+ "Email has been sent.";
-				auditlog.setDescription(described);
-				auditlog.setHighlight("Authorized");
-				auditlog.setStatus("Inbox");
-			}
-			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)) {
-				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'RMA Denied' by " + updateBy
-						+ "." + ";" + "Email has been sent.";
-				auditlog.setDescription(described);
-				auditlog.setHighlight("RMA Denied");
-				auditlog.setStatus("Inbox");
-			}
-			if (returnOrder.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)) {
-				String described = getRmaaQualifier() + " " + rmaNo + " has been updated to 'Cancelled' by " + updateBy
-						+ "." + ";" + "Email has been sent.";
-				auditlog.setDescription(described);
-				auditlog.setHighlight("Cancelled");
-				auditlog.setStatus("Inbox");
-			}
-
-			auditlog.setTitle("Return Order");
-			auditlog.setRmaNo(returnOrder.getRmaOrderNo());
-			auditlog.setUserName(updateBy);
-			auditLogRepository.save(auditlog);
-
+			auditLogServiceImpl.setAuditLog(description, title, auditLogStatus, rmaNo,
+					updateBy,returnOrder.getStatus());
 			return "RMA Status Updated Successfully.";
 
 		} else {
@@ -659,75 +627,36 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				e.printStackTrace();
 			}
 
-			AuditLog auditLog = new AuditLog();
-			auditLog.setTitle("Assign RMA");
-
-			if (!previousNote.equalsIgnoreCase(note.getNote()) && previousReturnType == returnTypeId
-					&& assignToId == previousAssignTo) {
-				auditLog.setDescription("Note Added while assigning RMA " + getRmaaQualifier() + " " + rmaNo + ".;"
-						+ "Note : " + note.getNote() + ".;" + "Email has been sent to "
-						+ note.getContact().getContactEmailId());
-				auditLog.setStatus("Inbox");
-				logger.info("condition 1");
-				;
-
-			} else if (previousReturnType != returnTypeId && previousNote.equalsIgnoreCase(note.getNote())
-					&& assignToId == previousAssignTo) {
-				auditLog.setDescription("Return type of the " + getRmaaQualifier() + " " + rmaNo + " is set to '"
-						+ returnTypes.get().getType() + "'.;" + "Email has been sent to "
-						+ note.getContact().getContactEmailId());
-				auditLog.setStatus("Inbox");
-				logger.info("condition 2");
-
-			} else if (previousReturnType != returnTypeId && !previousNote.equalsIgnoreCase(note.getNote())
-					&& assignToId == previousAssignTo) {
-				auditLog.setDescription("Return type of the " + getRmaaQualifier() + " " + rmaNo + " is set to '"
-						+ returnTypes.get().getType() + "'.;" + "Note Added while assigning RMA " + getRmaaQualifier()
-						+ " " + rmaNo + ".;" + "Note : " + note.getNote() + ".;" + "Email has been sent to "
-						+ note.getContact().getContactEmailId() + ".;");
-				auditLog.setStatus("Inbox");
-				logger.info("condition 3");
-
-			} else if (previousAssignTo != assignToId && previousReturnType != returnTypeId) {
-				auditLog.setDescription(
-						getRmaaQualifier() + " " + returnOrder.getRmaOrderNo() + " has been assigned to "
-								+ user.getFirstName() + " " + user.getLastName() + "." + ";" + "Return type of the "
-								+ getRmaaQualifier() + " " + rmaNo + " is set to '" + returnTypes.get().getType()
-								+ "'.;" + "Email has been sent to " + note.getContact().getContactEmailId() + ".;");
-				auditLog.setStatus("Inbox");
-				logger.info("condition 4");
-
-			} else if (previousAssignTo != assignToId && !previousNote.equalsIgnoreCase(note.getNote())) {
-				auditLog.setDescription(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
-						+ " has been assigned to the " + user.getFirstName() + " " + user.getLastName() + "." + ";"
-						+ "Note Added while assigning RMA " + getRmaaQualifier() + " " + rmaNo + ".;" + "Note : "
-						+ note.getNote() + ".;" + "Email has been sent to " + note.getContact().getContactEmailId()
-						+ ".;");
-				logger.info("condition 5");
-
-			} else if (previousAssignTo != assignToId && !previousNote.equalsIgnoreCase(note.getNote())) {
-				auditLog.setDescription(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
-						+ " has been assigned to the " + user.getFirstName() + " " + user.getLastName() + "." + ";"
-						+ getRmaaQualifier() + " " + rmaNo + " is now at 'Under Review'.;" + "Return type of the "
-						+ getRmaaQualifier() + " " + rmaNo + " is set to as '" + returnTypes.get().getType() + "'."
-						+ ";" + "Email has been sent to " + note.getContact().getContactEmailId());
-				auditLog.setStatus("Inbox");
-				logger.info("condition 6");
-
-			} else {
-				auditLog.setDescription(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
-						+ " has been assigned to the " + user.getFirstName() + " " + user.getLastName() + "." + ";"
-						+ getRmaaQualifier() + " " + rmaNo + " is now at 'Under Review'.;" + "Return type of the "
-						+ getRmaaQualifier() + " " + rmaNo + " is set to as '" + returnTypes.get().getType() + "'."
-						+ ";" + "Email has been sent to " + note.getContact().getContactEmailId());
-				auditLog.setStatus("Inbox");
-				logger.info("condition 7");
+			String highlight="";
+			String description="";
+			String status="RMA Header";
+			String title="Assign RMA";
+			List<String> updates = new ArrayList<>();
+			if (!previousNote.equalsIgnoreCase(note.getNote())) {
+				updates.add("Note Added while assigning RMA " + getRmaaQualifier() + " " + rmaNo + ".;" + "Note : "
+						+ note.getNote());
+				highlight = "Note";
 
 			}
-			auditLog.setHighlight(returnTypes.get().getType());
-			auditLog.setRmaNo(returnOrder.getRmaOrderNo());
-			auditLog.setUserName(updateBy);
-			auditLogRepository.save(auditLog);
+			if (previousReturnType != returnTypeId) {
+				updates.add("Return type of the "
+						+ getRmaaQualifier() + " " + rmaNo + " is set to as '" + returnTypes.get().getType() + "'");
+				highlight = "Return Type";
+
+			}
+			if (previousAssignTo != assignToId) {
+				updates.add(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
+				+ " has been assigned to the " + user.getFirstName() + " " + user.getLastName() + " by "+updateBy+"." + ";"
+				+ getRmaaQualifier() + " " + rmaNo + " is now at 'Under Review'.;"+"Email has been sent to "+note.getContact().getContactEmailId());
+				highlight = "assigned";
+				status="Inbox";
+
+			}
+			
+
+			description = String.join(".;", updates) + ".";
+
+			auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 
 			return "Assiged RMA to User";
 
