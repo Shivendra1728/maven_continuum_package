@@ -633,9 +633,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			String title="Assign RMA";
 			List<String> updates = new ArrayList<>();
 			if (!previousNote.equalsIgnoreCase(note.getNote())) {
-				updates.add("Note Added while assigning RMA " + getRmaaQualifier() + " " + rmaNo + ".;" + "Note : "
-						+ note.getNote());
-				highlight = "Note";
+				updates.add("Note '"+note.getNote()+"'"+" added, while assigning RMA " + getRmaaQualifier() + " " + rmaNo + ".");
+				highlight = note.getNote();
 
 			}
 			if (previousReturnType != returnTypeId) {
