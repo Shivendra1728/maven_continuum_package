@@ -118,7 +118,7 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 		URI windowListfullURI = windowList.resolve(windowList.getRawPath());
 
 		System.out.println(windowListfullURI.toString());
-		String token = p21TokenServiceImpl.getToken(masterTenant);
+		String token = p21TokenServiceImpl.findToken(masterTenant);
 		logger.info("#### TOKEN #### {}", token);
 		try {
 

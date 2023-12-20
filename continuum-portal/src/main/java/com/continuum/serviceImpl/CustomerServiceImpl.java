@@ -148,7 +148,7 @@ public class CustomerServiceImpl implements CustomerService {
 		logger.info("Order Search URI:" + fullURI);
 		HttpGet request = new HttpGet(fullURI);
 
-		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
 		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
 		HttpResponse response = httpClient.execute(request);

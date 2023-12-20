@@ -102,7 +102,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 		HttpGet request = new HttpGet(fullURI);
 
-		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.getToken(null));
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
 
 		HttpResponse response = httpClient.execute(request);
 		HttpEntity entity = response.getEntity();

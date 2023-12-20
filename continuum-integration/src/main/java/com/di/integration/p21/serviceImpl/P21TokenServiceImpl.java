@@ -1,7 +1,19 @@
 package com.di.integration.p21.serviceImpl;
 
 import java.io.StringReader;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.Map;
+import java.util.Properties;
 
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
+import javax.cache.spi.CachingProvider;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,6 +44,12 @@ import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.di.integration.config.TenantInfoHolderContext;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21TokenSerivce;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
 
 @Service
 public class P21TokenServiceImpl implements P21TokenSerivce {
@@ -51,7 +69,6 @@ public class P21TokenServiceImpl implements P21TokenSerivce {
 	HttpServletRequest httpServletRequest;
 
 	@Override
-	// @Cacheable(value = "accessTokenCache", key = "#accessToken")
 	public String getToken(MasterTenant masterTenantObject) throws Exception {
 
 		String accessToken = getAccessTokenFromCookie();
@@ -118,35 +135,65 @@ public class P21TokenServiceImpl implements P21TokenSerivce {
 		return null;
 
 	}
+	
+	public String findToken(MasterTenant masterTenantObject) throws Exception {
+	    if (masterTenantObject == null) {
+	        String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+	        masterTenantObject = masterTenantRepository.findByDbName(tenantId);
+	    }
 
-	private void setAccessTokenCookie(String accessToken) {
-		logger.info("setAccessTokenCookie::" + accessToken);
-		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
-				.getResponse();
-		// Create a new cookie with the token
-		Cookie cookie = new Cookie("accessToken", accessToken);
+	    CachingProvider cachingProvider = Caching.getCachingProvider();
 
-		// Set additional properties for the cookie (optional)
-		cookie.setMaxAge(3600); // Set the expiration time in seconds
-		cookie.setPath("/"); // Set the path for which the cookie is valid
+	    // Explicitly provide key and value types
+	    CacheManager cacheManager = cachingProvider.getCacheManager(null, null, new Properties());
 
-		// Add the cookie to the response
-		response.addCookie(cookie);
+	    // Check if the cache already exists
+	    Cache<String, String> cache = cacheManager.getCache("JDKCodeNames", String.class, String.class);
+	    if (cache == null) {
+	        // If the cache does not exist, create a new one with explicit key and value types
+	        MutableConfiguration<String, String> config = new MutableConfiguration<>();
+	        config.setTypes(String.class, String.class); // Set explicit types
+	        cache = cacheManager.createCache("JDKCodeNames", config);
+	    }
 
+	    String cacheKey = String.valueOf(masterTenantObject.getDbName()); // Convert the key to String
+	   	if (cache.containsKey(cacheKey) && !isTokenExpired(cache.get(cacheKey))) {
+	        logger.info("Cache Token: " + cache.get(cacheKey));
+	        return cache.get(cacheKey);
+	    } else {
+	        String token = getToken(masterTenantObject);
+	        logger.info("New Token: " + token);
+	        cache.put(cacheKey, token);
+	        return token;
+	    }
 	}
 
-	private static String parseAccessToken(String responseBody) throws Exception {
-		// Create a JDOM Document from the XML response
-		SAXBuilder builder = new SAXBuilder();
-		Document document = builder.build(new StringReader(responseBody));
-
-		// Get the root element of the document
-		Element root = document.getRootElement();
-
-		// Find the AccessToken element and extract its value
-		Element accessTokenElement = root.getChild(IntegrationConstants.ACCESS_TOKEN_ELEMENT);
-		String accessToken = accessTokenElement.getText();
-
-		return accessToken;
+	public boolean isTokenExpired(String token) {
+		try {
+			String body = token.split("\\.")[1];
+			String payload = new String(Base64.getDecoder().decode(body));
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode jsonNode = objectMapper.readTree(payload);
+			long expValue = jsonNode.get("exp").asLong();
+			LocalDateTime expirationTime = convertTimestampToDateTime(expValue);
+			LocalDateTime currentTime = LocalDateTime.now();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+			LocalDateTime formatedTime = LocalDateTime.parse(formatter.format(currentTime));
+			logger.info("Is Token Expired : "+formatedTime.isAfter(expirationTime));
+			return formatedTime.isAfter(expirationTime);
+		} catch (ExpiredJwtException e) {
+			// The token has expired
+			return true;
+		} catch (Exception e) {
+			// Other exceptions, such as parsing errors
+			return false;
+		}
 	}
+	
+	private static LocalDateTime convertTimestampToDateTime(long timestamp) {
+		Instant instant = Instant.ofEpochMilli(timestamp * 1000); // Convert seconds to milliseconds
+        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+    }
+
+	
 }
