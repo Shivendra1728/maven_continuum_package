@@ -343,6 +343,10 @@ public class EmailTemplateRenderer {
 			+ "\r\n"
 			+ "</html>\r\n"
 			+ "";
+	
+	public String getFPASSWORD_TEMPLETE_CONTENT() {
+		return FPASSWORD_TEMPLETE_CONTENT;
+	}
 
 	private static final String EMAIL_LINE_ITEM_STATUS_IN_TRANSIT = "<!DOCTYPE html>\r\n"
 			+ "<html lang=\"en\">\r\n"

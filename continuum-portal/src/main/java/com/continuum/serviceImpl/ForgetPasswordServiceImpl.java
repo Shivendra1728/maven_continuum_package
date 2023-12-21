@@ -3,6 +3,7 @@ package com.continuum.serviceImpl;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -48,6 +49,11 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 	
 	@Autowired
 	ReturnOrderServiceImpl returnOrderServiceImpl;
+	
+	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
+	
+	@Autowired
+	EmailSender emailSender;
 
 	@Override
 	public String forgetPassword(String email, HttpServletRequest request) {
@@ -62,61 +68,38 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 		if (existingUser != null) {
 			existingUser.setUuid(uuid);
 			existingUser.setResetTokenExpiration(expirationTime);
-			userRepository.save(existingUser);//saving user	
+			
+			String recipient = email;
+			String subject = PortalConstants.FPasswordLink;
+			String template = emailTemplateRenderer.getFPASSWORD_TEMPLETE_CONTENT();
+			HashMap<String, String> map = new HashMap<>();
+			String fullUrl = request.getRequestURL().toString();
 			try {
-				this.sendEmail(email, uuid, request);
-				return uuid;
-			} catch (MessagingException me) {
-				me.printStackTrace();
+			URL url = new URL(fullUrl);
+			String host = url.getHost();
+			String scheme = request.getScheme();
+			String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
+//			String link="http://pace.localhost:3000/updatepassword?token="+uuid;
+			map.put("RESET_LINK", link);
+			map.put("user_name", returnOrderServiceImpl.getRmaaQualifier());
+			map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+			map.put("CLIENT_PHONE",
+					String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+			try {
+				emailSender.sendEmail(recipient, template, subject, map);
+			} catch (MessagingException e) {
+				e.printStackTrace();
 			}
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			userRepository.save(existingUser);//saving user	
+			return uuid;
 		}
 		
 		return "Email not found";
 	}
 
-	public void sendEmail(String email, String uuid, HttpServletRequest request) throws MessagingException {
-		User existingUser = userRepository.findByEmail(email);
-
-		Properties props = new Properties();
-
-		props.put(PortalConstants.SMTP_HOST, mailHost);
-		props.put(PortalConstants.SMTP_PORT, mailPort);
-		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
-		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
-
-		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
-			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
-			}
-		});
-		String fullUrl = request.getRequestURL().toString();
-		try {
-			URL url = new URL(fullUrl);
-			String host = url.getHost();
-			String scheme = request.getScheme();
-			String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
-//			String link = "http://labdepot.localhost:3000/updatepassword?token=" + uuid;
-			String templateFilePath = PortalConstants.FPasswordLink;
-			VelocityContext context = new VelocityContext();
-
-			context.put("RESET_LINK", link);
-			context.put("user_name", existingUser.getFirstName());
-			context.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
-			context.put("CLIENT_PHONE",String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
-
-			String renderedBody = EmailTemplateRenderer.renderFPasswordTemplate(context);
-
-			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
-			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(PortalConstants.EMAIL_RECIPIENT));
-			message.setSubject(templateFilePath);
-			message.setContent(renderedBody, "text/html");
-			Transport.send(message);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
 
 	public String updatePassword(String uuid, String password) {
 		User user = userRepository.findByUuid(uuid);
