@@ -28,4 +28,5 @@ public class StatusConfig extends BaseEntity {
 	private Boolean isAuthorized;
 	private int priority;
 	private String statusMap;
+	private String isRecieved;
 }
