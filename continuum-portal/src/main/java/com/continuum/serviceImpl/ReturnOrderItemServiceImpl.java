@@ -189,39 +189,46 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				String title = "Update Activity";
 				String highlight = "";
 				String status = "Line Items";
-				
 
 				if (updatedItem.getAmount() != null) {
 					existingItem.setAmount(updatedItem.getAmount());
 				}
 
-				if (!updatedItem.getAmountNote().isEmpty()) {
+				if (!updatedItem.getAmountNote().isEmpty() && !updatedItem.getAmountNote().equals("")) {
 					existingItem.setAmountNote(updatedItem.getAmountNote());
 
-				if (existingItem.getReturnAmount() != null && existingItem.getReturnAmount() != BigDecimal.valueOf(0)) {
-					BigDecimal newRefundAmount = updatedItem.getAmount().subtract(existingItem.getReStockingAmount());
-					existingItem.setReturnAmount(newRefundAmount);
-				}
-				if (updatedItem.getAmountNote() != null && !updatedItem.getAmountNote().equals("")) {
-					ReturnRoom returnRoom = new ReturnRoom();
-					returnRoom.setName(updateBy);
-					returnRoom.setMessage(updatedItem.getAmountNote());
-					returnRoom.setReturnOrderItem(existingItem);
-					returnRoom.setAssignTo(null);
-					returnRoomRepository.save(returnRoom);
+					if (existingItem.getReturnAmount() != null
+							&& existingItem.getReturnAmount() != BigDecimal.valueOf(0)) {
+						BigDecimal newRefundAmount = updatedItem.getAmount()
+								.subtract(existingItem.getReStockingAmount());
+						existingItem.setReturnAmount(newRefundAmount);
+					}
+					if (updatedItem.getAmountNote() != null && !updatedItem.getAmountNote().equals("")) {
+						ReturnRoom returnRoom = new ReturnRoom();
+						returnRoom.setName(updateBy);
+						returnRoom.setMessage(updatedItem.getAmountNote());
+						returnRoom.setReturnOrderItem(existingItem);
+						returnRoom.setAssignTo(null);
+						returnRoomRepository.save(returnRoom);
 
-				}
+					}
 				}
 				List<String> updates = new ArrayList<>();
 
-				if (updatedItem.getAmount()!=existingAmount) {
+				if (updatedItem.getAmount().compareTo(existingAmount) != 0) {
 					updates.add("Amount has been updated of item - " + existingItem.getItemName() + " from "
 							+ existingAmount + " to " + updatedItem.getAmount());
 				}
 
-				if (!updatedItem.getAmountNote().equalsIgnoreCase(existingAmountNote)) {
+				if (!updatedItem.getAmountNote().isEmpty() && !updatedItem.getAmountNote().equals("")
+						&& existingAmountNote != null) {
 					updates.add("Amount Note has been updated of item - " + existingItem.getItemName() + " from " + "'"
 							+ existingAmountNote + "'" + " to " + "'" + updatedItem.getAmountNote() + "'");
+				}
+
+				if (existingAmountNote == null) {
+					updates.add("Amount Note has been updated of item - " + existingItem.getItemName() + " to " + "'"
+							+ updatedItem.getAmountNote() + "'");
 				}
 
 				if (!updates.isEmpty()) {
@@ -598,7 +605,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 								+ ".; Email has been sent to the " + returnOrderEntity.getContact().getContactEmailId();
 						String title = "Return Order";
 						String status = "Inbox";
-						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy, returnOrderEntity.getStatus());
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy,
+								returnOrderEntity.getStatus());
 					}
 
 					// save in ERP while rma denied
