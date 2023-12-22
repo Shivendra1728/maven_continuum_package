@@ -216,8 +216,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				List<String> updates = new ArrayList<>();
 
 				if (updatedItem.getAmount().compareTo(existingAmount) != 0) {
-					updates.add("Amount has been updated of item - " + existingItem.getItemName() + " from "
-							+ existingAmount + " to " + updatedItem.getAmount());
+					updates.add("Amount has been updated of item - " + existingItem.getItemName() + " from $"
+							+ existingAmount + " to $" + updatedItem.getAmount());
 				}
 
 				if (!updatedItem.getAmountNote().isEmpty() && !updatedItem.getAmountNote().equals("")
