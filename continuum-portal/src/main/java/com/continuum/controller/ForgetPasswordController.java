@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.ForgetPasswordService;
+import com.continuum.tenant.repos.entity.Role;
 
 @RestController
 public class ForgetPasswordController {
@@ -22,7 +23,7 @@ public class ForgetPasswordController {
 	}
 
 	@PutMapping("/updatePassword")
-	public String updatePassword(@RequestParam("UUID") String uuid, @RequestParam String password) {
+	public Role updatePassword(@RequestParam("UUID") String uuid, @RequestParam String password) {
 		return forgetPasswordService.updatePassword(uuid, password);
 
 	}

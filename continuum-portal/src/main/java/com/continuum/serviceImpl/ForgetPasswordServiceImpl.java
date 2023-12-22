@@ -4,18 +4,11 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.UUID;
 
-import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.velocity.VelocityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -23,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.continuum.constants.PortalConstants;
 import com.continuum.service.ForgetPasswordService;
+import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.UserRepository;
 
@@ -78,8 +72,8 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 			URL url = new URL(fullUrl);
 			String host = url.getHost();
 			String scheme = request.getScheme();
-			String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
-//			String link="http://pace.localhost:3000/updatepassword?token="+uuid;
+//			String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
+			String link="http://pace.localhost:3000/updatepassword?token="+uuid;
 			map.put("RESET_LINK", link);
 			map.put("user_name", returnOrderServiceImpl.getRmaaQualifier());
 			map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
@@ -101,27 +95,27 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 	}
 
 
-	public String updatePassword(String uuid, String password) {
-		User user = userRepository.findByUuid(uuid);
-		if (user != null) {
-			// Check if the token has expired
-			Date expirationTime = user.getResetTokenExpiration();
-			Date currentTime = new Date();
-
-			if (expirationTime != null && expirationTime.after(currentTime)) {
-				// Token is not expired, allow password update
-				String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-				user.setPassword(hashedPassword);
-				user.setUuid(null);
-				userRepository.save(user);
-				return "Password Updated Successfully";
+		public Role updatePassword(String uuid, String password) {
+			User user = userRepository.findByUuid(uuid);
+			if (user != null) {
+				// Check if the token has expired
+				Date expirationTime = user.getResetTokenExpiration();
+				Date currentTime = new Date();
+	
+				if (expirationTime != null && expirationTime.after(currentTime)) {
+					// Token is not expired, allow password update
+					String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+					user.setPassword(hashedPassword);
+					user.setUuid(null);
+					userRepository.save(user);
+					return user.getRole();
+				} else {
+					// Token has expired, show an error message
+					return null;
+				}
 			} else {
-				// Token has expired, show an error message
-				return "Reset link has expired. Please request a new link.";
+				return null;
 			}
-		} else {
-			return "User not found";
 		}
-	}
 
 }
