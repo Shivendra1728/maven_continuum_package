@@ -90,7 +90,7 @@ public class ReturnOrderItemController {
 		return returnOrderItemService.deleteItem(returnOrderItem,updateBy,rmaNo);
 	}
 		else {
-			return "Erp Deletion Failed , Not forwarding with deleting in Local DB.";
+			return "ERP deletion not allowed for this line item.";
 		}
 	
 
