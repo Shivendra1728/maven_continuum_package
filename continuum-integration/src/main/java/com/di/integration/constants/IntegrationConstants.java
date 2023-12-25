@@ -90,6 +90,7 @@ public final class IntegrationConstants {
     public static final String ACCESS_TOKEN_ELEMENT = "AccessToken";
     public static final String BILL_TO_POSTAL_CODE = "bill2_postal_code";
 	public static final String APPROVED ="approved";
+	public static final String ERP_RMA_WINDOW_ENDPOINT ="${erp.window_end_point}";
     
 
 

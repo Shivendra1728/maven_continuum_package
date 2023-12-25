@@ -68,6 +68,9 @@ public class P21SKUServiceImpl implements P21SKUService {
 	@Value(IntegrationConstants.ERP_RMA_UPDATE_RESTOCKING_API)
 	private String rmaGetEndPoint;
 
+	@Value(IntegrationConstants.ERP_RMA_WINDOW_ENDPOINT)
+	private String rmaWindowEndpoint;
+
 	@Override
 	public String deleteSKU(String itemId, String rmaNo, MasterTenant masterTenantObject) throws Exception {
 
@@ -91,7 +94,8 @@ public class P21SKUServiceImpl implements P21SKUService {
 		int rowNumber = 0;
 		String childWindowId = null;
 
-		//First API---------------------------------------------------------------------------------------------------------------------------------
+		// First
+		// API---------------------------------------------------------------------------------------------------------------------------------
 		String openSession = masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/";
 		try {
 			logger.info("1) Open Session for delete line");
@@ -126,8 +130,9 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 		// Store session id to use in the end
 
-		//Second Api--------------------------------------------------------------------------------------------------------------------------------------
-		String openWindow = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/";
+		// Second
+		// Api--------------------------------------------------------------------------------------------------------------------------------------
+		String openWindow = masterTenant.getSubdomain() + rmaWindowEndpoint;
 		try {
 			logger.info("2) Open Window for delete line");
 
@@ -164,9 +169,10 @@ public class P21SKUServiceImpl implements P21SKUService {
 		}
 
 		// Store window id to pass in most apis
-		//Third API ------------------------------------------------------------------------------------------------------------------------------
+		// Third API
+		// ------------------------------------------------------------------------------------------------------------------------------
 
-		String changeDataForAField = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId
+		String changeDataForAField = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId
 				+ "/elements/changedata?datawindowName=order&fieldName=order_no";
 
 		try {
@@ -202,7 +208,8 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 		// If 200 move ahead
 
-		//Fourth API ---------------------------------------------------------------------------------------------------------------------
+		// Fourth API
+		// ---------------------------------------------------------------------------------------------------------------------
 
 		String rmaDetails = masterTenant.getSubdomain() + rmaGetEndPoint + "/get";
 		try {
@@ -234,7 +241,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 			logger.info("Response from RMA detail: " + responseBody);
 			JsonNode rootNode = objectMapper.readTree(responseBody);
 
-			JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(36).path("Rows");
+			JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(41).path("Rows");
 			List<String> itemIdsList = new ArrayList<>();
 			for (JsonNode item : itemsNode) {
 				// Picking up item id/item ids from rma
@@ -244,21 +251,21 @@ public class P21SKUServiceImpl implements P21SKUService {
 				logger.info("Item ID: " + itemIdInXML);
 				if (itemIdInXML.equals(itemId)) {
 
-					rowNumber = itemIdsList.indexOf(itemId)+1;
+					rowNumber = itemIdsList.indexOf(itemId) + 1;
 					logger.info("Row Number to target is: " + rowNumber);
 
 					break;
 				} else {
 					logger.info("I can't identify this item id");
 					continue;
-					
+
 				}
 			}
 
 		} catch (Exception e) {
 			logger.error("Error Getting RMA Details :: " + e.getMessage());
 		}
-		if (rowNumber==0) {
+		if (rowNumber == 0) {
 			return "I couldn't identify the row in RMA for this item";
 		}
 
@@ -266,9 +273,10 @@ public class P21SKUServiceImpl implements P21SKUService {
 		// and pick up a row number
 		// and then carry forward
 
-		//Fifth API --------------------------------------------------------------------------------------------------------------------------------
+		// Fifth API
+		// --------------------------------------------------------------------------------------------------------------------------------
 
-		String setFocusOnAField = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId
+		String setFocusOnAField = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId
 				+ "/elements/focus?datawindowName=items&fieldName=oe_order_item_id&row=" + rowNumber;
 		try {
 			logger.info("5) Set Focus On A Field");
@@ -300,7 +308,8 @@ public class P21SKUServiceImpl implements P21SKUService {
 		}
 
 		// if 200 move ahead
-		//Sixth API ----------------------------------------------------------------------------------------------------------------
+		// Sixth API
+		// ----------------------------------------------------------------------------------------------------------------
 		String runToolUrl = String.format(
 				"%s/uiserver0/ui/full/v1/window/%s/elements/tools/run?dwName=%s&toolName=%s&dwElementName=%s&row=%s",
 				masterTenant.getSubdomain(), windowId, "items", "m_deletelline", "items", rowNumber);
@@ -371,10 +380,10 @@ public class P21SKUServiceImpl implements P21SKUService {
 		// value for row put dynamic
 		// Parse the 500 response to get child window id and pass on to next one.
 
-		//Seventh API------------------------------------------------------------------------------------------------------------------------------------------------
+		// Seventh
+		// API------------------------------------------------------------------------------------------------------------------------------------------------
 
-		String childWindowActive = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + childWindowId
-				+ "/active";
+		String childWindowActive = masterTenant.getSubdomain() + rmaWindowEndpoint + childWindowId + "/active";
 
 		try {
 			logger.info("7) Child Window Active");
@@ -404,10 +413,10 @@ public class P21SKUServiceImpl implements P21SKUService {
 		}
 
 		// If 200 that means child window is active and you can delete and save session
-		//Eighth API------------------------------------------------------------------------------------------------------------------------------------------
+		// Eighth
+		// API------------------------------------------------------------------------------------------------------------------------------------------
 
-		String toolOfChildWindow = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + childWindowId
-				+ "/tools/cb_1";
+		String toolOfChildWindow = masterTenant.getSubdomain() + rmaWindowEndpoint + childWindowId + "/tools/cb_1";
 
 		try {
 			logger.info("8) Tool Of Child window ");
@@ -427,7 +436,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 			HttpEntity entity = response.getEntity();
 			int statusCode = response.getStatusLine().getStatusCode();
 			if (statusCode == 200) {
-				logger.info("Eighth API ran successfully."); 
+				logger.info("Eighth API ran successfully.");
 			} else {
 				logger.error("Error: Unexpected status code in Eighth api - " + statusCode);
 			}
@@ -438,9 +447,10 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 		// If 200 that means we clicked Yes option if you want to click No then choose
 		// cb_2
-		//Ninth API-----------------------------------------------------------------------------------------------------------------------------------------
+		// Ninth
+		// API-----------------------------------------------------------------------------------------------------------------------------------------
 
-		String saveWindow = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId + "/save";
+		String saveWindow = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId + "/save";
 		try {
 			logger.info("9) Save window ");
 
@@ -471,9 +481,10 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 		// if 200 then success window saved , line deleted.
 
-		//Tenth API----------------------------------------------------------------------------------------------------------------------
+		// Tenth
+		// API----------------------------------------------------------------------------------------------------------------------
 
-		String closeMainWindow = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId;
+		String closeMainWindow = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId;
 
 		try {
 			logger.info("10) Close Main window ");
@@ -505,7 +516,8 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 		// if 200 that means window has been closed now we end the session
 
-		//Eleventh API---------------------------------------------------------------------------------------------------------
+		// Eleventh
+		// API---------------------------------------------------------------------------------------------------------
 
 		String endSession = masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions?Id=" + sessionId;
 
@@ -539,7 +551,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 			logger.error("Error Closing Session :: " + e.getMessage());
 		}
 		return "Session End - Item Deleted";
-		
+
 		// if null response that means everything worked ...Chill.
 
 	}
