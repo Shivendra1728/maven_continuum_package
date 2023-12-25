@@ -75,7 +75,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 			String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
 //			String link="http://pace.localhost:3000/updatepassword?token="+uuid;
 			map.put("RESET_LINK", link);
-			map.put("user_name", returnOrderServiceImpl.getRmaaQualifier());
+			map.put("user_name", existingUser.getFirstName());
 			map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
 			map.put("CLIENT_PHONE",
 					String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
