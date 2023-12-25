@@ -1,7 +1,7 @@
 package com.di.integration.p21.serviceImpl;
 
-import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,9 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -38,10 +37,20 @@ import org.springframework.web.client.RestTemplate;
 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
+import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21SKUService;
+import com.di.integration.p21.transaction.DataElement;
+import com.di.integration.p21.transaction.Edit;
+import com.di.integration.p21.transaction.P21ReturnOrderMarshller;
+import com.di.integration.p21.transaction.Row;
+import com.di.integration.p21.transaction.Transaction;
+import com.di.integration.p21.transaction.TransactionSet;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 /*
  * @author SS
@@ -64,12 +73,22 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 	@Autowired
 	HttpServletRequest httpServletRequest;
-
+	
+	@Autowired
+	P21ReturnOrderMarshller p21ReturnOrderMarshller;
+	
+	@Autowired
+	P21OrderLineServiceImpl p21orderLineServiceImpl;
+	
+	@Value(IntegrationConstants.ERP_RMA_CREATE_API)
+	String RMA_CREATE_API;
+	
 	@Value(IntegrationConstants.ERP_RMA_UPDATE_RESTOCKING_API)
 	private String rmaGetEndPoint;
 
 	@Value(IntegrationConstants.ERP_RMA_WINDOW_ENDPOINT)
 	private String rmaWindowEndpoint;
+	
 
 	@Override
 	public String deleteSKU(String itemId, String rmaNo, MasterTenant masterTenantObject) throws Exception {
@@ -555,5 +574,146 @@ public class P21SKUServiceImpl implements P21SKUService {
 		// if null response that means everything worked ...Chill.
 
 	}
+	
+	@Override
+	public String addSKU(String rmaNo,List<ReturnOrderItemDTO> returnOrderItemDTOList,  MasterTenant masterTenantObject)throws Exception{
+		
+		MasterTenant masterTenant;
+
+		if (masterTenantObject == null) {
+			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			masterTenant = masterTenantRepository.findByDbName(tenantId);
+		} else {
+			masterTenant = masterTenantObject;
+		}
+		// Token for tenant/ERP
+		String token = p21TokenServiceImpl.findToken(masterTenant);
+		logger.info("THE TOKEN IS:" + token);
+		
+		String xmlPayload=prepareAddItemXml(rmaNo , returnOrderItemDTOList);
+		logger.info("returnOrderXmlPayload {}", xmlPayload);
+
+		try {
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		HttpPost request = new HttpPost(masterTenant.getSubdomain() + RMA_CREATE_API);
+
+		// Set request headers
+		request.addHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
+		logger.info("#### TOKEN #### {}", token);
+
+		request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		StringEntity entity = new StringEntity(xmlPayload);
+		request.setEntity(entity);
+		CloseableHttpResponse response = httpClient.execute(request);
+		String responseBody = EntityUtils.toString(response.getEntity());
+
+		logger.info("#### RMA LINE RESPONSE #### {}", responseBody);
+		return "Line Item Added";
+
+		}catch(Exception e) {
+			return "Failed to add line item";
+		}
+	}
+
+	
+	private String prepareAddItemXml(String rmaNo , List<ReturnOrderItemDTO> returnOrderItemDTOList)throws Exception {
+		TransactionSet transactionSet = new TransactionSet();
+	    transactionSet.setIgnoreDisabled(true);
+	    transactionSet.setName(IntegrationConstants.RMA);
+	    Transaction transaction = new Transaction();
+	    
+	    List<DataElement> dataElements = new ArrayList<>();
+
+	    // ORDER HEADER DATA ELEMENT 1-----------------------------------------
+	    DataElement dataElement1 = new DataElement();
+	    dataElement1.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER);
+	    dataElement1.setType(IntegrationConstants.DATA_ELEMENT_TYPE_FORM);
+	    
+	    List<Row> rowList = new ArrayList<Row>();
+	    Row row1 = new Row();
+	    List<Edit> editList = new ArrayList<Edit>();
+	    Edit edit1 = new Edit();
+	    edit1.setName("order_no");
+	    edit1.setValue(rmaNo);
+	    editList.add(edit1);
+	    row1.setEdits(editList);
+	    rowList.add(row1);
+	    dataElement1.setRows(rowList);
+	    dataElements.add(dataElement1);
+	    
+	    // ORDER ITEMS DATA ELEMENT 2-----------------------------------------
+	    DataElement dataElement2 = new DataElement();
+	    dataElement2.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER_ITEMS);
+	    dataElement2.setType(IntegrationConstants.DATA_ELEMENT_TYPE_LIST);
+	    
+	    List<Row> rowList1 = new ArrayList<Row>();
+	    
+	    for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
+	        Row row = new Row();
+	        List<Edit> editList1 = new ArrayList<Edit>();
+	        
+	        Edit edit2 = new Edit();
+	        edit2.setName("oe_order_item_id");
+	        edit2.setValue(returnOrderItemDTO.getItemName());
+	        
+	        Edit edit4 = new Edit();
+	        edit4.setName("unit_quantity");
+	        edit4.setValue(String.valueOf(returnOrderItemDTO.getQuanity()));
+	        
+	        editList1.add(edit2);
+	        editList1.add(edit4);
+	        
+	        row.setEdits(editList1);
+	        rowList1.add(row);
+	    }
+	    
+	    dataElement2.setRows(rowList1);
+	    dataElements.add(dataElement2);
+	    
+	    transaction.setDataElements(dataElements);
+	    transactionSet.setTransactions(Collections.singletonList(transaction));
+	    
+	    XmlMapper xmlMapper = new XmlMapper();
+	    xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
+	    xmlMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+	    String xml = xmlMapper.writeValueAsString(transactionSet);
+	    
+	    xml = xml.replaceAll("wstxns2:", "");
+	    xml = xml.replaceAll("xmlns:wstxns2", "xmlns:a");
+
+	    xml = xml.replaceAll("wstxns1:", "");
+	    xml = xml.replaceAll("xmlns:wstxns1", "xmlns:a");
+
+	    xml = xml.replaceAll("wstxns3:", "");
+	    xml = xml.replaceAll("xmlns:wstxns3", "xmlns:a");
+	    
+	    xml = xml.replaceAll("wstxns4:", "");
+	    xml = xml.replaceAll("xmlns:wstxns4", "xmlns:a");
+	    
+	    logger.info("Updated restocking XML");
+	    logger.info(xml);
+	    return xml;
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 }
