@@ -63,6 +63,7 @@ import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21UpdateRMAService;
+import com.di.integration.p21.serviceImpl.P21SKUServiceImpl;
 import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
 import com.di.integration.p21.serviceImpl.P21UpdateRMAServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -85,6 +86,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	AuditLogRepository auditLogRepository;
 	@Autowired
 	QuestionConfigRepository questionConfigRepository;
+
+	@Autowired
+	P21SKUServiceImpl p21SKUServiceImpl;
 
 	@Autowired
 	ReturnRoomRepository returnRoomRepository;
@@ -955,7 +959,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String deleteItem(ReturnOrderItem orderItem, String updateBy, String rmaNo) {
+	public String deleteItem(ReturnOrderItem orderItem, String updateBy, String rmaNo) throws Exception {
+
 		Optional<ReturnOrderItem> returnOrderItem = returnOrderItemRepository.findById(orderItem.getId());
 		ReturnOrderItem item = returnOrderItem.get();
 		if (item != null) {
@@ -982,6 +987,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			return "Item Deleted";
 		}
+
 		return "Item Not found";
 	}
 
