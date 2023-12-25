@@ -23,6 +23,6 @@ public interface ReturnOrderItemService {
 
 	List<QuestionConfig> getQuestions();
 	
-	String deleteItem(ReturnOrderItem returnOrderItem , String updateBy , String rmaNo);
+	String deleteItem(ReturnOrderItem returnOrderItem , String updateBy , String rmaNo) throws Exception;
 	
 }

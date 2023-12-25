@@ -3,6 +3,8 @@ package com.continuum.controller;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,15 +15,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.ReturnOrderItemService;
+import com.continuum.serviceImpl.ReturnOrderItemServiceImpl;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.StatusConfig;
 import com.di.commons.dto.ReturnOrderItemDTO;
+import com.di.integration.p21.serviceImpl.P21SKUServiceImpl;
 
 @RestController
 @RequestMapping("/return_order_items")
 public class ReturnOrderItemController {
+	final Logger logger = LoggerFactory.getLogger(ReturnOrderItemServiceImpl.class);
 
 //	private final ReturnOrderItemService returnOrderItemService;
 //
@@ -29,9 +34,12 @@ public class ReturnOrderItemController {
 //	public ReturnOrderItemController(ReturnOrderItemService returnOrderItemService) {
 //		this.returnOrderItemService = returnOrderItemService;
 //  }
-	
+
 	@Autowired
 	ReturnOrderItemService returnOrderItemService;
+
+	@Autowired
+	P21SKUServiceImpl p21SKUServiceImpl;
 
 	@PutMapping("/updatestatus")
 	public String updateReturnOrderItem(@RequestParam Long id, @RequestParam String rmaNo,
@@ -41,8 +49,10 @@ public class ReturnOrderItemController {
 
 	@PutMapping("/update/note")
 	public String updateNote(@RequestParam long lineItemId, @RequestParam Long assignToId, @RequestParam String rmaNo,
-			@RequestParam String updateBy,@RequestParam Long assignToRole , @RequestParam String contactEmail,@RequestBody ReturnOrderItemDTO updatedNote) {
-		return returnOrderItemService.updateNote(lineItemId, assignToId, rmaNo, updateBy,assignToRole,contactEmail,updatedNote);
+			@RequestParam String updateBy, @RequestParam Long assignToRole, @RequestParam String contactEmail,
+			@RequestBody ReturnOrderItemDTO updatedNote) {
+		return returnOrderItemService.updateNote(lineItemId, assignToId, rmaNo, updateBy, assignToRole, contactEmail,
+				updatedNote);
 	}
 
 	@PutMapping("/UpdateShipTo")
@@ -69,11 +79,20 @@ public class ReturnOrderItemController {
 	public List<QuestionConfig> getQuestions() {
 		return returnOrderItemService.getQuestions();
 	}
-	
+
 	@DeleteMapping("/deleteItem")
-	public String deleteItem(@RequestBody ReturnOrderItem returnOrderItem , @RequestParam String updateBy , @RequestParam String rmaNo) {
+	public String deleteItem(@RequestBody ReturnOrderItem returnOrderItem , @RequestParam String updateBy , @RequestParam String rmaNo) throws Exception {
+		
+	
+		String response = p21SKUServiceImpl.deleteSKU(returnOrderItem.getItemName(), rmaNo, null);
+		logger.info("This is response from ERP Deletion method :: "+ response);
+		if ("Item Deleted".equals(response) || "Process Complete Line Item from ERP deleted".equals(response)) {
 		return returnOrderItemService.deleteItem(returnOrderItem,updateBy,rmaNo);
 	}
+		else {
+			return "Erp Deletion Failed , Not forwarding with deleting in Local DB.";
+		}
 	
 
+}
 }

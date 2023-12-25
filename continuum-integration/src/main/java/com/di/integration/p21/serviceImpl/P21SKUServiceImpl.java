@@ -364,6 +364,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 					} else {
 						logger.error("Error: " + response.getStatusLine().getStatusCode());
+						return "You can't delete this item from ERP.";
 					}
 				}
 			}
@@ -563,7 +564,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 				return "Process Complete Line Item from ERP deleted";
 			} else {
 				logger.error("Error: Unexpected status code in Tenth api - " + statusCode);
-				return "Process complete session was already active, Still Line Item from ERP deleted";
+				return "Item Deleted";
 			}
 
 		} catch (Exception e) {
