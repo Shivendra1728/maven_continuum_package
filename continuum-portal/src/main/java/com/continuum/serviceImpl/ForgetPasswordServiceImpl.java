@@ -64,7 +64,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 			existingUser.setUuid(uuid);
 			existingUser.setResetTokenExpiration(expirationTime);
 			
-			String recipient = "nitin.parihar@bytesfarms.com";
+			String recipient = email;
 			String subject = PortalConstants.FPasswordLink;
 			String template = emailTemplateRenderer.getFPASSWORD_TEMPLETE_CONTENT();
 			HashMap<String, String> map = new HashMap<>();
