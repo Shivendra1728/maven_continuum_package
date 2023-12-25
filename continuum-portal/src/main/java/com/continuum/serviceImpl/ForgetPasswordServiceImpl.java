@@ -1,6 +1,7 @@
 package com.continuum.serviceImpl;
 
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 			existingUser.setUuid(uuid);
 			existingUser.setResetTokenExpiration(expirationTime);
 			
-			String recipient = email;
+			String recipient = "nitin.parihar@bytesfarms.com";
 			String subject = PortalConstants.FPasswordLink;
 			String template = emailTemplateRenderer.getFPASSWORD_TEMPLETE_CONTENT();
 			HashMap<String, String> map = new HashMap<>();
@@ -77,8 +78,10 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 			map.put("RESET_LINK", link);
 			map.put("user_name", existingUser.getFirstName());
 			map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
-			map.put("CLIENT_PHONE",
-					String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+			Long contactNo = returnOrderServiceImpl.getClientConfig().getClient().getContactNo();
+			String decimalFormat = contactNo.toString();
+			String num = decimalFormat.substring(0, 3)+"-"+decimalFormat.substring(3, 6)+"-"+decimalFormat.substring(6);
+			map.put("CLIENT_PHONE", num);
 			try {
 				emailSender.sendEmail(recipient, template, subject, map);
 			} catch (MessagingException e) {
