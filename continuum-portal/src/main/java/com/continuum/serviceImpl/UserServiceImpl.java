@@ -1,6 +1,5 @@
 package com.continuum.serviceImpl;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +15,6 @@ import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.TncRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
-import com.di.commons.dto.UserDTO;
 import com.di.commons.mapper.UserMapper;
 
 @Service
@@ -30,7 +28,7 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	UserMapper usermapper;
-	
+
 	@Autowired
 	TncRepository tncRepository;
 
@@ -38,9 +36,9 @@ public class UserServiceImpl implements UserService {
 	public Long createUser(User user) throws Exception {
 
 		if (userRepository.existsByEmail(user.getEmail())) {
-			
+
 			throw new Exception("Email already exists. Cannot create a user with the same email.");
-			
+
 		} else {
 			String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
 			user.setPassword(hashedPassword);
@@ -58,7 +56,7 @@ public class UserServiceImpl implements UserService {
 			List<User> userdto = userDTO.map(Collections::singletonList).orElse(Collections.emptyList());
 			return userdto;
 		} else {
-			
+
 			return userRepository.findByStatus(true);
 		}
 	}
@@ -138,6 +136,7 @@ public class UserServiceImpl implements UserService {
 			}
 			if (user.getEmail() != null) {
 				eUser.setEmail(user.getEmail());
+				eUser.setUserName(user.getEmail());
 			}
 			if (user.getTitle() != null) {
 				eUser.setTitle(user.getTitle());
