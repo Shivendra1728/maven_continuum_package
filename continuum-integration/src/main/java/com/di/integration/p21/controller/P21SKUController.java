@@ -13,13 +13,14 @@ import com.di.integration.p21.service.P21SKUService;
 @RestController
 @RequestMapping("/P21/SKU")
 public class P21SKUController {
-	
+
 	@Autowired
 	P21SKUService p21SKUService;
-	
+
 	@DeleteMapping("/delete")
-	public String skuDelete(@RequestParam(required = true) String itemId,@RequestParam(required = true) String rmaNo) throws URISyntaxException, Exception {
-		 return p21SKUService.deleteSKU(itemId,rmaNo,null);
+	public String skuDelete(@RequestParam(required = true) String itemId, @RequestParam(required = true) String rmaNo)
+			throws URISyntaxException, Exception {
+		return p21SKUService.deleteSKU(itemId, rmaNo, null);
 	}
 
 }
