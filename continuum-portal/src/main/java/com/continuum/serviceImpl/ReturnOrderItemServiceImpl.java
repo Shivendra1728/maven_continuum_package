@@ -61,6 +61,7 @@ import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
 import com.continuum.tenant.repos.repositories.StatusConfigRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.ReturnOrderItemDTO;
+import com.di.commons.mapper.ReturnOrderItemMapper;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21UpdateRMAService;
 import com.di.integration.p21.serviceImpl.P21SKUServiceImpl;
@@ -151,6 +152,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	P21UpdateRMAServiceImpl p21UpdateRMAServiceImpl;
+
+	@Autowired
+	ReturnOrderItemMapper returnOrderItemMapper;
 
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
@@ -989,6 +993,31 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		}
 
 		return "Item Not found";
+	}
+
+	@Override
+	public String addItem(List<ReturnOrderItemDTO> returnOrderItemDTOList, String updateBy, String rmaNo) {
+		Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
+		if (optionalReturnOrder.isPresent()) {
+			ReturnOrder returnOrder = optionalReturnOrder.get();
+			for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
+				returnOrderItemDTO.setQuanity(returnOrderItemDTO.getQuanity());
+				returnOrderItemDTO.setItemName(returnOrderItemDTO.getItemName());
+				returnOrderItemDTO.setItemDesc(returnOrderItemDTO.getItemDesc());
+
+				ReturnOrderItem returnOrderItem = returnOrderItemMapper
+						.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
+				try {
+				returnOrderItemRepository.save(returnOrderItem);
+				returnOrderItemRepository.updateReturnOrder(returnOrderItem.getId(), returnOrder.getId());
+				}catch(Exception e) {
+					e.printStackTrace();				}
+			}
+
+			return "Item(s) added successfully";
+		}
+
+		return "Return Order not found";
 	}
 
 	public String processRMAAndGetReceiptNumber(int rmaNo) throws Exception {
