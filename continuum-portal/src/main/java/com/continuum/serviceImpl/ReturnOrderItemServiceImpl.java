@@ -1012,7 +1012,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemDTO.setItemDesc(returnOrderItemDTO.getItemDesc());
 				returnOrderItemDTO.setStatus(returnOrder.getStatus());		
 				returnOrderItemDTO.setIsEditable(true);
-				returnOrderItemDTO.setIsAuthorized(false);		
+				returnOrderItemDTO.setIsAuthorized(false);
+				returnOrderItemDTO.setIsActive(true);
 				ReturnOrderItem returnOrderItem = returnOrderItemMapper
 						.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
 				try {
