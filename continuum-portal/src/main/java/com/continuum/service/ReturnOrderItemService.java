@@ -2,6 +2,7 @@ package com.continuum.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.QuestionConfig;
@@ -23,7 +24,7 @@ public interface ReturnOrderItemService {
 
 	List<QuestionConfig> getQuestions();
 	
-	String deleteItem(ReturnOrderItem returnOrderItem , String updateBy , String rmaNo) throws Exception;
+	Map<String, Object> deleteItem(ReturnOrderItem returnOrderItem , String updateBy , String rmaNo) throws Exception;
 	String addItem(List<ReturnOrderItemDTO> returnOrderItemList , String updateBy , String rmaNo) throws Exception;
 
 	
