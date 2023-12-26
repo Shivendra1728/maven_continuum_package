@@ -161,6 +161,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		for (ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {
 			returnOrderItem.setShipTo(null);
+			returnOrderItem.setIsActive(true);
 		}
 		returnOrderRepository.save(returnOrder);
 		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
@@ -501,8 +502,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 						+ returnOrder.getStatus() + " by " + updateBy + ".; Email has been sent to "
 						+ returnOrder.getContact().getContactEmailId() + ".";
 			}
-			auditLogServiceImpl.setAuditLog(description, title, auditLogStatus, rmaNo,
-					updateBy,returnOrder.getStatus());
+			auditLogServiceImpl.setAuditLog(description, title, auditLogStatus, rmaNo, updateBy,
+					returnOrder.getStatus());
 			return "RMA Status Updated Successfully.";
 
 		} else {
@@ -627,31 +628,32 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				e.printStackTrace();
 			}
 
-			String highlight="";
-			String description="";
-			String status="RMA Header";
-			String title="Assign RMA";
+			String highlight = "";
+			String description = "";
+			String status = "RMA Header";
+			String title = "Assign RMA";
 			List<String> updates = new ArrayList<>();
 			if (!previousNote.equalsIgnoreCase(note.getNote())) {
-				updates.add("Note '"+note.getNote()+"'"+" added, while assigning RMA " + getRmaaQualifier() + " " + rmaNo + ".");
+				updates.add("Note '" + note.getNote() + "'" + " added, while assigning RMA " + getRmaaQualifier() + " "
+						+ rmaNo + ".");
 				highlight = note.getNote();
 
 			}
 			if (previousReturnType != returnTypeId) {
-				updates.add("Return type of the "
-						+ getRmaaQualifier() + " " + rmaNo + " is set to as '" + returnTypes.get().getType() + "'");
+				updates.add("Return type of the " + getRmaaQualifier() + " " + rmaNo + " is set to as '"
+						+ returnTypes.get().getType() + "'");
 				highlight = "Return Type";
 
 			}
 			if (previousAssignTo != assignToId) {
-				updates.add(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
-				+ " has been assigned to the " + user.getFirstName() + " " + user.getLastName() + " by "+updateBy+"." + ";"
-				+ getRmaaQualifier() + " " + rmaNo + " is now at 'Under Review'.;"+"Email has been sent to "+note.getContact().getContactEmailId());
+				updates.add(getRmaaQualifier() + " " + returnOrder.getRmaOrderNo() + " has been assigned to the "
+						+ user.getFirstName() + " " + user.getLastName() + " by " + updateBy + "." + ";"
+						+ getRmaaQualifier() + " " + rmaNo + " is now at 'Under Review'.;" + "Email has been sent to "
+						+ note.getContact().getContactEmailId());
 				highlight = "assigned";
-				status="Inbox";
+				status = "Inbox";
 
 			}
-			
 
 			description = String.join(".;", updates) + ".";
 
