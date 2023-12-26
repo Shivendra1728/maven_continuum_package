@@ -1011,7 +1011,15 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemRepository.save(returnOrderItem);
 				returnOrderItemRepository.updateReturnOrder(returnOrderItem.getId(), returnOrder.getId());
 				}catch(Exception e) {
-					e.printStackTrace();				}
+					e.printStackTrace();
+				}
+				
+				//Capture in audit logs
+				String description="Item- " + returnOrderItemDTO.getItemName() + " has been added by " + updateBy + ".";
+				String title="Update Activity";
+				String status="List Items";
+				String highlight="added";
+				auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 			}
 
 			return "Item(s) added successfully";
