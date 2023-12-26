@@ -24,5 +24,7 @@ public interface ReturnOrderItemService {
 	List<QuestionConfig> getQuestions();
 	
 	String deleteItem(ReturnOrderItem returnOrderItem , String updateBy , String rmaNo) throws Exception;
+	String addItem(List<ReturnOrderItemDTO> returnOrderItemList , String updateBy , String rmaNo) throws Exception;
+
 	
 }

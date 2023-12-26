@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.StatusConfig;
 import com.di.commons.dto.ReturnOrderItemDTO;
+import com.di.integration.p21.service.P21SKUService;
 import com.di.integration.p21.serviceImpl.P21SKUServiceImpl;
 
 @RestController
@@ -40,6 +42,9 @@ public class ReturnOrderItemController {
 
 	@Autowired
 	P21SKUServiceImpl p21SKUServiceImpl;
+	
+	@Autowired
+	P21SKUService p21skuService;
 
 	@PutMapping("/updatestatus")
 	public String updateReturnOrderItem(@RequestParam Long id, @RequestParam String rmaNo,
@@ -81,18 +86,29 @@ public class ReturnOrderItemController {
 	}
 
 	@DeleteMapping("/deleteItem")
-	public String deleteItem(@RequestBody ReturnOrderItem returnOrderItem , @RequestParam String updateBy , @RequestParam String rmaNo) throws Exception {
-		
-	
+	public String deleteItem(@RequestBody ReturnOrderItem returnOrderItem, @RequestParam String updateBy,
+			@RequestParam String rmaNo) throws Exception {
+
 		String response = p21SKUServiceImpl.deleteSKU(returnOrderItem.getItemName(), rmaNo, null);
-		logger.info("This is response from ERP Deletion method :: "+ response);
+		logger.info("This is response from ERP Deletion method :: " + response);
 		if ("Item Deleted".equals(response) || "Process Complete Line Item from ERP deleted".equals(response)) {
-		return returnOrderItemService.deleteItem(returnOrderItem,updateBy,rmaNo);
-	}
-		else {
+			return returnOrderItemService.deleteItem(returnOrderItem, updateBy, rmaNo);
+		} else {
 			return "ERP deletion not allowed for this line item.";
 		}
-	
 
-}
+	}
+	
+	
+	@PostMapping("/add")
+	public String addItem(@RequestBody List<ReturnOrderItemDTO> returnOrderItemDTOList , @RequestParam String updateBy , @RequestParam String rmaNo) throws Exception{
+		String response = p21skuService.addSKU(rmaNo, returnOrderItemDTOList, null);
+		if(response.equalsIgnoreCase("Line Item Added")) {
+		return returnOrderItemService.addItem(returnOrderItemDTOList,updateBy,rmaNo);
+		}else {
+			return "ERP addition not allowed for this line item.";
+		}
+		
+	}
+	
 }
