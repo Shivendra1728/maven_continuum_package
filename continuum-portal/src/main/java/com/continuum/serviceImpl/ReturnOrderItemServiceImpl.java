@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.mail.MessagingException;
@@ -963,9 +964,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String deleteItem(ReturnOrderItem orderItem, String updateBy, String rmaNo) throws Exception {
+	public Map<String, Object> deleteItem(ReturnOrderItem orderItem, String updateBy, String rmaNo) throws Exception {
 
 		Optional<ReturnOrderItem> returnOrderItem = returnOrderItemRepository.findById(orderItem.getId());
+	    Map<String, Object> jsonResponse = new HashMap<>();
 		ReturnOrderItem item = returnOrderItem.get();
 		if (item != null) {
 			item.setIsActive(false);
@@ -988,11 +990,15 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
+			
+			jsonResponse.put("status", "success");
+	        jsonResponse.put("message", "Item Deleted");
 
-			return "Item Deleted";
+			return jsonResponse;
 		}
-
-		return "Item Not found";
+		jsonResponse.put("status", "error");
+        jsonResponse.put("message", "Item Not found");
+		return jsonResponse;
 	}
 
 	@Override
@@ -1004,7 +1010,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemDTO.setQuanity(returnOrderItemDTO.getQuanity());
 				returnOrderItemDTO.setItemName(returnOrderItemDTO.getItemName());
 				returnOrderItemDTO.setItemDesc(returnOrderItemDTO.getItemDesc());
-
+				returnOrderItemDTO.setStatus(returnOrder.getStatus());		
+				returnOrderItemDTO.setIsEditable(true);
+				returnOrderItemDTO.setIsAuthorized(false);		
 				ReturnOrderItem returnOrderItem = returnOrderItemMapper
 						.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
 				try {

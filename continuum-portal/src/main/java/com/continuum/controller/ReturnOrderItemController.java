@@ -1,7 +1,9 @@
 package com.continuum.controller;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,15 +88,20 @@ public class ReturnOrderItemController {
 	}
 
 	@DeleteMapping("/deleteItem")
-	public String deleteItem(@RequestBody ReturnOrderItem returnOrderItem, @RequestParam String updateBy,
+	public Map<String, Object> deleteItem(@RequestBody ReturnOrderItem returnOrderItem, @RequestParam String updateBy,
 			@RequestParam String rmaNo) throws Exception {
 
+	    Map<String, Object> jsonResponse = new HashMap<>();
 		String response = p21SKUServiceImpl.deleteSKU(returnOrderItem.getItemName(), rmaNo, null);
 		logger.info("This is response from ERP Deletion method :: " + response);
 		if ("Item Deleted".equals(response) || "Process Complete Line Item from ERP deleted".equals(response)) {
 			return returnOrderItemService.deleteItem(returnOrderItem, updateBy, rmaNo);
+			
 		} else {
-			return "ERP deletion not allowed for this line item.";
+			jsonResponse.put("status", "error");
+	        jsonResponse.put("code", 0);
+	        jsonResponse.put("message", "ERP deletion not allowed for this line item.");	
+	        return jsonResponse;
 		}
 
 	}
