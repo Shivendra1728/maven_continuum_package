@@ -203,8 +203,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (updatedItem.getAmount() != null) {
 					existingItem.setAmount(updatedItem.getAmount());
-					BigDecimal newRefundAmount = updatedItem.getAmount().subtract(existingItem.getReStockingAmount());
-					existingItem.setReturnAmount(newRefundAmount);
+					if(updatedItem.getReStockingAmount() != null) {
+						BigDecimal newRefundAmount = updatedItem.getAmount().subtract(existingItem.getReStockingAmount());
+						existingItem.setReturnAmount(newRefundAmount);
+					}
+					
 				}
 
 //				if (existingItem.getReturnAmount() != null
