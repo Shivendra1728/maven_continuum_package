@@ -336,7 +336,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				ReturnOrder returnOrderEntity = returnOrderRepository.findByRmaOrderNo(rmaNo).get();
 				List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository
-						.findByReturnOrderIdAndIsActive(returnOrderEntity.getId(),true);
+						.findByReturnOrderIdAndIsActive(returnOrderEntity.getId(), true);
 
 				int min = 1000;
 				for (ReturnOrderItem returnOrderItem : returnOrderItems) {
@@ -1006,62 +1006,66 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String addItem(List<ReturnOrderItemDTO> returnOrderItemDTOList, String updateBy, String rmaNo) {
-	    Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
+	public Map<String, Object> addItem(List<ReturnOrderItemDTO> returnOrderItemDTOList, String updateBy, String rmaNo) {
+		Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
+		Map<String, Object> jsonResponse = new HashMap<>();
 
-	    if (optionalReturnOrder.isPresent()) {
-	        ReturnOrder returnOrder = optionalReturnOrder.get();
-	        List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
-	        Set<String> existingItemNames = new HashSet<>();
+		if (optionalReturnOrder.isPresent()) {
+			ReturnOrder returnOrder = optionalReturnOrder.get();
+			List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
+			Set<String> existingItemNames = new HashSet<>();
 
-	        for (ReturnOrderItem existingItem : returnOrderItems) {
-	            existingItemNames.add(existingItem.getItemName());
-	        }
+			for (ReturnOrderItem existingItem : returnOrderItems) {
+				existingItemNames.add(existingItem.getItemName());
+			}
 
-	        for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
-	            String itemName = returnOrderItemDTO.getItemName();
+			for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
+				String itemName = returnOrderItemDTO.getItemName();
 
-	            // Check if the item already exists for the given RMA
-	            if (existingItemNames.contains(itemName)) {
-	                // Handle the case where the item already exists
-	                return "Item '" + itemName + "' already exists for RMA '" + rmaNo + "'.";
-	            }
+				// Check if the item already exists for the given RMA
+				if (existingItemNames.contains(itemName)) {
+					// Handle the case where the item already exists
+					jsonResponse.put("status", "error");
+					jsonResponse.put("message", "Item Already Exists");
+					return jsonResponse;				}
 
-	            // Add the item name to the set to prevent duplicates
-	            existingItemNames.add(itemName);
+				// Add the item name to the set to prevent duplicates
+				existingItemNames.add(itemName);
 
-	            // Rest of your code
-	            returnOrderItemDTO.setQuanity(returnOrderItemDTO.getQuanity());
-	            returnOrderItemDTO.setItemName(itemName);
-	            returnOrderItemDTO.setItemDesc(returnOrderItemDTO.getItemDesc());
-	            returnOrderItemDTO.setStatus(returnOrder.getStatus());
-	            returnOrderItemDTO.setIsEditable(true);
-	            returnOrderItemDTO.setIsAuthorized(false);
-	            returnOrderItemDTO.setIsActive(true);
+				// Rest of your code
+				returnOrderItemDTO.setQuanity(returnOrderItemDTO.getQuanity());
+				returnOrderItemDTO.setItemName(itemName);
+				returnOrderItemDTO.setItemDesc(returnOrderItemDTO.getItemDesc());
+				returnOrderItemDTO.setStatus(returnOrderItemDTO.getStatus());
+				returnOrderItemDTO.setIsEditable(true);
+				returnOrderItemDTO.setIsAuthorized(false);
+				returnOrderItemDTO.setIsActive(true);
 
-	            ReturnOrderItem returnOrderItem = returnOrderItemMapper.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
+				ReturnOrderItem returnOrderItem = returnOrderItemMapper
+						.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
 
-	            try {
-	                returnOrderItemRepository.save(returnOrderItem);
-	                returnOrderItemRepository.updateReturnOrder(returnOrderItem.getId(), returnOrder.getId());
-	            } catch (Exception e) {
-	                e.printStackTrace();
-	            }
+				try {
+					returnOrderItemRepository.save(returnOrderItem);
+					returnOrderItemRepository.updateReturnOrder(returnOrderItem.getId(), returnOrder.getId());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 
-	            // Capture in audit logs
-	            String description = "Item- " + itemName + " has been added by " + updateBy + ".";
-	            String title = "Update Activity";
-	            String status = "List Items";
-	            String highlight = "added";
-	            auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
-	        }
+				// Capture in audit logs
+				String description = "Item- " + itemName + " has been added by " + updateBy + ".";
+				String title = "Update Activity";
+				String status = "List Items";
+				String highlight = "added";
+				auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+			}
 
-	        return "Item(s) added successfully";
-	    }
+			jsonResponse.put("status", "success");
+			jsonResponse.put("message", "Item(s) Added Successfully");
+			return jsonResponse;		}
 
-	    return "Return Order not found";
-	}
-
+		jsonResponse.put("status", "error");
+		jsonResponse.put("message", "Return Order Not Found");
+		return jsonResponse;	}
 
 	public String processRMAAndGetReceiptNumber(int rmaNo) throws Exception {
 
