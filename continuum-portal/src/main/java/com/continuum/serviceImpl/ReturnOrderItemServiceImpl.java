@@ -7,10 +7,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.mail.MessagingException;
 import javax.persistence.EntityNotFoundException;
@@ -201,11 +203,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (updatedItem.getAmount() != null) {
 					existingItem.setAmount(updatedItem.getAmount());
-					BigDecimal newRefundAmount = updatedItem.getAmount()
-							.subtract(existingItem.getReStockingAmount());
+					BigDecimal newRefundAmount = updatedItem.getAmount().subtract(existingItem.getReStockingAmount());
 					existingItem.setReturnAmount(newRefundAmount);
 				}
-				
+
 //				if (existingItem.getReturnAmount() != null
 //						&& existingItem.getReturnAmount() != BigDecimal.valueOf(0)) {
 //					BigDecimal newRefundAmount = updatedItem.getAmount()
@@ -970,7 +971,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	public Map<String, Object> deleteItem(ReturnOrderItem orderItem, String updateBy, String rmaNo) throws Exception {
 
 		Optional<ReturnOrderItem> returnOrderItem = returnOrderItemRepository.findById(orderItem.getId());
-	    Map<String, Object> jsonResponse = new HashMap<>();
+		Map<String, Object> jsonResponse = new HashMap<>();
 		ReturnOrderItem item = returnOrderItem.get();
 		if (item != null) {
 			item.setIsActive(false);
@@ -993,52 +994,74 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
-			
+
 			jsonResponse.put("status", "success");
-	        jsonResponse.put("message", "Item Deleted");
+			jsonResponse.put("message", "Item Deleted");
 
 			return jsonResponse;
 		}
 		jsonResponse.put("status", "error");
-        jsonResponse.put("message", "Item Not found");
+		jsonResponse.put("message", "Item Not found");
 		return jsonResponse;
 	}
 
 	@Override
 	public String addItem(List<ReturnOrderItemDTO> returnOrderItemDTOList, String updateBy, String rmaNo) {
-		Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
-		if (optionalReturnOrder.isPresent()) {
-			ReturnOrder returnOrder = optionalReturnOrder.get();
-			for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
-				returnOrderItemDTO.setQuanity(returnOrderItemDTO.getQuanity());
-				returnOrderItemDTO.setItemName(returnOrderItemDTO.getItemName());
-				returnOrderItemDTO.setItemDesc(returnOrderItemDTO.getItemDesc());
-				returnOrderItemDTO.setStatus(returnOrder.getStatus());		
-				returnOrderItemDTO.setIsEditable(true);
-				returnOrderItemDTO.setIsAuthorized(false);
-				returnOrderItemDTO.setIsActive(true);
-				ReturnOrderItem returnOrderItem = returnOrderItemMapper
-						.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
-				try {
-				returnOrderItemRepository.save(returnOrderItem);
-				returnOrderItemRepository.updateReturnOrder(returnOrderItem.getId(), returnOrder.getId());
-				}catch(Exception e) {
-					e.printStackTrace();
-				}
-				
-				//Capture in audit logs
-				String description="Item- " + returnOrderItemDTO.getItemName() + " has been added by " + updateBy + ".";
-				String title="Update Activity";
-				String status="List Items";
-				String highlight="added";
-				auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
-			}
+	    Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
 
-			return "Item(s) added successfully";
-		}
+	    if (optionalReturnOrder.isPresent()) {
+	        ReturnOrder returnOrder = optionalReturnOrder.get();
+	        List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
+	        Set<String> existingItemNames = new HashSet<>();
 
-		return "Return Order not found";
+	        for (ReturnOrderItem existingItem : returnOrderItems) {
+	            existingItemNames.add(existingItem.getItemName());
+	        }
+
+	        for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
+	            String itemName = returnOrderItemDTO.getItemName();
+
+	            // Check if the item already exists for the given RMA
+	            if (existingItemNames.contains(itemName)) {
+	                // Handle the case where the item already exists
+	                return "Item '" + itemName + "' already exists for RMA '" + rmaNo + "'.";
+	            }
+
+	            // Add the item name to the set to prevent duplicates
+	            existingItemNames.add(itemName);
+
+	            // Rest of your code
+	            returnOrderItemDTO.setQuanity(returnOrderItemDTO.getQuanity());
+	            returnOrderItemDTO.setItemName(itemName);
+	            returnOrderItemDTO.setItemDesc(returnOrderItemDTO.getItemDesc());
+	            returnOrderItemDTO.setStatus(returnOrder.getStatus());
+	            returnOrderItemDTO.setIsEditable(true);
+	            returnOrderItemDTO.setIsAuthorized(false);
+	            returnOrderItemDTO.setIsActive(true);
+
+	            ReturnOrderItem returnOrderItem = returnOrderItemMapper.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
+
+	            try {
+	                returnOrderItemRepository.save(returnOrderItem);
+	                returnOrderItemRepository.updateReturnOrder(returnOrderItem.getId(), returnOrder.getId());
+	            } catch (Exception e) {
+	                e.printStackTrace();
+	            }
+
+	            // Capture in audit logs
+	            String description = "Item- " + itemName + " has been added by " + updateBy + ".";
+	            String title = "Update Activity";
+	            String status = "List Items";
+	            String highlight = "added";
+	            auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+	        }
+
+	        return "Item(s) added successfully";
+	    }
+
+	    return "Return Order not found";
 	}
+
 
 	public String processRMAAndGetReceiptNumber(int rmaNo) throws Exception {
 
