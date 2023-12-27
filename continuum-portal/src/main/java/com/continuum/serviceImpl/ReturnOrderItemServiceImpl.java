@@ -1031,9 +1031,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	}
 
 	@Override
-	public String addItem(List<ReturnOrderItemDTO> returnOrderItemDTOList, String updateBy, String rmaNo) {
+	public Map<String, Object> addItem(List<ReturnOrderItemDTO> returnOrderItemDTOList, String updateBy, String rmaNo) {
 		Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
-
+		Map<String, Object> jsonResponse = new HashMap<>();
 		if (optionalReturnOrder.isPresent()) {
 			ReturnOrder returnOrder = optionalReturnOrder.get();
 			List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
@@ -1049,7 +1049,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				// Check if the item already exists for the given RMA
 				if (existingItemNames.contains(itemName)) {
 					// Handle the case where the item already exists
-					return "Item '" + itemName + "' already exists for RMA '" + rmaNo + "'.";
+					jsonResponse.put("status", "error");
+					jsonResponse.put("message", "Item Already Exists");
+					return jsonResponse;
 				}
 
 				// Add the item name to the set to prevent duplicates
@@ -1059,7 +1061,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemDTO.setQuanity(returnOrderItemDTO.getQuanity());
 				returnOrderItemDTO.setItemName(itemName);
 				returnOrderItemDTO.setItemDesc(returnOrderItemDTO.getItemDesc());
-				returnOrderItemDTO.setStatus(returnOrder.getStatus());
+				returnOrderItemDTO.setStatus(returnOrderItemDTO.getStatus());
+				returnOrderItemDTO.setReasonCode(returnOrderItemDTO.getReasonCode());
 				returnOrderItemDTO.setIsEditable(true);
 				returnOrderItemDTO.setIsAuthorized(false);
 				returnOrderItemDTO.setIsActive(true);
@@ -1082,10 +1085,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 			}
 
-			return "Item(s) added successfully";
+			jsonResponse.put("status", "success");
+			jsonResponse.put("message", "Item(s) added successfully");
+			return jsonResponse;
 		}
 
-		return "Return Order not found";
+		jsonResponse.put("status", "error");
+		jsonResponse.put("message", "Return Order Not Found");
+		return jsonResponse;
 	}
 
 	public String processRMAAndGetReceiptNumber(int rmaNo) throws Exception {
