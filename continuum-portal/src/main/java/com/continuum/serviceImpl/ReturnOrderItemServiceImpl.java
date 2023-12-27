@@ -241,7 +241,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ existingAmountNote + "'" + " to " + "'" + updatedItem.getAmountNote() + "'");
 				}
 
-				if (existingAmountNote == null) {
+				if (existingAmountNote == null && updatedItem.getAmount()!=null && updatedItem.getAmount().equals(existingAmount)) {
 					updates.add("Amount Note has been updated of item - " + existingItem.getItemName() + " to " + "'"
 							+ updatedItem.getAmountNote() + "'");
 				}
