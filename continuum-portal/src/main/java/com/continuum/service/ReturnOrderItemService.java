@@ -25,7 +25,7 @@ public interface ReturnOrderItemService {
 	List<QuestionConfig> getQuestions();
 	
 	Map<String, Object> deleteItem(ReturnOrderItem returnOrderItem , String updateBy , String rmaNo) throws Exception;
-	String addItem(List<ReturnOrderItemDTO> returnOrderItemList , String updateBy , String rmaNo) throws Exception;
+	Map<String, Object> addItem(List<ReturnOrderItemDTO> returnOrderItemList , String updateBy , String rmaNo) throws Exception;
 
 	
 }

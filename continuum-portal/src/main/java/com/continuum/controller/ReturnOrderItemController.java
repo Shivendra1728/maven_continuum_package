@@ -99,7 +99,6 @@ public class ReturnOrderItemController {
 			
 		} else {
 			jsonResponse.put("status", "error");
-	        jsonResponse.put("code", 0);
 	        jsonResponse.put("message", "ERP deletion not allowed for this line item.");	
 	        return jsonResponse;
 		}
@@ -108,13 +107,16 @@ public class ReturnOrderItemController {
 	
 	
 	@PostMapping("/add")
-	public String addItem(@RequestBody List<ReturnOrderItemDTO> returnOrderItemDTOList , @RequestParam String updateBy , @RequestParam String rmaNo) throws Exception{
+	public Map<String, Object> addItem(@RequestBody List<ReturnOrderItemDTO> returnOrderItemDTOList , @RequestParam String updateBy , @RequestParam String rmaNo) throws Exception{
+	    Map<String, Object> jsonResponse = new HashMap<>();
+
 		String response = p21skuService.addSKU(rmaNo, returnOrderItemDTOList, null);
 		if(response.equalsIgnoreCase("Line Item Added")) {
 		return returnOrderItemService.addItem(returnOrderItemDTOList,updateBy,rmaNo);
 		}else {
-			return "ERP addition not allowed for this line item.";
-		}
+			jsonResponse.put("status", "error");
+	        jsonResponse.put("message", "ERP addition not allowed for this line item.");	
+	        return jsonResponse;		}
 		
 	}
 	
