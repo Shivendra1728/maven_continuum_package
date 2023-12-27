@@ -336,7 +336,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				ReturnOrder returnOrderEntity = returnOrderRepository.findByRmaOrderNo(rmaNo).get();
 				List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository
-						.findByReturnOrderId(returnOrderEntity.getId());
+						.findByReturnOrderIdAndIsActive(returnOrderEntity.getId(),true);
 
 				int min = 1000;
 				for (ReturnOrderItem returnOrderItem : returnOrderItems) {

@@ -24,4 +24,6 @@ public interface ReturnOrderItemRepository extends JpaRepository<ReturnOrderItem
     @Query(value = "UPDATE return_order_item SET return_order_id = :returnOrderId WHERE id = :itemId", nativeQuery = true)
     void updateReturnOrder(@Param("itemId") Long itemId, @Param("returnOrderId") Long returnOrderId);
 
+	List<ReturnOrderItem> findByReturnOrderIdAndIsActive(Long id, boolean b);
+
 }
