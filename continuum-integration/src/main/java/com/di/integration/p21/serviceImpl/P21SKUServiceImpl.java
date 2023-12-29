@@ -123,472 +123,501 @@ public class P21SKUServiceImpl implements P21SKUService {
 		// Every API will have content type and accept as application/json.
 		// Lets make two global variable to be used anywhere in code ..
 
-		String windowId = null;
-		String sessionId = null;
-		int rowNumber = 0;
-		String childWindowId = null;
+//		String windowId = null;
+//		String sessionId = null;
+//		int rowNumber = 0;
+//		String childWindowId = null;
+//
+//		// First
+//		// API---------------------------------------------------------------------------------------------------------------------------------
+//		String openSession = masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/";
+//		try {
+//			logger.info("1) Open Session for delete line");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			URIBuilder uriBuilder = new URIBuilder(openSession);
+//			HttpPost httpPost = new HttpPost(uriBuilder.build());
+//
+//			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpPost.setHeader("Accept", "application/json");
+//			httpPost.setHeader("Content-Type", "application/json");
+//			CloseableHttpResponse response = httpClient.execute(httpPost);
+//			HttpEntity entity = response.getEntity();
+//
+//			if (entity != null) {
+//				String jsonResponse = EntityUtils.toString(entity);
+//				JSONObject jsonObject = new JSONObject(jsonResponse);
+//
+//				logger.info("First Json" + jsonResponse);
+//				sessionId = jsonObject.getString("Id");
+//				logger.info("SessionId: " + sessionId);
+//			} else {
+//				logger.info("Response not generated from 1st API.");
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Creating Session :: " + e.getMessage());
+//		}
+//
+//		// Store session id to use in the end
+//
+//		// Second
+//		// Api--------------------------------------------------------------------------------------------------------------------------------------
+//		String openWindow = masterTenant.getSubdomain() + rmaWindowEndpoint;
+//		try {
+//			logger.info("2) Open Window for delete line");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			URIBuilder uriBuilder = new URIBuilder(openWindow);
+//			HttpPost httpPost = new HttpPost(uriBuilder.build());
+//
+//			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpPost.setHeader("Accept", "application/json");
+//			httpPost.setHeader("Content-Type", "application/json");
+//
+//			String requestBodyForWindow = "\"RMA\"";
+//			StringEntity stringEntity = new StringEntity(requestBodyForWindow);
+//			httpPost.setEntity(stringEntity);
+//
+//			CloseableHttpResponse response = httpClient.execute(httpPost);
+//			HttpEntity entity = response.getEntity();
+//
+//			if (entity != null) {
+//				String jsonResponse = EntityUtils.toString(entity);
+//				JSONObject jsonObject = new JSONObject(jsonResponse);
+//
+//				windowId = jsonObject.getString("Result");
+//				logger.info("WindowId: " + windowId);
+//			} else {
+//				logger.info("Response not generated from 2nd API.");
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Creating Window :: " + e.getMessage());
+//		}
+//
+//		// Store window id to pass in most apis
+//		// Third API
+//		// ------------------------------------------------------------------------------------------------------------------------------
+//
+//		String changeDataForAField = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId
+//				+ "/elements/changedata?datawindowName=order&fieldName=order_no";
+//
+//		try {
+//			logger.info("3) Change data for a field");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			URIBuilder uriBuilder = new URIBuilder(changeDataForAField);
+//			HttpPut httpPut = new HttpPut(uriBuilder.build());
+//
+//			httpPut.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpPut.setHeader("Accept", "application/json");
+//			httpPut.setHeader("Content-Type", "application/json");
+//
+//			String requestBody = "\"" + rmaNo + "\"";
+//			StringEntity entity3 = new StringEntity(requestBody, ContentType.APPLICATION_JSON);
+//			httpPut.setEntity(entity3);
+//
+//			CloseableHttpResponse response = httpClient.execute(httpPut);
+//			HttpEntity entity = response.getEntity();
+//			int statusCode = response.getStatusLine().getStatusCode();
+//			if (statusCode == 200) {
+//				logger.info("Third API ran successfully.");
+//			} else {
+//				logger.error("Error: Unexpected status code in third api - " + statusCode);
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Changing data for a field :: " + e.getMessage());
+//		}
+//
+//		// If 200 move ahead
+//
+//		// Fourth API
+//		// ---------------------------------------------------------------------------------------------------------------------
+//
+//		String rmaDetails = masterTenant.getSubdomain() + rmaGetEndPoint + "/get";
+//		try {
+//			logger.info("4) Getting RMA Details");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			logger.info("Get RMA Details API-" + rmaDetails);
+//
+//			URIBuilder uriBuilder = new URIBuilder(rmaDetails);
+//			HttpPost httpPost = new HttpPost(uriBuilder.build());
+//
+//			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpPost.setHeader("Content-Type", "application/json");
+//			httpPost.setHeader("Accept", "application/json");
+//
+//			int rmaNumber = Integer.parseInt(rmaNo);
+//			String jsonPayload = String.format("{\n" + "    \"ServiceName\":\"RMA\",\n"
+//					+ "    \"TransactionStates\":[{\n" + "        \"DataElementName\":\"TABPAGE_1.order\",\n"
+//					+ "        \"Keys\":[{\n" + "            \"Name\":\"order_no\",\n" + "            \"Value\":%d\n"
+//					+ "        }]\n" + "    }],\n" + "    \"UseCodeValues\":true\n" + "}", rmaNumber);
+//			httpPost.setEntity(new StringEntity(jsonPayload, ContentType.APPLICATION_JSON));
+//
+//			CloseableHttpResponse response = httpClient.execute(httpPost);
+//
+//			String responseBody = EntityUtils.toString(response.getEntity());
+//			logger.info("Response from RMA detail: " + responseBody);
+//			JsonNode rootNode = objectMapper.readTree(responseBody);
+//
+//			JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(41).path("Rows");
+//			List<String> itemIdsList = new ArrayList<>();
+//			for (JsonNode item : itemsNode) {
+//				// Picking up item id/item ids from rma
+//
+//				String itemIdInXML = item.path("Edits").get(0).path("Value").asText();
+//				itemIdsList.add(itemIdInXML);
+//				logger.info("Item ID: " + itemIdInXML);
+//				if (itemIdInXML.equals(itemId)) {
+//
+//					rowNumber = itemIdsList.indexOf(itemId) + 1;
+//					logger.info("Row Number to target is: " + rowNumber);
+//
+//					break;
+//				} else {
+//					logger.info("I can't identify this item id");
+//					continue;
+//
+//				}
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Getting RMA Details :: " + e.getMessage());
+//		}
+//		if (rowNumber == 0) {
+//			return "I couldn't identify the row in RMA for this item";
+//		}
+//
+//		// Give a request body and then call this to get position after looping items
+//		// and pick up a row number
+//		// and then carry forward
+//
+//		// Fifth API
+//		// --------------------------------------------------------------------------------------------------------------------------------
+//
+//		String setFocusOnAField = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId
+//				+ "/elements/focus?datawindowName=items&fieldName=oe_order_item_id&row=" + rowNumber;
+//		try {
+//			logger.info("5) Set Focus On A Field");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			URIBuilder uriBuilder = new URIBuilder(setFocusOnAField);
+//			logger.info("Set focus on field URL made-" + setFocusOnAField);
+//			HttpPost httpPost = new HttpPost(uriBuilder.build());
+//
+//			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpPost.setHeader("Accept", "application/json");
+//			httpPost.setHeader("Content-Type", "application/json");
+//
+//			CloseableHttpResponse response = httpClient.execute(httpPost);
+//			HttpEntity entity = response.getEntity();
+//			logger.info("Response of focus ::" + response);
+//			int statusCode = response.getStatusLine().getStatusCode();
+//			if (statusCode == 200) {
+//				logger.info("Fifth API ran successfully.");
+//			} else {
+//				logger.error("Error: Unexpected status code in Fifth api - " + statusCode);
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Set Focus On A field :: " + e.getMessage());
+//		}
+//
+//		// if 200 move ahead
+//		// Sixth API
+//		// ----------------------------------------------------------------------------------------------------------------
+//		String runToolUrl = String.format(
+//				"%s/uiserver0/ui/full/v1/window/%s/elements/tools/run?dwName=%s&toolName=%s&dwElementName=%s&row=%s",
+//				masterTenant.getSubdomain(), windowId, "items", "m_deletelline", "items", rowNumber);
+//		try {
+//			logger.info("6) Run Tool on Window");
+//
+//			try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+//				URIBuilder uriBuilder = new URIBuilder(runToolUrl);
+//				HttpPut httpPut = new HttpPut(uriBuilder.build());
+//
+//				httpPut.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+//				httpPut.addHeader(HttpHeaders.ACCEPT, "application/json");
+//				httpPut.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//
+//				try (CloseableHttpResponse response = httpClient.execute(httpPut)) {
+//					HttpEntity entity = response.getEntity();
+//
+//					if (HttpStatus.valueOf(response.getStatusLine().getStatusCode()).is2xxSuccessful()) {
+//						String runToolOnWindowResponseBody = EntityUtils.toString(entity);
+//						logger.info("Run Tool on Window " + runToolOnWindowResponseBody);
+//
+//						ObjectMapper objectMapper = new ObjectMapper();
+//						JsonNode rootNode = objectMapper.readTree(runToolOnWindowResponseBody);
+//
+//						JsonNode eventsNode = rootNode.path("Events");
+//						if (eventsNode.isArray() && eventsNode.size() > 0) {
+//							JsonNode eventDataNode = eventsNode.get(0).path("EventData");
+//							if (eventDataNode.has("windowid")) {
+//								childWindowId = eventDataNode.get("windowid").asText();
+//								logger.info("Child Window Id: " + childWindowId);
+//							}
+//						}
+//
+//					} else {
+//						logger.error("Error: " + response.getStatusLine().getStatusCode());
+//						return "You can't delete this item from ERP.";
+//					}
+//				}
+//			}
+//
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			logger.error("Error Running Tool At The Row :: " + ex.getMessage());
+//			logger.info("Finding Child Window ID using regular expression.");
+//
+//			if (ex instanceof HttpClientErrorException || ex instanceof HttpServerErrorException) {
+//				// Handle the exception response
+//				String responseBody = ex instanceof HttpClientErrorException
+//						? ((HttpClientErrorException) ex).getResponseBodyAsString()
+//						: ((HttpServerErrorException) ex).getResponseBodyAsString();
+//
+//				logger.error("Error Response Body: " + responseBody);
+//
+//				// You can extract information from the error response if needed
+//				Pattern pattern = Pattern
+//						.compile("<ErrorMessage>[^<]*window\\s([^\\s]+)[^<]*blocks[^<]*</ErrorMessage>");
+//				Matcher matcher = pattern.matcher(responseBody);
+//				if (matcher.find()) {
+//					childWindowId = matcher.group(1);
+//					logger.info("THIS IS CHILD WINDOW ID :: " + childWindowId);
+//				} else {
+//					logger.error("CHILD WINDOW ID COULDN'T BE PARSED..");
+//				}
+//			} else {
+//				logger.error("Unexpected Exception: " + ex.getClass().getName() + " - " + ex.getMessage());
+//			}
+//		}
+//
+//		// value for row put dynamic
+//		// Parse the 500 response to get child window id and pass on to next one.
+//
+//		// Seventh
+//		// API------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//		String childWindowActive = masterTenant.getSubdomain() + rmaWindowEndpoint + childWindowId + "/active";
+//
+//		try {
+//			logger.info("7) Child Window Active");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			URIBuilder uriBuilder = new URIBuilder(childWindowActive);
+//			HttpGet httpGet = new HttpGet(uriBuilder.build());
+//
+//			httpGet.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpGet.setHeader("Accept", "application/json");
+//			httpGet.setHeader("Content-Type", "application/json");
+//
+//			CloseableHttpResponse response = httpClient.execute(httpGet);
+//			HttpEntity entity = response.getEntity();
+//			int statusCode = response.getStatusLine().getStatusCode();
+//			if (statusCode == 200) {
+//				logger.info("Seventh API ran successfully.");
+//			} else {
+//				logger.error("Error: Unexpected status code in Seventh api - " + statusCode);
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Child Window Is Not Active :: " + e.getMessage());
+//		}
+//
+//		// If 200 that means child window is active and you can delete and save session
+//		// Eighth
+//		// API------------------------------------------------------------------------------------------------------------------------------------------
+//
+//		String toolOfChildWindow = masterTenant.getSubdomain() + rmaWindowEndpoint + childWindowId + "/tools/cb_1";
+//
+//		try {
+//			logger.info("8) Tool Of Child window ");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			URIBuilder uriBuilder = new URIBuilder(toolOfChildWindow);
+//			HttpPut httpPut = new HttpPut(uriBuilder.build());
+//
+//			httpPut.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpPut.setHeader("Accept", "application/json");
+//			httpPut.setHeader("Content-Type", "application/json");
+//
+//			CloseableHttpResponse response = httpClient.execute(httpPut);
+//			HttpEntity entity = response.getEntity();
+//			int statusCode = response.getStatusLine().getStatusCode();
+//			if (statusCode == 200) {
+//				logger.info("Eighth API ran successfully.");
+//			} else {
+//				logger.error("Error: Unexpected status code in Eighth api - " + statusCode);
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Running Tool Of Child Window :: " + e.getMessage());
+//		}
+//
+//		// If 200 that means we clicked Yes option if you want to click No then choose
+//		// cb_2
+//		// Ninth
+//		// API-----------------------------------------------------------------------------------------------------------------------------------------
+//
+//		String saveWindow = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId + "/save";
+//		try {
+//			logger.info("9) Save window ");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			URIBuilder uriBuilder = new URIBuilder(saveWindow);
+//			HttpPost httpPost = new HttpPost(uriBuilder.build());
+//
+//			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpPost.setHeader("Accept", "application/json");
+//			httpPost.setHeader("Content-Type", "application/json");
+//
+//			CloseableHttpResponse response = httpClient.execute(httpPost);
+//
+//			HttpEntity entity = response.getEntity();
+//			int statusCode = response.getStatusLine().getStatusCode();
+//			if (statusCode == 200) {
+//				logger.info("Ninth API ran successfully.");
+//			} else {
+//				logger.error("Error: Unexpected status code in Ninth api - " + statusCode);
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Saving Window :: " + e.getMessage());
+//		}
+//
+//		// if 200 then success window saved , line deleted.
+//
+//		// Tenth
+//		// API----------------------------------------------------------------------------------------------------------------------
+//
+//		String closeMainWindow = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId;
+//
+//		try {
+//			logger.info("10) Close Main window ");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			URIBuilder uriBuilder = new URIBuilder(closeMainWindow);
+//			HttpDelete httpDelete = new HttpDelete(uriBuilder.build());
+//
+//			httpDelete.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpDelete.setHeader("Accept", "application/json");
+//			httpDelete.setHeader("Content-Type", "application/json");
+//
+//			CloseableHttpResponse response = httpClient.execute(httpDelete);
+//
+//			HttpEntity entity = response.getEntity();
+//			int statusCode = response.getStatusLine().getStatusCode();
+//			if (statusCode == 200) {
+//				logger.info("Tenth API ran successfully.");
+//			} else {
+//				logger.error("Error: Unexpected status code in Tenth api - " + statusCode);
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Closing Main Window :: " + e.getMessage());
+//		}
+//
+//		// if 200 that means window has been closed now we end the session
+//
+//		// Eleventh
+//		// API---------------------------------------------------------------------------------------------------------
+//
+//		String endSession = masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions?Id=" + sessionId;
+//
+//		try {
+//			logger.info("11) End session ");
+//
+//			CloseableHttpClient httpClient = HttpClients.custom()
+//					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+//					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+//
+//			URIBuilder uriBuilder = new URIBuilder(endSession);
+//			HttpDelete httpDelete = new HttpDelete(uriBuilder.build());
+//
+//			httpDelete.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+//			httpDelete.setHeader("Accept", "application/json");
+//			httpDelete.setHeader("Content-Type", "application/json");
+//
+//			CloseableHttpResponse response = httpClient.execute(httpDelete);
+//
+//			HttpEntity entity = response.getEntity();
+//			int statusCode = response.getStatusLine().getStatusCode();
+//			if (statusCode == 200) {
+//				logger.info("Eleventh API ran successfully. Session End - RMA Delete line procedure completed.");
+//				return "Process Complete Line Item from ERP deleted";
+//			} else {
+//				logger.error("Error: Unexpected status code in Tenth api - " + statusCode);
+//				return "Item Deleted";
+//			}
+//
+//		} catch (Exception e) {
+//			logger.error("Error Closing Session :: " + e.getMessage());
+//		}
+//		return "Session End - Item Deleted";
+//
+//		// if null response that means everything worked ...Chill.
 
-		// First
-		// API---------------------------------------------------------------------------------------------------------------------------------
-		String openSession = masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/";
+		
+		String xmlPayload = prepareDeleteItemXml(rmaNo,itemId);
+		logger.info("returnOrderXmlPayload {}", xmlPayload);
+
 		try {
-			logger.info("1) Open Session for delete line");
-
 			CloseableHttpClient httpClient = HttpClients.custom()
 					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+			HttpPost request = new HttpPost(masterTenant.getSubdomain() + RMA_CREATE_API);
 
-			URIBuilder uriBuilder = new URIBuilder(openSession);
-			HttpPost httpPost = new HttpPost(uriBuilder.build());
+			// Set request headers
+			request.addHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
+			logger.info("#### TOKEN #### {}", token);
 
-			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpPost.setHeader("Accept", "application/json");
-			httpPost.setHeader("Content-Type", "application/json");
-			CloseableHttpResponse response = httpClient.execute(httpPost);
-			HttpEntity entity = response.getEntity();
-
-			if (entity != null) {
-				String jsonResponse = EntityUtils.toString(entity);
-				JSONObject jsonObject = new JSONObject(jsonResponse);
-
-				logger.info("First Json" + jsonResponse);
-				sessionId = jsonObject.getString("Id");
-				logger.info("SessionId: " + sessionId);
-			} else {
-				logger.info("Response not generated from 1st API.");
-			}
-
-		} catch (Exception e) {
-			logger.error("Error Creating Session :: " + e.getMessage());
-		}
-
-		// Store session id to use in the end
-
-		// Second
-		// Api--------------------------------------------------------------------------------------------------------------------------------------
-		String openWindow = masterTenant.getSubdomain() + rmaWindowEndpoint;
-		try {
-			logger.info("2) Open Window for delete line");
-
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			URIBuilder uriBuilder = new URIBuilder(openWindow);
-			HttpPost httpPost = new HttpPost(uriBuilder.build());
-
-			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpPost.setHeader("Accept", "application/json");
-			httpPost.setHeader("Content-Type", "application/json");
-
-			String requestBodyForWindow = "\"RMA\"";
-			StringEntity stringEntity = new StringEntity(requestBodyForWindow);
-			httpPost.setEntity(stringEntity);
-
-			CloseableHttpResponse response = httpClient.execute(httpPost);
-			HttpEntity entity = response.getEntity();
-
-			if (entity != null) {
-				String jsonResponse = EntityUtils.toString(entity);
-				JSONObject jsonObject = new JSONObject(jsonResponse);
-
-				windowId = jsonObject.getString("Result");
-				logger.info("WindowId: " + windowId);
-			} else {
-				logger.info("Response not generated from 2nd API.");
-			}
-
-		} catch (Exception e) {
-			logger.error("Error Creating Window :: " + e.getMessage());
-		}
-
-		// Store window id to pass in most apis
-		// Third API
-		// ------------------------------------------------------------------------------------------------------------------------------
-
-		String changeDataForAField = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId
-				+ "/elements/changedata?datawindowName=order&fieldName=order_no";
-
-		try {
-			logger.info("3) Change data for a field");
-
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			URIBuilder uriBuilder = new URIBuilder(changeDataForAField);
-			HttpPut httpPut = new HttpPut(uriBuilder.build());
-
-			httpPut.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpPut.setHeader("Accept", "application/json");
-			httpPut.setHeader("Content-Type", "application/json");
-
-			String requestBody = "\"" + rmaNo + "\"";
-			StringEntity entity3 = new StringEntity(requestBody, ContentType.APPLICATION_JSON);
-			httpPut.setEntity(entity3);
-
-			CloseableHttpResponse response = httpClient.execute(httpPut);
-			HttpEntity entity = response.getEntity();
-			int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode == 200) {
-				logger.info("Third API ran successfully.");
-			} else {
-				logger.error("Error: Unexpected status code in third api - " + statusCode);
-			}
-
-		} catch (Exception e) {
-			logger.error("Error Changing data for a field :: " + e.getMessage());
-		}
-
-		// If 200 move ahead
-
-		// Fourth API
-		// ---------------------------------------------------------------------------------------------------------------------
-
-		String rmaDetails = masterTenant.getSubdomain() + rmaGetEndPoint + "/get";
-		try {
-			logger.info("4) Getting RMA Details");
-
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			logger.info("Get RMA Details API-" + rmaDetails);
-
-			URIBuilder uriBuilder = new URIBuilder(rmaDetails);
-			HttpPost httpPost = new HttpPost(uriBuilder.build());
-
-			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpPost.setHeader("Content-Type", "application/json");
-			httpPost.setHeader("Accept", "application/json");
-
-			int rmaNumber = Integer.parseInt(rmaNo);
-			String jsonPayload = String.format("{\n" + "    \"ServiceName\":\"RMA\",\n"
-					+ "    \"TransactionStates\":[{\n" + "        \"DataElementName\":\"TABPAGE_1.order\",\n"
-					+ "        \"Keys\":[{\n" + "            \"Name\":\"order_no\",\n" + "            \"Value\":%d\n"
-					+ "        }]\n" + "    }],\n" + "    \"UseCodeValues\":true\n" + "}", rmaNumber);
-			httpPost.setEntity(new StringEntity(jsonPayload, ContentType.APPLICATION_JSON));
-
-			CloseableHttpResponse response = httpClient.execute(httpPost);
-
+			request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+			request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+			StringEntity entity = new StringEntity(xmlPayload);
+			request.setEntity(entity);
+			CloseableHttpResponse response = httpClient.execute(request);
 			String responseBody = EntityUtils.toString(response.getEntity());
-			logger.info("Response from RMA detail: " + responseBody);
-			JsonNode rootNode = objectMapper.readTree(responseBody);
 
-			JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(41).path("Rows");
-			List<String> itemIdsList = new ArrayList<>();
-			for (JsonNode item : itemsNode) {
-				// Picking up item id/item ids from rma
-
-				String itemIdInXML = item.path("Edits").get(0).path("Value").asText();
-				itemIdsList.add(itemIdInXML);
-				logger.info("Item ID: " + itemIdInXML);
-				if (itemIdInXML.equals(itemId)) {
-
-					rowNumber = itemIdsList.indexOf(itemId) + 1;
-					logger.info("Row Number to target is: " + rowNumber);
-
-					break;
-				} else {
-					logger.info("I can't identify this item id");
-					continue;
-
-				}
-			}
+			logger.info("#### RMA LINE RESPONSE #### {}", responseBody);
+			return "Line Item Deleted";
 
 		} catch (Exception e) {
-			logger.error("Error Getting RMA Details :: " + e.getMessage());
+			return "Failed to add line item";
 		}
-		if (rowNumber == 0) {
-			return "I couldn't identify the row in RMA for this item";
-		}
-
-		// Give a request body and then call this to get position after looping items
-		// and pick up a row number
-		// and then carry forward
-
-		// Fifth API
-		// --------------------------------------------------------------------------------------------------------------------------------
-
-		String setFocusOnAField = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId
-				+ "/elements/focus?datawindowName=items&fieldName=oe_order_item_id&row=" + rowNumber;
-		try {
-			logger.info("5) Set Focus On A Field");
-
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			URIBuilder uriBuilder = new URIBuilder(setFocusOnAField);
-			logger.info("Set focus on field URL made-" + setFocusOnAField);
-			HttpPost httpPost = new HttpPost(uriBuilder.build());
-
-			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpPost.setHeader("Accept", "application/json");
-			httpPost.setHeader("Content-Type", "application/json");
-
-			CloseableHttpResponse response = httpClient.execute(httpPost);
-			HttpEntity entity = response.getEntity();
-			logger.info("Response of focus ::" + response);
-			int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode == 200) {
-				logger.info("Fifth API ran successfully.");
-			} else {
-				logger.error("Error: Unexpected status code in Fifth api - " + statusCode);
-			}
-
-		} catch (Exception e) {
-			logger.error("Error Set Focus On A field :: " + e.getMessage());
-		}
-
-		// if 200 move ahead
-		// Sixth API
-		// ----------------------------------------------------------------------------------------------------------------
-		String runToolUrl = String.format(
-				"%s/uiserver0/ui/full/v1/window/%s/elements/tools/run?dwName=%s&toolName=%s&dwElementName=%s&row=%s",
-				masterTenant.getSubdomain(), windowId, "items", "m_deletelline", "items", rowNumber);
-		try {
-			logger.info("6) Run Tool on Window");
-
-			try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-				URIBuilder uriBuilder = new URIBuilder(runToolUrl);
-				HttpPut httpPut = new HttpPut(uriBuilder.build());
-
-				httpPut.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-				httpPut.addHeader(HttpHeaders.ACCEPT, "application/json");
-				httpPut.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-
-				try (CloseableHttpResponse response = httpClient.execute(httpPut)) {
-					HttpEntity entity = response.getEntity();
-
-					if (HttpStatus.valueOf(response.getStatusLine().getStatusCode()).is2xxSuccessful()) {
-						String runToolOnWindowResponseBody = EntityUtils.toString(entity);
-						logger.info("Run Tool on Window " + runToolOnWindowResponseBody);
-
-						ObjectMapper objectMapper = new ObjectMapper();
-						JsonNode rootNode = objectMapper.readTree(runToolOnWindowResponseBody);
-
-						JsonNode eventsNode = rootNode.path("Events");
-						if (eventsNode.isArray() && eventsNode.size() > 0) {
-							JsonNode eventDataNode = eventsNode.get(0).path("EventData");
-							if (eventDataNode.has("windowid")) {
-								childWindowId = eventDataNode.get("windowid").asText();
-								logger.info("Child Window Id: " + childWindowId);
-							}
-						}
-
-					} else {
-						logger.error("Error: " + response.getStatusLine().getStatusCode());
-						return "You can't delete this item from ERP.";
-					}
-				}
-			}
-
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			logger.error("Error Running Tool At The Row :: " + ex.getMessage());
-			logger.info("Finding Child Window ID using regular expression.");
-
-			if (ex instanceof HttpClientErrorException || ex instanceof HttpServerErrorException) {
-				// Handle the exception response
-				String responseBody = ex instanceof HttpClientErrorException
-						? ((HttpClientErrorException) ex).getResponseBodyAsString()
-						: ((HttpServerErrorException) ex).getResponseBodyAsString();
-
-				logger.error("Error Response Body: " + responseBody);
-
-				// You can extract information from the error response if needed
-				Pattern pattern = Pattern
-						.compile("<ErrorMessage>[^<]*window\\s([^\\s]+)[^<]*blocks[^<]*</ErrorMessage>");
-				Matcher matcher = pattern.matcher(responseBody);
-				if (matcher.find()) {
-					childWindowId = matcher.group(1);
-					logger.info("THIS IS CHILD WINDOW ID :: " + childWindowId);
-				} else {
-					logger.error("CHILD WINDOW ID COULDN'T BE PARSED..");
-				}
-			} else {
-				logger.error("Unexpected Exception: " + ex.getClass().getName() + " - " + ex.getMessage());
-			}
-		}
-
-		// value for row put dynamic
-		// Parse the 500 response to get child window id and pass on to next one.
-
-		// Seventh
-		// API------------------------------------------------------------------------------------------------------------------------------------------------
-
-		String childWindowActive = masterTenant.getSubdomain() + rmaWindowEndpoint + childWindowId + "/active";
-
-		try {
-			logger.info("7) Child Window Active");
-
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			URIBuilder uriBuilder = new URIBuilder(childWindowActive);
-			HttpGet httpGet = new HttpGet(uriBuilder.build());
-
-			httpGet.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpGet.setHeader("Accept", "application/json");
-			httpGet.setHeader("Content-Type", "application/json");
-
-			CloseableHttpResponse response = httpClient.execute(httpGet);
-			HttpEntity entity = response.getEntity();
-			int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode == 200) {
-				logger.info("Seventh API ran successfully.");
-			} else {
-				logger.error("Error: Unexpected status code in Seventh api - " + statusCode);
-			}
-
-		} catch (Exception e) {
-			logger.error("Error Child Window Is Not Active :: " + e.getMessage());
-		}
-
-		// If 200 that means child window is active and you can delete and save session
-		// Eighth
-		// API------------------------------------------------------------------------------------------------------------------------------------------
-
-		String toolOfChildWindow = masterTenant.getSubdomain() + rmaWindowEndpoint + childWindowId + "/tools/cb_1";
-
-		try {
-			logger.info("8) Tool Of Child window ");
-
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			URIBuilder uriBuilder = new URIBuilder(toolOfChildWindow);
-			HttpPut httpPut = new HttpPut(uriBuilder.build());
-
-			httpPut.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpPut.setHeader("Accept", "application/json");
-			httpPut.setHeader("Content-Type", "application/json");
-
-			CloseableHttpResponse response = httpClient.execute(httpPut);
-			HttpEntity entity = response.getEntity();
-			int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode == 200) {
-				logger.info("Eighth API ran successfully.");
-			} else {
-				logger.error("Error: Unexpected status code in Eighth api - " + statusCode);
-			}
-
-		} catch (Exception e) {
-			logger.error("Error Running Tool Of Child Window :: " + e.getMessage());
-		}
-
-		// If 200 that means we clicked Yes option if you want to click No then choose
-		// cb_2
-		// Ninth
-		// API-----------------------------------------------------------------------------------------------------------------------------------------
-
-		String saveWindow = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId + "/save";
-		try {
-			logger.info("9) Save window ");
-
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			URIBuilder uriBuilder = new URIBuilder(saveWindow);
-			HttpPost httpPost = new HttpPost(uriBuilder.build());
-
-			httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpPost.setHeader("Accept", "application/json");
-			httpPost.setHeader("Content-Type", "application/json");
-
-			CloseableHttpResponse response = httpClient.execute(httpPost);
-
-			HttpEntity entity = response.getEntity();
-			int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode == 200) {
-				logger.info("Ninth API ran successfully.");
-			} else {
-				logger.error("Error: Unexpected status code in Ninth api - " + statusCode);
-			}
-
-		} catch (Exception e) {
-			logger.error("Error Saving Window :: " + e.getMessage());
-		}
-
-		// if 200 then success window saved , line deleted.
-
-		// Tenth
-		// API----------------------------------------------------------------------------------------------------------------------
-
-		String closeMainWindow = masterTenant.getSubdomain() + rmaWindowEndpoint + windowId;
-
-		try {
-			logger.info("10) Close Main window ");
-
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			URIBuilder uriBuilder = new URIBuilder(closeMainWindow);
-			HttpDelete httpDelete = new HttpDelete(uriBuilder.build());
-
-			httpDelete.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpDelete.setHeader("Accept", "application/json");
-			httpDelete.setHeader("Content-Type", "application/json");
-
-			CloseableHttpResponse response = httpClient.execute(httpDelete);
-
-			HttpEntity entity = response.getEntity();
-			int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode == 200) {
-				logger.info("Tenth API ran successfully.");
-			} else {
-				logger.error("Error: Unexpected status code in Tenth api - " + statusCode);
-			}
-
-		} catch (Exception e) {
-			logger.error("Error Closing Main Window :: " + e.getMessage());
-		}
-
-		// if 200 that means window has been closed now we end the session
-
-		// Eleventh
-		// API---------------------------------------------------------------------------------------------------------
-
-		String endSession = masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions?Id=" + sessionId;
-
-		try {
-			logger.info("11) End session ");
-
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			URIBuilder uriBuilder = new URIBuilder(endSession);
-			HttpDelete httpDelete = new HttpDelete(uriBuilder.build());
-
-			httpDelete.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			httpDelete.setHeader("Accept", "application/json");
-			httpDelete.setHeader("Content-Type", "application/json");
-
-			CloseableHttpResponse response = httpClient.execute(httpDelete);
-
-			HttpEntity entity = response.getEntity();
-			int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode == 200) {
-				logger.info("Eleventh API ran successfully. Session End - RMA Delete line procedure completed.");
-				return "Process Complete Line Item from ERP deleted";
-			} else {
-				logger.error("Error: Unexpected status code in Tenth api - " + statusCode);
-				return "Item Deleted";
-			}
-
-		} catch (Exception e) {
-			logger.error("Error Closing Session :: " + e.getMessage());
-		}
-		return "Session End - Item Deleted";
-
-		// if null response that means everything worked ...Chill.
-
+		
+		
 	}
 
 	@Override
@@ -685,6 +714,85 @@ public class P21SKUServiceImpl implements P21SKUService {
 			row.setEdits(editList1);
 			rowList1.add(row);
 		}
+
+		dataElement2.setRows(rowList1);
+		dataElements.add(dataElement2);
+
+		transaction.setDataElements(dataElements);
+		transactionSet.setTransactions(Collections.singletonList(transaction));
+
+		XmlMapper xmlMapper = new XmlMapper();
+		xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		xmlMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		String xml = xmlMapper.writeValueAsString(transactionSet);
+
+		xml = xml.replaceAll("wstxns2:", "");
+		xml = xml.replaceAll("xmlns:wstxns2", "xmlns:a");
+
+		xml = xml.replaceAll("wstxns1:", "");
+		xml = xml.replaceAll("xmlns:wstxns1", "xmlns:a");
+
+		xml = xml.replaceAll("wstxns3:", "");
+		xml = xml.replaceAll("xmlns:wstxns3", "xmlns:a");
+
+		xml = xml.replaceAll("wstxns4:", "");
+		xml = xml.replaceAll("xmlns:wstxns4", "xmlns:a");
+
+		logger.info("Updated restocking XML");
+		logger.info(xml);
+		return xml;
+
+	}
+	
+	private String prepareDeleteItemXml(String rmaNo, String itemId) throws Exception {
+		TransactionSet transactionSet = new TransactionSet();
+		transactionSet.setIgnoreDisabled(true);
+		transactionSet.setName(IntegrationConstants.RMA);
+		Transaction transaction = new Transaction();
+
+		List<DataElement> dataElements = new ArrayList<>();
+
+		// ORDER HEADER DATA ELEMENT 1-----------------------------------------
+		DataElement dataElement1 = new DataElement();
+		dataElement1.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER);
+		dataElement1.setType(IntegrationConstants.DATA_ELEMENT_TYPE_FORM);
+
+		List<Row> rowList = new ArrayList<Row>();
+		Row row1 = new Row();
+		List<Edit> editList = new ArrayList<Edit>();
+		Edit edit1 = new Edit();
+		edit1.setName("order_no");
+		edit1.setValue(rmaNo);
+		editList.add(edit1);
+		row1.setEdits(editList);
+		rowList.add(row1);
+		dataElement1.setRows(rowList);
+		dataElements.add(dataElement1);
+
+		// ORDER ITEMS DATA ELEMENT 2-----------------------------------------
+		DataElement dataElement2 = new DataElement();
+		dataElement2.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER_ITEMS);
+		dataElement2.setType(IntegrationConstants.DATA_ELEMENT_TYPE_LIST);
+
+		List<Row> rowList1 = new ArrayList<Row>();
+
+			Row row = new Row();
+			List<Edit> editList1 = new ArrayList<Edit>();
+
+			Edit edit2 = new Edit();
+			edit2.setName("oe_order_item_id");
+			edit2.setValue(itemId);
+
+			Edit edit4 = new Edit();
+			edit4.setName("unit_quantity");
+			edit4.setValue(String.valueOf(0));
+
+			editList1.add(edit2);
+			editList1.add(edit4);
+
+			row.setEdits(editList1);
+			rowList1.add(row);
+		
 
 		dataElement2.setRows(rowList1);
 		dataElements.add(dataElement2);
