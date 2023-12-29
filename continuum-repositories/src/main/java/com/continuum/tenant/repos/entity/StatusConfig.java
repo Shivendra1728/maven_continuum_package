@@ -1,7 +1,12 @@
 package com.continuum.tenant.repos.entity;
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,5 +33,10 @@ public class StatusConfig extends BaseEntity {
 	private Boolean isAuthorized;
 	private int priority;
 	private String statusMap;
+
 	private String isRecieved;
+
+	@OneToMany(mappedBy = "statusConfig", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	private List<StatusRelation> statusRelations;
+
 }
