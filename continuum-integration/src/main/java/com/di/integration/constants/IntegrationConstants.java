@@ -53,6 +53,7 @@ public final class IntegrationConstants {
     public static final String ERP_RMA_CREATE_API = "${erp.rma.create}";
     public static final String ERP_RMA_UPDATE_RESTOCKING_API = "${erp.data_update_restocking_url}";
     public static final String ERP_SERIALIZED_API = "${erp.serialized_url}";
+    public static final String ERP_SELLABLE_API = "${erp.sellable_url}";
     
     
     public static final String ERP_DATA_API_ORDER_VIEW = "${erp.data_api_order_view}";

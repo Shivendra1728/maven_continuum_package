@@ -1,5 +1,6 @@
 package com.di.integration.p21.serviceImpl;
 
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -86,9 +88,16 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 	@Value(IntegrationConstants.ERP_RMA_CREATE_API)
 	String RMA_CREATE_API;
+	
+	@Value(IntegrationConstants.ERP_DATA_API_BASE_URL)
+	String ERP_BASE_URL;
 
 	@Value(IntegrationConstants.ERP_SERIALIZED_API)
 	String SERIALIZED_API_URL;
+	
+	@Value(IntegrationConstants.ERP_SELLABLE_API)
+	String ERP_SELLABLE_API;
+
 
 	@Value(IntegrationConstants.ERP_RMA_UPDATE_RESTOCKING_API)
 	private String rmaGetEndPoint;
@@ -748,11 +757,74 @@ public class P21SKUServiceImpl implements P21SKUService {
 						responseMap.put("isSerialized", false);
 					}
 				} else {
-
+					responseMap.put("itemId", itemId);
+					responseMap.put("isSerialized", false);
 				}
 			}
 		}
 
 		return responseMap;
+	}
+	
+	
+	
+	@Override
+	public Map<String, Object> isSellable(String itemId,MasterTenant masterTenantObject) throws Exception{
+		MasterTenant masterTenant;
+	    Map<String, Object> jsonResponse = new HashMap<>();
+		if (masterTenantObject == null) {
+			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			masterTenant = masterTenantRepository.findByDbName(tenantId);
+		} else {
+			masterTenant = masterTenantObject;
+		}
+		// Token for tenant/ERP
+		String token = p21TokenServiceImpl.findToken(masterTenant);
+		logger.info("THE TOKEN IS:" + token);
+		
+		try {
+			CloseableHttpClient httpClient = HttpClients.custom()
+					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+			String baseUri = masterTenant.getSubdomain() + ERP_BASE_URL+ ERP_SELLABLE_API;
+			String filter = "item_id eq '" + itemId + "'";
+			URIBuilder uriBuilder = new URIBuilder(baseUri);
+			uriBuilder.addParameter("$format", "json");
+			uriBuilder.addParameter("$filter", filter);
+ 
+			URI fullURI = uriBuilder.build();
+			logger.info("Full URI " + fullURI);
+			HttpGet request = new HttpGet(fullURI);
+ 
+			request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+			request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+ 
+			HttpResponse response = httpClient.execute(request);
+			HttpEntity entity = response.getEntity();
+			String responseBody = EntityUtils.toString(entity);
+			logger.info("response :" + responseBody);
+			
+			int statusCode = response.getStatusLine().getStatusCode();
+			
+			if (statusCode == 200) {
+				logger.info(responseBody);
+				if (responseBody != null && responseBody.contains("\"sellable\":\"Y\"")) {
+					jsonResponse.put("itemId", itemId);
+					jsonResponse.put("isSellable", true);
+				} else {
+					jsonResponse.put("itemId", itemId);
+					jsonResponse.put("isSellable", false);
+				}
+			} else {
+				jsonResponse.put("itemId", itemId);
+				jsonResponse.put("isSellable", false);
+			}
+			
+			return jsonResponse;
+		} catch (Exception e) {
+			return jsonResponse;
+		}
+		
+		
 	}
 }
