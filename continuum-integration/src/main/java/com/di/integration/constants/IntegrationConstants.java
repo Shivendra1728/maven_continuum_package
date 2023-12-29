@@ -52,6 +52,7 @@ public final class IntegrationConstants {
     public static final String ERP_ORDER_FORMAT = "${erp.order_format}";
     public static final String ERP_RMA_CREATE_API = "${erp.rma.create}";
     public static final String ERP_RMA_UPDATE_RESTOCKING_API = "${erp.data_update_restocking_url}";
+    public static final String ERP_SERIALIZED_API = "${erp.serialized_url}";
     
     
     public static final String ERP_DATA_API_ORDER_VIEW = "${erp.data_api_order_view}";
@@ -92,6 +93,7 @@ public final class IntegrationConstants {
     public static final String BILL_TO_POSTAL_CODE = "bill2_postal_code";
 	public static final String APPROVED ="approved";
 	public static final String ERP_RMA_WINDOW_ENDPOINT ="${erp.window_end_point}";
+	
     
 
 
