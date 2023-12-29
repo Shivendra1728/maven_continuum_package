@@ -27,6 +27,9 @@ public class EditableConfig extends BaseEntity {
 	private boolean itemDeletion;
 	private boolean searchChildSKU;
 	private boolean recievedStatus;
+	private boolean isSerialized;
+	private boolean isSellable;
+
 
 	
 
