@@ -42,5 +42,10 @@ public class P21SKUController {
 		Map<String, Object> response = p21SKUService.checkSerialized(itemId,null);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+	
+	@GetMapping("/isSellable")
+	public Map<String, Object> isSellable(@RequestParam(required = true) String itemId) throws Exception {
+		return p21SKUService.isSellable(itemId, null);
+	}
 
 }

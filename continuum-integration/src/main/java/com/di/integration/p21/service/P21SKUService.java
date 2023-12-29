@@ -14,5 +14,6 @@ public interface P21SKUService {
 			throws Exception;
 
 	Map<String, Object> checkSerialized(String itemId, MasterTenant masterTenant) throws Exception;
+	public Map<String, Object> isSellable(String itemId,MasterTenant masterTenantObject) throws Exception;
 
 }
