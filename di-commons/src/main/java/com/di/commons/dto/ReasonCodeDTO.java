@@ -2,7 +2,12 @@ package com.di.commons.dto;
 
 import java.util.List;
 
+import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
+
+import com.continuum.tenant.repos.entity.ReturnType;
 import com.continuum.tenant.repos.entity.Store;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +36,9 @@ public class ReasonCodeDTO {
 	private boolean img_mandatory;
 	private boolean isPopUp;
 	private String popUpDetails;
+	private boolean noteMandatory;
+	private String problemNoteHeader;
+	private ReturnType returnType;
 	
 	//private String status;
 }

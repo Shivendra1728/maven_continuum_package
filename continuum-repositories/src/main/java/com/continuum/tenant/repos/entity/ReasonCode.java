@@ -64,4 +64,10 @@ public class ReasonCode extends BaseEntity {
 
 	private boolean isPopUp;
 	private String popUpDetails;
+	private boolean noteMandatory;
+	private String problemNoteHeader;
+	
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.EAGER)
+	private ReturnType returnType;
 }
