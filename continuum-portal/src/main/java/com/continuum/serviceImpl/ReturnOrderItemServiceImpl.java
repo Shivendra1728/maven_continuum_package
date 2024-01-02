@@ -203,11 +203,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (updatedItem.getAmount() != null) {
 					existingItem.setAmount(updatedItem.getAmount());
-					if(existingItem.getReStockingAmount() != null) {
-						BigDecimal newRefundAmount = updatedItem.getAmount().subtract(existingItem.getReStockingAmount());
+					if (existingItem.getReStockingAmount() != null) {
+						BigDecimal newRefundAmount = updatedItem.getAmount()
+								.subtract(existingItem.getReStockingAmount());
 						existingItem.setReturnAmount(newRefundAmount);
 					}
-					
+
 				}
 
 //				if (existingItem.getReturnAmount() != null
@@ -241,7 +242,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ existingAmountNote + "'" + " to " + "'" + updatedItem.getAmountNote() + "'");
 				}
 
-				if (existingAmountNote == null && updatedItem.getAmount()!=null && updatedItem.getAmount().equals(existingAmount)) {
+				if (existingAmountNote == null && updatedItem.getAmount() != null
+						&& updatedItem.getAmount().equals(existingAmount)) {
 					updates.add("Amount Note has been updated of item - " + existingItem.getItemName() + " to " + "'"
 							+ updatedItem.getAmountNote() + "'");
 				}
@@ -1001,25 +1003,28 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository
 					.findByReturnOrderIdAndIsActive(returnOrderEntity.getId(), true);
 
-			int min = 1000;
-			for (ReturnOrderItem returnOrderItemEntity : returnOrderItems) {
+			if (!returnOrderItems.isEmpty()) {
+				
+				int min = 1000;
+				for (ReturnOrderItem returnOrderItemEntity : returnOrderItems) {
 
-				StatusConfig statusConfig = statusConfigRepository.findBystatuslabl(returnOrderItemEntity.getStatus())
-						.get(0);
-				if (statusConfig.getPriority() < min) {
-					min = statusConfig.getPriority();
+					StatusConfig statusConfig = statusConfigRepository
+							.findBystatuslabl(returnOrderItemEntity.getStatus()).get(0);
+					if (statusConfig.getPriority() < min) {
+						min = statusConfig.getPriority();
+
+					}
 
 				}
 
+				StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
+				String existingHeaderStatus = returnOrderEntity.getStatus();
+				returnOrderEntity.setStatus(statusConfig.getStatusMap());
+				returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+				returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
+
+				returnOrderRepository.save(returnOrderEntity);
 			}
-
-			StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
-			String existingHeaderStatus = returnOrderEntity.getStatus();
-			returnOrderEntity.setStatus(statusConfig.getStatusMap());
-			returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
-			returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
-
-			returnOrderRepository.save(returnOrderEntity);
 
 			// updateReturnOrderItem(Long id, String rmaNo, updateBy, orderItem);
 
