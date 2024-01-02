@@ -29,5 +29,6 @@ public class ReturnType {
 	private Long id;
 	
 	private String type;
+	private Boolean isDisplayed;
 }
 

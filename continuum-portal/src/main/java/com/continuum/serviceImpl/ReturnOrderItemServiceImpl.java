@@ -1024,9 +1024,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
 
 				returnOrderRepository.save(returnOrderEntity);
-			}
-			else {
-				
+			} else {
+
 				StatusConfig statusConfig = statusConfigRepository.findByPriority(25).get(0);
 				String existingHeaderStatus = returnOrderEntity.getStatus();
 				returnOrderEntity.setStatus(statusConfig.getStatusMap());
@@ -1034,8 +1033,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
 
 				returnOrderRepository.save(returnOrderEntity);
-				
-				
+
 			}
 
 			// updateReturnOrderItem(Long id, String rmaNo, updateBy, orderItem);
@@ -1125,7 +1123,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				}
 
 				// Capture in audit logs
-				String description = "Item- " + itemName + " has been added by " + updateBy + ".";
+				List<String> updates = new ArrayList<>();
+				String description = "Item- " + itemName + " has been added by " + updateBy + ".;" + "Item- " + itemName
+						+ " has been updated to " + returnOrderItemList.get(0).getStatus() + ".;";
+				
 				String title = "Update Activity";
 				String status = "List Items";
 				String highlight = "added";
