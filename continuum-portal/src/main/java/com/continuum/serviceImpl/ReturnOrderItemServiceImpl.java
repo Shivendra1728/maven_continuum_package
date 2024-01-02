@@ -1004,7 +1004,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					.findByReturnOrderIdAndIsActive(returnOrderEntity.getId(), true);
 
 			if (!returnOrderItems.isEmpty()) {
-				
+
 				int min = 1000;
 				for (ReturnOrderItem returnOrderItemEntity : returnOrderItems) {
 
@@ -1024,6 +1024,18 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
 
 				returnOrderRepository.save(returnOrderEntity);
+			}
+			else {
+				
+				StatusConfig statusConfig = statusConfigRepository.findByPriority(25).get(0);
+				String existingHeaderStatus = returnOrderEntity.getStatus();
+				returnOrderEntity.setStatus(statusConfig.getStatusMap());
+				returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+				returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
+
+				returnOrderRepository.save(returnOrderEntity);
+				
+				
 			}
 
 			// updateReturnOrderItem(Long id, String rmaNo, updateBy, orderItem);
@@ -1055,7 +1067,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				String itemName = returnOrderItemDTO.getItemName();
 
 				// Check if the item already exists for the given RMA
-				if (existingItemNames.contains(itemName)) {
+				if (existingItemNames.contains(itemName) && Boolean.TRUE.equals(returnOrderItemDTO.getIsActive())) {
 					// Handle the case where the item already exists
 					jsonResponse.put("status", "error");
 					jsonResponse.put("message", "Item Already Exists");
@@ -1083,6 +1095,33 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					returnOrderItemRepository.updateReturnOrder(returnOrderItem.getId(), returnOrder.getId());
 				} catch (Exception e) {
 					e.printStackTrace();
+				}
+
+				ReturnOrder returnOrderEntity = returnOrderRepository.findByRmaOrderNo(rmaNo).get();
+				List<ReturnOrderItem> returnOrderItemList = returnOrderItemRepository
+						.findByReturnOrderIdAndIsActive(returnOrderEntity.getId(), true);
+
+				if (!returnOrderItemList.isEmpty()) {
+
+					int min = 1000;
+					for (ReturnOrderItem returnOrderItemEntity : returnOrderItemList) {
+
+						StatusConfig statusConfig = statusConfigRepository
+								.findBystatuslabl(returnOrderItemEntity.getStatus()).get(0);
+						if (statusConfig.getPriority() < min) {
+							min = statusConfig.getPriority();
+
+						}
+
+					}
+
+					StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
+					String existingHeaderStatus = returnOrderEntity.getStatus();
+					returnOrderEntity.setStatus(statusConfig.getStatusMap());
+					returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+					returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
+
+					returnOrderRepository.save(returnOrderEntity);
 				}
 
 				// Capture in audit logs
