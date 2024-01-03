@@ -1,8 +1,14 @@
 package com.di.integration.p21.serviceImpl;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,7 +49,11 @@ import org.springframework.web.client.RestTemplate;
 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
+import com.di.commons.dto.OrderDTO;
+import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.dto.ReturnOrderItemDTO;
+import com.di.commons.helper.P21ProductItem;
+import com.di.commons.helper.P21ProductItemHelper;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21SKUService;
 import com.di.integration.p21.transaction.DataElement;
@@ -70,6 +80,9 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 	@Autowired
 	RestTemplate restTemplate;
+	
+	@Value(IntegrationConstants.ERP_PRODUCT_API_BASE_URL)
+	String ERP_PRODUCT_API_BASE_URL;
 
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
@@ -88,16 +101,15 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 	@Value(IntegrationConstants.ERP_RMA_CREATE_API)
 	String RMA_CREATE_API;
-	
+
 	@Value(IntegrationConstants.ERP_DATA_API_BASE_URL)
 	String ERP_BASE_URL;
 
 	@Value(IntegrationConstants.ERP_SERIALIZED_API)
 	String SERIALIZED_API_URL;
-	
+
 	@Value(IntegrationConstants.ERP_SELLABLE_API)
 	String ERP_SELLABLE_API;
-
 
 	@Value(IntegrationConstants.ERP_RMA_UPDATE_RESTOCKING_API)
 	private String rmaGetEndPoint;
@@ -589,8 +601,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 //
 //		// if null response that means everything worked ...Chill.
 
-		
-		String xmlPayload = prepareDeleteItemXml(rmaNo,itemId);
+		String xmlPayload = prepareDeleteItemXml(rmaNo, itemId);
 		logger.info("returnOrderXmlPayload {}", xmlPayload);
 
 		try {
@@ -616,8 +627,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 		} catch (Exception e) {
 			return "Failed to add line item";
 		}
-		
-		
+
 	}
 
 	@Override
@@ -743,7 +753,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 		return xml;
 
 	}
-	
+
 	private String prepareDeleteItemXml(String rmaNo, String itemId) throws Exception {
 		TransactionSet transactionSet = new TransactionSet();
 		transactionSet.setIgnoreDisabled(true);
@@ -776,23 +786,22 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 		List<Row> rowList1 = new ArrayList<Row>();
 
-			Row row = new Row();
-			List<Edit> editList1 = new ArrayList<Edit>();
+		Row row = new Row();
+		List<Edit> editList1 = new ArrayList<Edit>();
 
-			Edit edit2 = new Edit();
-			edit2.setName("oe_order_item_id");
-			edit2.setValue(itemId);
+		Edit edit2 = new Edit();
+		edit2.setName("oe_order_item_id");
+		edit2.setValue(itemId);
 
-			Edit edit4 = new Edit();
-			edit4.setName("unit_quantity");
-			edit4.setValue(String.valueOf(0));
+		Edit edit4 = new Edit();
+		edit4.setName("unit_quantity");
+		edit4.setValue(String.valueOf(0));
 
-			editList1.add(edit2);
-			editList1.add(edit4);
+		editList1.add(edit2);
+		editList1.add(edit4);
 
-			row.setEdits(editList1);
-			rowList1.add(row);
-		
+		row.setEdits(editList1);
+		rowList1.add(row);
 
 		dataElement2.setRows(rowList1);
 		dataElements.add(dataElement2);
@@ -842,7 +851,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 		String apiUrl = baseUrl + "?$format=json&$filter=" + encodedFilter;
 
-		try (CloseableHttpClient httpClient = HttpClients.custom()	
+		try (CloseableHttpClient httpClient = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build()) {
 
@@ -873,13 +882,11 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 		return responseMap;
 	}
-	
-	
-	
+
 	@Override
-	public Map<String, Object> isSellable(String itemId,MasterTenant masterTenantObject) throws Exception{
+	public Map<String, Object> isSellable(String itemId, MasterTenant masterTenantObject) throws Exception {
 		MasterTenant masterTenant;
-	    Map<String, Object> jsonResponse = new HashMap<>();
+		Map<String, Object> jsonResponse = new HashMap<>();
 		if (masterTenantObject == null) {
 			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
 			masterTenant = masterTenantRepository.findByDbName(tenantId);
@@ -889,31 +896,31 @@ public class P21SKUServiceImpl implements P21SKUService {
 		// Token for tenant/ERP
 		String token = p21TokenServiceImpl.findToken(masterTenant);
 		logger.info("THE TOKEN IS:" + token);
-		
+
 		try {
 			CloseableHttpClient httpClient = HttpClients.custom()
 					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-			String baseUri = masterTenant.getSubdomain() + ERP_BASE_URL+ ERP_SELLABLE_API;
+			String baseUri = masterTenant.getSubdomain() + ERP_BASE_URL + ERP_SELLABLE_API;
 			String filter = "item_id eq '" + itemId + "'";
 			URIBuilder uriBuilder = new URIBuilder(baseUri);
 			uriBuilder.addParameter("$format", "json");
 			uriBuilder.addParameter("$filter", filter);
- 
+
 			URI fullURI = uriBuilder.build();
 			logger.info("Full URI " + fullURI);
 			HttpGet request = new HttpGet(fullURI);
- 
+
 			request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 			request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
- 
+
 			HttpResponse response = httpClient.execute(request);
 			HttpEntity entity = response.getEntity();
 			String responseBody = EntityUtils.toString(entity);
 			logger.info("response :" + responseBody);
-			
+
 			int statusCode = response.getStatusLine().getStatusCode();
-			
+
 			if (statusCode == 200) {
 				logger.info(responseBody);
 				if (responseBody != null && responseBody.contains("\"sellable\":\"Y\"")) {
@@ -927,12 +934,68 @@ public class P21SKUServiceImpl implements P21SKUService {
 				jsonResponse.put("itemId", itemId);
 				jsonResponse.put("isSellable", false);
 			}
-			
+
 			return jsonResponse;
 		} catch (Exception e) {
 			return jsonResponse;
 		}
-		
-		
+
+	}
+
+	@Override
+	public OrderDTO getProductByProductId(String productId) {
+		OrderDTO orderDTO = new OrderDTO();
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+		try {
+			CloseableHttpClient httpClient = HttpClients.custom()
+					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+			String baseUri = masterTenant.getSubdomain() + ERP_BASE_URL + ERP_PRODUCT_API_BASE_URL;
+			String filter = "item_id eq '" + productId + "'";
+			URIBuilder uriBuilder = new URIBuilder(baseUri);
+			uriBuilder.addParameter("$format", "json");
+			uriBuilder.addParameter("$filter", filter);
+
+			URI fullURI = uriBuilder.build();
+			HttpGet request = new HttpGet(fullURI);
+
+			try {
+				request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
+				logger.info("Token : " + p21TokenServiceImpl.findToken(null));
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+			HttpResponse response = httpClient.execute(request);
+			HttpEntity entity = response.getEntity();
+			String responseBody = EntityUtils.toString(entity);
+			logger.info("response :" + responseBody);
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			P21ProductItemHelper p21ProductLineItemHelper = objectMapper.readValue(responseBody,
+					P21ProductItemHelper.class);
+
+			List<P21ProductItem> p21ProductLineItems = p21ProductLineItemHelper.getValue();
+			List<OrderItemDTO> orderItems = new ArrayList<OrderItemDTO>();
+			for (P21ProductItem p21ProductItem : p21ProductLineItems) {
+				OrderItemDTO orderItemDTO = new OrderItemDTO();
+				orderItemDTO.setItemName(p21ProductItem.getItem_id());
+				orderItemDTO.setDescription(p21ProductItem.getItem_desc());
+				orderItemDTO.setQuantity(0);
+				orderItemDTO.setAmount(new BigDecimal(p21ProductItem.getPrice1()));
+				orderItems.add(orderItemDTO);
+			}
+			orderDTO.setOrderItems(orderItems);
+
+		} catch (URISyntaxException | IOException e) {
+			e.printStackTrace();
+		} catch (KeyStoreException | NoSuchAlgorithmException | KeyManagementException e) {
+			e.printStackTrace();
+		}
+		return orderDTO;
 	}
 }
