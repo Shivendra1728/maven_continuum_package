@@ -167,10 +167,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
 		Optional<ReturnOrder> findByRmaOrderNo = returnOrderRepository.findByRmaOrderNo(rmaNo);
 		ReturnOrder returnOrder = findByRmaOrderNo.get();
-
 		if (optionalItem.isPresent()) {
 			AuditLog auditLog = new AuditLog();
 			ReturnOrderItem existingItem = optionalItem.get();
+			String existingUpdatedStatus = existingItem.getStatus();
+
 			String previousStatus = existingItem.getStatus();
 			String previousRC = existingItem.getReasonCode();
 			String previousPD = existingItem.getProblemDesc();
@@ -254,6 +255,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 					returnOrderItemRepository.save(existingItem);
+					if (existingUpdatedStatus.equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)
+							|| existingUpdatedStatus.equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)
+							|| existingUpdatedStatus.equalsIgnoreCase(PortalConstants.RECIEVED)) {
+						sendAmountToErp(rmaNo, existingItem);
+					}
+
 				}
 			}
 
@@ -308,6 +315,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			if (updatedItem.getStatus() != null) {
 				String existingStatus = existingItem.getStatus();
 				existingItem.setStatus(updatedItem.getStatus());
+				BigDecimal existingAmount = BigDecimal.ZERO;
+				BigDecimal existingRestockingFee = BigDecimal.ZERO;
+				if (existingItem.getAmount() != null && existingItem.getReStockingAmount() != null) {
+					existingAmount = existingItem.getAmount();
+					existingRestockingFee = existingItem.getReStockingAmount();
+				}
+
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)
@@ -321,10 +335,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					existingItem.setIsEditable(statusConfig.getIsEditable());
 					existingItem.setIsAuthorized(statusConfig.getIsAuthorized());
 
-					BigDecimal existingAmount = existingItem.getAmount();
-					BigDecimal existingRestockingFee = existingItem.getReStockingAmount();
 					if (!existingAmount.equals(updatedItem.getAmount())
-							&& !existingRestockingFee.equals(updatedItem.getReStockingAmount())) {
+							&& !existingRestockingFee.equals(updatedItem.getReStockingAmount())
+							&& updatedItem.getAmount() != null && updatedItem.getReStockingAmount() != null) {
 						if (statusConfig.getIsAuthorized() || statusConfig.getIsRecieved()) {
 							sendRestockingFeeToERP(rmaNo);
 							sendAmountToErp(rmaNo, existingItem);
@@ -894,6 +907,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		Optional<ReturnOrderItem> returnorderitem = returnOrderItemRepository.findById(id);
 		if (returnorderitem.isPresent()) {
 			ReturnOrderItem returnOrderItem = returnorderitem.get();
+			String existingStatus = returnOrderItem.getStatus();
+
 			BigDecimal preRestocking = returnOrderItem.getReStockingAmount();
 			if (preRestocking == null) {
 				preRestocking = BigDecimal.valueOf(0);
@@ -922,6 +937,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnRoom.setReturnOrderItem(returnOrderItem);
 			returnRoom.setAssignTo(null);
 			returnRoomRepository.save(returnRoom);
+
+			if (existingStatus.equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)
+					|| existingStatus.equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)
+					|| existingStatus.equalsIgnoreCase(PortalConstants.RECIEVED)) {
+				sendRestockingFeeToERP(rmaNo);
+			}
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
@@ -1095,7 +1116,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemDTO.setIsEditable(true);
 				returnOrderItemDTO.setIsAuthorized(false);
 				returnOrderItemDTO.setIsActive(true);
-				returnOrderItemDTO.setUser(returnOrder.getUser());
 
 				ReturnOrderItem returnOrderItem = returnOrderItemMapper
 						.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
