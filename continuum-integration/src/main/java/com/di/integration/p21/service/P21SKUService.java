@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.ReturnOrderItemDTO;
 
 public interface P21SKUService {
@@ -15,5 +16,7 @@ public interface P21SKUService {
 
 	Map<String, Object> checkSerialized(String itemId, MasterTenant masterTenant) throws Exception;
 	public Map<String, Object> isSellable(String itemId,MasterTenant masterTenantObject) throws Exception;
+
+	OrderDTO getProductByProductId(String productId);
 
 }

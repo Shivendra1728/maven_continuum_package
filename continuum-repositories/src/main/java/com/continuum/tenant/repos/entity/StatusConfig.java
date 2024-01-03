@@ -33,8 +33,15 @@ public class StatusConfig extends BaseEntity {
 	private Boolean isAuthorized;
 	private int priority;
 	private String statusMap;
+	private String statusValue;
 
-	private String isRecieved;
+	private Boolean isRecieved;
+	
+	private Boolean enableReturnLocation;
+	private Boolean enableProblemDescription;
+	private Boolean enableRestocking;
+	private Boolean enableAmmount;
+	private Boolean enableNote;
 
 	@OneToMany(mappedBy = "statusConfig", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<StatusRelation> statusRelations;

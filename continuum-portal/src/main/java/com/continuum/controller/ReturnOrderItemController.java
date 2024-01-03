@@ -94,7 +94,7 @@ public class ReturnOrderItemController {
 	    Map<String, Object> jsonResponse = new HashMap<>();
 		String response = p21SKUServiceImpl.deleteSKU(returnOrderItem.getItemName(), rmaNo, null);
 		logger.info("This is response from ERP Deletion method :: " + response);
-		if ("Item Deleted".equals(response) || "Process Complete Line Item from ERP deleted".equals(response)) {
+		if ("Line Item Deleted".equals(response)) {
 			return returnOrderItemService.deleteItem(returnOrderItem, updateBy, rmaNo);
 			
 		} else {

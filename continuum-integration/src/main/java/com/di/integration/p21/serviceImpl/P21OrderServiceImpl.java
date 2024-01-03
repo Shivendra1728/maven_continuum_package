@@ -179,6 +179,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 						.collect(Collectors.toList());
 			}
 			orderDTO.setOrderItems(orderItemDTOList);
+			
 			orderDTO.setContactDTO(
 					p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
 

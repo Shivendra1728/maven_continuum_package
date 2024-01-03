@@ -167,10 +167,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		Optional<ReturnOrderItem> optionalItem = returnOrderItemRepository.findById(id);
 		Optional<ReturnOrder> findByRmaOrderNo = returnOrderRepository.findByRmaOrderNo(rmaNo);
 		ReturnOrder returnOrder = findByRmaOrderNo.get();
-
 		if (optionalItem.isPresent()) {
 			AuditLog auditLog = new AuditLog();
 			ReturnOrderItem existingItem = optionalItem.get();
+			String existingUpdatedStatus = existingItem.getStatus();
+
 			String previousStatus = existingItem.getStatus();
 			String previousRC = existingItem.getReasonCode();
 			String previousPD = existingItem.getProblemDesc();
@@ -203,11 +204,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				if (updatedItem.getAmount() != null) {
 					existingItem.setAmount(updatedItem.getAmount());
-					if(existingItem.getReStockingAmount() != null) {
-						BigDecimal newRefundAmount = updatedItem.getAmount().subtract(existingItem.getReStockingAmount());
+					if (existingItem.getReStockingAmount() != null) {
+						BigDecimal newRefundAmount = updatedItem.getAmount()
+								.subtract(existingItem.getReStockingAmount());
 						existingItem.setReturnAmount(newRefundAmount);
 					}
-					
+
 				}
 
 //				if (existingItem.getReturnAmount() != null
@@ -241,7 +243,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ existingAmountNote + "'" + " to " + "'" + updatedItem.getAmountNote() + "'");
 				}
 
-				if (existingAmountNote == null && updatedItem.getAmount()!=null && updatedItem.getAmount().equals(existingAmount)) {
+				if (existingAmountNote == null && updatedItem.getAmount() != null
+						&& updatedItem.getAmount().equals(existingAmount)) {
 					updates.add("Amount Note has been updated of item - " + existingItem.getItemName() + " to " + "'"
 							+ updatedItem.getAmountNote() + "'");
 				}
@@ -252,6 +255,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 					auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 					returnOrderItemRepository.save(existingItem);
+					if (existingUpdatedStatus.equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)
+							|| existingUpdatedStatus.equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)
+							|| existingUpdatedStatus.equalsIgnoreCase(PortalConstants.RECIEVED)) {
+						sendAmountToErp(rmaNo, existingItem);
+					}
+
 				}
 			}
 
@@ -306,6 +315,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			if (updatedItem.getStatus() != null) {
 				String existingStatus = existingItem.getStatus();
 				existingItem.setStatus(updatedItem.getStatus());
+				BigDecimal existingAmount = BigDecimal.ZERO;
+				BigDecimal existingRestockingFee = BigDecimal.ZERO;
+				if (existingItem.getAmount() != null && existingItem.getReStockingAmount() != null) {
+					existingAmount = existingItem.getAmount();
+					existingRestockingFee = existingItem.getReStockingAmount();
+				}
+
 				if (updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)
@@ -318,6 +334,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					System.err.println(statusConfig.getIsEditable());
 					existingItem.setIsEditable(statusConfig.getIsEditable());
 					existingItem.setIsAuthorized(statusConfig.getIsAuthorized());
+
+					if (!existingAmount.equals(updatedItem.getAmount())
+							&& !existingRestockingFee.equals(updatedItem.getReStockingAmount())
+							&& updatedItem.getAmount() != null && updatedItem.getReStockingAmount() != null) {
+						if (statusConfig.getIsAuthorized() || statusConfig.getIsRecieved()) {
+							sendRestockingFeeToERP(rmaNo);
+							sendAmountToErp(rmaNo, existingItem);
+						}
+					}
+
 				}
 
 				String auditLogDescription = "";
@@ -431,29 +457,29 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 
 					// Updating Restocking fee to the ERP
-					sendRestockingFeeToERP(rmaNo);
-
-					String db_name = "";
-					String domain[] = httpServletRequest.getHeader("host").split("\\.");
-					for (String str : domain) {
-						if (str.equals("gocontinuum")) {
-							break;
-						}
-						db_name += str + ".";
-					}
-					if (!db_name.equals("pace.dev.") && !db_name.equals("pace.")) {
-						sendRestockingFeeToERP(rmaNo);
-					}
-
-					List<EditableConfig> findAll = editableConfigRepository.findAll();
-					EditableConfig editableConfig = findAll.get(0);
-					if (editableConfig.isAmountAddition() == true) {
-						Optional<ReturnOrder> findByRmaOrderNo1 = returnOrderRepository.findByRmaOrderNo(rmaNo);
-						ReturnOrder returnOrder1 = findByRmaOrderNo1.get();
-						logger.info("Updating amount to REP");
-						// Updating Amount to the ERP
-						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
-					}
+//					sendRestockingFeeToERP(rmaNo);
+//
+//					String db_name = "";
+//					String domain[] = httpServletRequest.getHeader("host").split("\\.");
+//					for (String str : domain) {
+//						if (str.equals("gocontinuum")) {
+//							break;
+//						}
+//						db_name += str + ".";
+//					}
+//					if (!db_name.equals("pace.dev.") && !db_name.equals("pace.")) {
+//						sendRestockingFeeToERP(rmaNo);
+//					}
+//
+//					List<EditableConfig> findAll = editableConfigRepository.findAll();
+//					EditableConfig editableConfig = findAll.get(0);
+//					if (editableConfig.isAmountAddition() == true) {
+//						Optional<ReturnOrder> findByRmaOrderNo1 = returnOrderRepository.findByRmaOrderNo(rmaNo);
+//						ReturnOrder returnOrder1 = findByRmaOrderNo1.get();
+//						logger.info("Updating amount to REP");
+//						// Updating Amount to the ERP
+//						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
+//					}
 
 				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RECIEVED)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
@@ -881,6 +907,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		Optional<ReturnOrderItem> returnorderitem = returnOrderItemRepository.findById(id);
 		if (returnorderitem.isPresent()) {
 			ReturnOrderItem returnOrderItem = returnorderitem.get();
+			String existingStatus = returnOrderItem.getStatus();
+
 			BigDecimal preRestocking = returnOrderItem.getReStockingAmount();
 			if (preRestocking == null) {
 				preRestocking = BigDecimal.valueOf(0);
@@ -909,6 +937,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			returnRoom.setReturnOrderItem(returnOrderItem);
 			returnRoom.setAssignTo(null);
 			returnRoomRepository.save(returnRoom);
+
+			if (existingStatus.equalsIgnoreCase(PortalConstants.AUTHORIZED_AWAITING_TRANSIT)
+					|| existingStatus.equalsIgnoreCase(PortalConstants.AUTHORIZED_IN_TRANSIT)
+					|| existingStatus.equalsIgnoreCase(PortalConstants.RECIEVED)) {
+				sendRestockingFeeToERP(rmaNo);
+			}
 
 			AuditLog auditLog = new AuditLog();
 			auditLog.setTitle("Update Activity");
@@ -950,9 +984,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		}
 	}
 
-	public void sendAmountToErp(String rmaNo, List<ReturnOrderItem> list) {
+	public void sendAmountToErp(String rmaNo, ReturnOrderItem returnOrderItem) {
 		try {
-			p21UpdateRMAService.updateAmount(rmaNo, list);
+			p21UpdateRMAService.updateAmount(rmaNo, returnOrderItem);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1001,25 +1035,38 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			List<ReturnOrderItem> returnOrderItems = returnOrderItemRepository
 					.findByReturnOrderIdAndIsActive(returnOrderEntity.getId(), true);
 
-			int min = 1000;
-			for (ReturnOrderItem returnOrderItemEntity : returnOrderItems) {
+			if (!returnOrderItems.isEmpty()) {
 
-				StatusConfig statusConfig = statusConfigRepository.findBystatuslabl(returnOrderItemEntity.getStatus())
-						.get(0);
-				if (statusConfig.getPriority() < min) {
-					min = statusConfig.getPriority();
+				int min = 1000;
+				for (ReturnOrderItem returnOrderItemEntity : returnOrderItems) {
+
+					StatusConfig statusConfig = statusConfigRepository
+							.findBystatuslabl(returnOrderItemEntity.getStatus()).get(0);
+					if (statusConfig.getPriority() < min) {
+						min = statusConfig.getPriority();
+
+					}
 
 				}
 
+				StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
+				String existingHeaderStatus = returnOrderEntity.getStatus();
+				returnOrderEntity.setStatus(statusConfig.getStatusMap());
+				returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+				returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
+
+				returnOrderRepository.save(returnOrderEntity);
+			} else {
+
+				StatusConfig statusConfig = statusConfigRepository.findByPriority(25).get(0);
+				String existingHeaderStatus = returnOrderEntity.getStatus();
+				returnOrderEntity.setStatus(statusConfig.getStatusMap());
+				returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+				returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
+
+				returnOrderRepository.save(returnOrderEntity);
+
 			}
-
-			StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
-			String existingHeaderStatus = returnOrderEntity.getStatus();
-			returnOrderEntity.setStatus(statusConfig.getStatusMap());
-			returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
-			returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
-
-			returnOrderRepository.save(returnOrderEntity);
 
 			// updateReturnOrderItem(Long id, String rmaNo, updateBy, orderItem);
 
@@ -1050,7 +1097,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				String itemName = returnOrderItemDTO.getItemName();
 
 				// Check if the item already exists for the given RMA
-				if (existingItemNames.contains(itemName)) {
+				if (existingItemNames.contains(itemName) && Boolean.TRUE.equals(returnOrderItemDTO.getIsActive())) {
 					// Handle the case where the item already exists
 					jsonResponse.put("status", "error");
 					jsonResponse.put("message", "Item Already Exists");
@@ -1080,8 +1127,38 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					e.printStackTrace();
 				}
 
+				ReturnOrder returnOrderEntity = returnOrderRepository.findByRmaOrderNo(rmaNo).get();
+				List<ReturnOrderItem> returnOrderItemList = returnOrderItemRepository
+						.findByReturnOrderIdAndIsActive(returnOrderEntity.getId(), true);
+
+				if (!returnOrderItemList.isEmpty()) {
+
+					int min = 1000;
+					for (ReturnOrderItem returnOrderItemEntity : returnOrderItemList) {
+
+						StatusConfig statusConfig = statusConfigRepository
+								.findBystatuslabl(returnOrderItemEntity.getStatus()).get(0);
+						if (statusConfig.getPriority() < min) {
+							min = statusConfig.getPriority();
+
+						}
+
+					}
+
+					StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
+					String existingHeaderStatus = returnOrderEntity.getStatus();
+					returnOrderEntity.setStatus(statusConfig.getStatusMap());
+					returnOrderEntity.setIsEditable(statusConfig.getIsEditable());
+					returnOrderEntity.setIsAuthorized(statusConfig.getIsAuthorized());
+
+					returnOrderRepository.save(returnOrderEntity);
+				}
+
 				// Capture in audit logs
-				String description = "Item- " + itemName + " has been added by " + updateBy + ".";
+				List<String> updates = new ArrayList<>();
+				String description = "Item- " + itemName + " has been added by " + updateBy + ".;" + "Item- " + itemName
+						+ " has been updated to " + returnOrderItemList.get(0).getStatus() + ".;";
+
 				String title = "Update Activity";
 				String status = "List Items";
 				String highlight = "added";
