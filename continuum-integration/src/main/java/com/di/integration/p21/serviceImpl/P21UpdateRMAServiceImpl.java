@@ -95,13 +95,13 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 	}
 	
 	@Override
-	public String updateAmount(String rmaNo, List<ReturnOrderItem> returnOrderItems) throws Exception {
+	public String updateAmount(String rmaNo, ReturnOrderItem returnOrderItem) throws Exception {
 		
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 				
-		String updateAmountXml = prepareXml(rmaNo, returnOrderItems);
+		String updateAmountXml = prepareXml(rmaNo, returnOrderItem);
 		CloseableHttpClient httpClient = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
@@ -204,7 +204,7 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 		return xml;
 	}
 	
-	public String prepareXml(String rmaNo, List<ReturnOrderItem> returnOrderItems) throws JsonProcessingException{
+	public String prepareXml(String rmaNo, ReturnOrderItem returnOrderItem) throws JsonProcessingException{
 		TransactionSet transactionSet = new TransactionSet();
 		transactionSet.setIgnoreDisabled(true);
 		transactionSet.setName(IntegrationConstants.RMA);
@@ -235,7 +235,7 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 		dataElement2.setType(IntegrationConstants.DATA_ELEMENT_TYPE_LIST);
 		
 		List<Row> rowList1 = new ArrayList<Row>();
-		for(ReturnOrderItem returnOrderItem : returnOrderItems) {
+		
 			Row row2 = new Row();
 			List<Edit> editList1 = new ArrayList<Edit>();
 			
@@ -252,7 +252,6 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 			
 			row2.setEdits(editList1);
 			rowList1.add(row2);
-		}
 		
 		dataElement2.setRows(rowList1);
 		dataElements.add(dataElement2);
