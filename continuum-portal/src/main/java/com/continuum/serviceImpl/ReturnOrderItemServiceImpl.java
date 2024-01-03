@@ -320,6 +320,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					System.err.println(statusConfig.getIsEditable());
 					existingItem.setIsEditable(statusConfig.getIsEditable());
 					existingItem.setIsAuthorized(statusConfig.getIsAuthorized());
+
+					BigDecimal existingAmount = existingItem.getAmount();
+					BigDecimal existingRestockingFee = existingItem.getReStockingAmount();
+					if (!existingAmount.equals(updatedItem.getAmount())
+							&& !existingRestockingFee.equals(updatedItem.getReStockingAmount())) {
+						if (statusConfig.getIsAuthorized() || statusConfig.getIsRecieved()) {
+							sendRestockingFeeToERP(rmaNo);
+							sendAmountToErp(rmaNo, existingItem);
+						}
+					}
+
 				}
 
 				String auditLogDescription = "";
@@ -433,29 +444,29 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 
 					// Updating Restocking fee to the ERP
-					sendRestockingFeeToERP(rmaNo);
-
-					String db_name = "";
-					String domain[] = httpServletRequest.getHeader("host").split("\\.");
-					for (String str : domain) {
-						if (str.equals("gocontinuum")) {
-							break;
-						}
-						db_name += str + ".";
-					}
-					if (!db_name.equals("pace.dev.") && !db_name.equals("pace.")) {
-						sendRestockingFeeToERP(rmaNo);
-					}
-
-					List<EditableConfig> findAll = editableConfigRepository.findAll();
-					EditableConfig editableConfig = findAll.get(0);
-					if (editableConfig.isAmountAddition() == true) {
-						Optional<ReturnOrder> findByRmaOrderNo1 = returnOrderRepository.findByRmaOrderNo(rmaNo);
-						ReturnOrder returnOrder1 = findByRmaOrderNo1.get();
-						logger.info("Updating amount to REP");
-						// Updating Amount to the ERP
-						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
-					}
+//					sendRestockingFeeToERP(rmaNo);
+//
+//					String db_name = "";
+//					String domain[] = httpServletRequest.getHeader("host").split("\\.");
+//					for (String str : domain) {
+//						if (str.equals("gocontinuum")) {
+//							break;
+//						}
+//						db_name += str + ".";
+//					}
+//					if (!db_name.equals("pace.dev.") && !db_name.equals("pace.")) {
+//						sendRestockingFeeToERP(rmaNo);
+//					}
+//
+//					List<EditableConfig> findAll = editableConfigRepository.findAll();
+//					EditableConfig editableConfig = findAll.get(0);
+//					if (editableConfig.isAmountAddition() == true) {
+//						Optional<ReturnOrder> findByRmaOrderNo1 = returnOrderRepository.findByRmaOrderNo(rmaNo);
+//						ReturnOrder returnOrder1 = findByRmaOrderNo1.get();
+//						logger.info("Updating amount to REP");
+//						// Updating Amount to the ERP
+//						sendAmountToErp(rmaNo, returnOrder1.getReturnOrderItem());
+//					}
 
 				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.RECIEVED)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
@@ -952,9 +963,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		}
 	}
 
-	public void sendAmountToErp(String rmaNo, List<ReturnOrderItem> list) {
+	public void sendAmountToErp(String rmaNo, ReturnOrderItem returnOrderItem) {
 		try {
-			p21UpdateRMAService.updateAmount(rmaNo, list);
+			p21UpdateRMAService.updateAmount(rmaNo, returnOrderItem);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1126,7 +1137,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				List<String> updates = new ArrayList<>();
 				String description = "Item- " + itemName + " has been added by " + updateBy + ".;" + "Item- " + itemName
 						+ " has been updated to " + returnOrderItemList.get(0).getStatus() + ".;";
-				
+
 				String title = "Update Activity";
 				String status = "List Items";
 				String highlight = "added";

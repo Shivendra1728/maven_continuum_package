@@ -35,7 +35,7 @@ public class StatusConfig extends BaseEntity {
 	private String statusMap;
 	private String statusValue;
 
-	private String isRecieved;
+	private Boolean isRecieved;
 	
 	private Boolean enableReturnLocation;
 	private Boolean enableProblemDescription;
