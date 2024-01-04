@@ -335,15 +335,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					existingItem.setIsEditable(statusConfig.getIsEditable());
 					existingItem.setIsAuthorized(statusConfig.getIsAuthorized());
 
-					if (!existingAmount.equals(updatedItem.getAmount())
-							&& !existingRestockingFee.equals(updatedItem.getReStockingAmount())
-							&& updatedItem.getAmount() != null && updatedItem.getReStockingAmount() != null) {
-						if (statusConfig.getIsAuthorized() || statusConfig.getIsRecieved()) {
-							sendRestockingFeeToERP(rmaNo);
-							sendAmountToErp(rmaNo, existingItem);
-						}
+					if (statusConfig.getIsAuthorized() || statusConfig.getIsRecieved()) {
+						sendRestockingFeeToERP(rmaNo);
+						sendAmountToErp(rmaNo, existingItem);
 					}
-
 				}
 
 				String auditLogDescription = "";
