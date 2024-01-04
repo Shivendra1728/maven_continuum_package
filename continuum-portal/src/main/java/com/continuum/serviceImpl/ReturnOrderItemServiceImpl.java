@@ -1114,6 +1114,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemDTO.setIsEditable(true);
 				returnOrderItemDTO.setIsAuthorized(false);
 				returnOrderItemDTO.setIsActive(true);
+				returnOrderItemDTO.setUser(returnOrder.getUser());
+				
 
 				ReturnOrderItem returnOrderItem = returnOrderItemMapper
 						.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
