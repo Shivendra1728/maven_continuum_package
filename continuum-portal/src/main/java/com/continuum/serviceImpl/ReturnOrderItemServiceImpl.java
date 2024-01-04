@@ -346,6 +346,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				String auditLogTitle = "";
 				auditLogDescription = "Item - " + existingItem.getItemName() + " has been updated from "
 						+ existingStatus + " to " + updatedItem.getStatus() + " by " + updateBy + ".";
+				auditLogTitle = "Update Activity";
 				auditLogStatus = "Line Items";
 
 				auditLogServiceImpl.setAuditLog(auditLogDescription, auditLogTitle, auditLogStatus, rmaNo, updateBy,
@@ -885,7 +886,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setDescription("Shipping Information has been updated of item - " + returnOrderItem.getItemName()
 					+ " by " + updateBy + ".");
 			auditLog.setHighlight("Shipping Information");
-			auditLog.setStatus("List Items");
+			auditLog.setStatus("Line Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
@@ -945,7 +946,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					updateBy + " has updated the restocking fee of item - " + returnOrderItem.getItemName() + " from $"
 							+ preRestocking + " to $" + returnOrderItem.getReStockingAmount() + ".");
 			auditLog.setHighlight("restocking fee");
-			auditLog.setStatus("List Items");
+			auditLog.setStatus("Line Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
@@ -1021,7 +1022,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setDescription("Item- " + item.getItemName() + " has been deleted by " + updateBy + ".;"
 					+ "Note : " + orderItem.getDeleteNote() + ".");
 			auditLog.setHighlight("deleted");
-			auditLog.setStatus("List Items");
+			auditLog.setStatus("Line Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
@@ -1162,7 +1163,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						+ " has been updated to " + returnOrderItem.getStatus() + ".;" + "Reason Listing : "
 						+ modifiedReasonCode+";";
 				String title = "Update Activity";
-				String status = "List Items";
+				String status = "Line Items";
 				String highlight = "added";
 				auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
 			}
