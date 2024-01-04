@@ -1155,10 +1155,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				}
 
 				// Capture in audit logs
-				List<String> updates = new ArrayList<>();
-				String description = "Item- " + itemName + " has been added by " + updateBy + ".;" + "Item- " + itemName
-						+ " has been updated to " + returnOrderItemList.get(0).getStatus() + ".;";
+				String reasonCode = returnOrderItem.getReasonCode();
+		        String modifiedReasonCode = reasonCode.replace(",", " ---> ");
 
+				String description = "Item- " + itemName + " has been added by " + updateBy + ".;" + "Item- " + itemName
+						+ " has been updated to " + returnOrderItem.getStatus() + ".;" + "Reason Listing : "
+						+ modifiedReasonCode+";";
 				String title = "Update Activity";
 				String status = "List Items";
 				String highlight = "added";
