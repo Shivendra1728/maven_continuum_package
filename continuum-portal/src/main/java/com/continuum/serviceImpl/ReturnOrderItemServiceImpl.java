@@ -1096,14 +1096,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
 				String itemName = returnOrderItemDTO.getItemName();
 
-				// Check if the item already exists for the given RMA
-				if (existingItemNames.contains(itemName) && Boolean.TRUE.equals(returnOrderItemDTO.getIsActive())) {
-					// Handle the case where the item already exists
-					jsonResponse.put("status", "error");
-					jsonResponse.put("message", "Item Already Exists");
-					return jsonResponse;
-				}
+				ReturnOrderItem existingItem = returnOrderItems.stream()
+			            .filter(item -> itemName.equals(item.getItemName()) && Boolean.TRUE.equals(item.getIsActive()))
+			            .findFirst()
+			            .orElse(null);
 
+			    if (existingItem != null) {
+			        // Handle the case where the item already exists and is active
+			        jsonResponse.put("status", "error");
+			        jsonResponse.put("message", "Item Already Exists");
+			        return jsonResponse;
+			    }
 				// Add the item name to the set to prevent duplicates
 				existingItemNames.add(itemName);
 
