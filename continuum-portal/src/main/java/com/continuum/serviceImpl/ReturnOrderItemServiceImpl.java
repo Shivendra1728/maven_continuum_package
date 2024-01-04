@@ -1096,14 +1096,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			for (ReturnOrderItemDTO returnOrderItemDTO : returnOrderItemDTOList) {
 				String itemName = returnOrderItemDTO.getItemName();
 
-				// Check if the item already exists for the given RMA
-				if (existingItemNames.contains(itemName) && Boolean.TRUE.equals(returnOrderItemDTO.getIsActive())) {
-					// Handle the case where the item already exists
-					jsonResponse.put("status", "error");
-					jsonResponse.put("message", "Item Already Exists");
-					return jsonResponse;
-				}
+				ReturnOrderItem existingItem = returnOrderItems.stream()
+			            .filter(item -> itemName.equals(item.getItemName()) && Boolean.TRUE.equals(item.getIsActive()))
+			            .findFirst()
+			            .orElse(null);
 
+			    if (existingItem != null) {
+			        // Handle the case where the item already exists and is active
+			        jsonResponse.put("status", "error");
+			        jsonResponse.put("message", "Item Already Exists");
+			        return jsonResponse;
+			    }
 				// Add the item name to the set to prevent duplicates
 				existingItemNames.add(itemName);
 
@@ -1155,10 +1158,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				}
 
 				// Capture in audit logs
-				List<String> updates = new ArrayList<>();
-				String description = "Item- " + itemName + " has been added by " + updateBy + ".;" + "Item- " + itemName
-						+ " has been updated to " + returnOrderItemList.get(0).getStatus() + ".;";
+				String reasonCode = returnOrderItem.getReasonCode();
+		        String modifiedReasonCode = reasonCode.replace(",", " ---> ");
 
+				String description = "Item- " + itemName + " has been added by " + updateBy + ".;" + "Item- " + itemName
+						+ " has been updated to " + returnOrderItem.getStatus() + ".;" + "Reason Listing : "
+						+ modifiedReasonCode+";";
 				String title = "Update Activity";
 				String status = "List Items";
 				String highlight = "added";
