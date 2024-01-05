@@ -850,7 +850,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			auditLog.setTitle("Update Activity");
 			auditLog.setHighlight("reassigned note");
-			auditLog.setStatus("List Items");
+			auditLog.setStatus("Line Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
 			auditLogRepository.save(auditLog);
@@ -1112,6 +1112,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemDTO.setItemDesc(returnOrderItemDTO.getItemDesc());
 				returnOrderItemDTO.setStatus(returnOrderItemDTO.getStatus());
 				returnOrderItemDTO.setReasonCode(returnOrderItemDTO.getReasonCode());
+				returnOrderItemDTO.setProblemDesc(returnOrderItemDTO.getProblemDesc());
 				returnOrderItemDTO.setIsEditable(true);
 				returnOrderItemDTO.setIsAuthorized(false);
 				returnOrderItemDTO.setIsActive(true);
@@ -1161,11 +1162,18 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				String description = "Item- " + itemName + " has been added by " + updateBy + ".;" + "Item- " + itemName
 						+ " has been updated to " + returnOrderItem.getStatus() + ".;" + "Reason Listing : "
-						+ modifiedReasonCode+";";
+						+ modifiedReasonCode+";"+"Note : "+returnOrderItem.getProblemDesc()+".";
 				String title = "Update Activity";
 				String status = "Line Items";
 				String highlight = "added";
 				auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+				
+				ReturnRoom returnRoom = new ReturnRoom();
+				returnRoom.setName(updateBy);
+				returnRoom.setMessage(returnOrderItem.getProblemDesc());
+				returnRoom.setReturnOrderItem(returnOrderItem);
+				returnRoom.setAssignTo(null);
+				returnRoomRepository.save(returnRoom);
 			}
 
 			jsonResponse.put("status", "success");
