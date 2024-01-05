@@ -135,20 +135,25 @@ public class P21ProductServiceImpl implements P21ProductService {
 				orderItemDTO.setSearchFrom("productId");
 				orderItems.add(orderItemDTO);
 			}
+
+			if (orderItems == null || orderItems.isEmpty()) {
+
+				throw new Exception("Invalid response:Please put correct Product Id.");
+			}
 			orderDTO.setOrderItems(orderItems);
 //			orderDTO.setSearchFrom("productId");
 
 			orderDTOList = p21OrderMapper.convertP21OrderObjectToOrderDTO(getOrderData(customerId));
 
 			logger.info("This is Order DTO :: " + orderDTOList);
-			
-			orderDTO.setContactDTO(
-					p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTOList.get(0).getContactEmailId())));
+
+			orderDTO.setContactDTO(p21ContactMapper
+					.convertP21ContactObjectToContactDTO(getContactData(orderDTOList.get(0).getContactEmailId())));
 			if (!orderDTOList.isEmpty()) {
 				OrderDTO existingOrderDTO = orderDTOList.get(0);
 				existingOrderDTO.setOrderItems(orderItems);
 				existingOrderDTO.setContactDTO(orderDTO.getContactDTO());
-				
+
 			} else {
 				orderDTOList.add(orderDTO);
 			}
