@@ -1,5 +1,6 @@
 package com.continuum.serviceImpl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -162,6 +163,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		for (ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {
 			returnOrderItem.setShipTo(null);
 			returnOrderItem.setIsActive(true);
+			if (returnOrderItem.getReturnAmount() == null && returnOrderItem.getReStockingAmount() == null) {
+
+				returnOrderItem.setReStockingAmount(new BigDecimal(0));
+				returnOrderItem
+						.setReturnAmount(returnOrderItem.getAmount().subtract(returnOrderItem.getReStockingAmount()));
+			}
 		}
 		returnOrderRepository.save(returnOrder);
 		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
