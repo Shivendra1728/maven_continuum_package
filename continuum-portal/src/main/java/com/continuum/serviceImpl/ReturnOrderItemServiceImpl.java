@@ -341,16 +341,18 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 				}
 
-				String auditLogDescription = "";
-				String auditLogStatus = "";
-				String auditLogTitle = "";
-				auditLogDescription = "Item - " + existingItem.getItemName() + " has been updated from "
-						+ existingStatus + " to " + updatedItem.getStatus() + " by " + updateBy + ".";
-				auditLogTitle = "Update Activity";
-				auditLogStatus = "Line Items";
-
-				auditLogServiceImpl.setAuditLog(auditLogDescription, auditLogTitle, auditLogStatus, rmaNo, updateBy,
-						updatedItem.getStatus());
+				if(!existingStatus.equalsIgnoreCase(updatedItem.getStatus())) {
+					String auditLogDescription = "";
+					String auditLogStatus = "";
+					String auditLogTitle = "";
+					auditLogDescription = "Item - " + existingItem.getItemName() + " has been updated from "
+							+ existingStatus + " to " + updatedItem.getStatus() + " by " + updateBy + ".";
+					auditLogTitle = "Update Activity";
+					auditLogStatus = "Line Items";
+	
+					auditLogServiceImpl.setAuditLog(auditLogDescription, auditLogTitle, auditLogStatus, rmaNo, updateBy,
+							updatedItem.getStatus());
+				}			
 				returnOrderItemRepository.save(existingItem);
 
 				// String recipient = existingItem.getReturnOrder().getCustomer().getEmail();
