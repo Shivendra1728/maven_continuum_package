@@ -185,7 +185,12 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			
 			if(updatedItem.getSerialNo() != null && !updatedItem.getSerialNo().isEmpty()) {
 				if(!updatedItem.getSerialNo().equals(existingItem.getSerialNo())) {
-					String auditLogDescription = "Serial number of item "+existingItem.getItemName()+" has been updated from "+existingItem.getSerialNo()+" to "+updatedItem.getSerialNo();
+					String auditLogDescription = "";
+					if(existingItem.getSerialNo() == null) {
+						auditLogDescription = "Serial number of item "+existingItem.getItemName()+" has been updated "+updatedItem.getSerialNo();
+					}else {
+						auditLogDescription = "Serial number of item "+existingItem.getItemName()+" has been updated from "+existingItem.getSerialNo()+" to "+updatedItem.getSerialNo();
+					}
 					String auditLogTitle = "Update Activity";
 					String auditLogStatus = "Line Items";
 					auditLogServiceImpl.setAuditLog(auditLogDescription, auditLogTitle, auditLogStatus, rmaNo, updateBy, updatedItem.getSerialNo());
