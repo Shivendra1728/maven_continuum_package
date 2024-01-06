@@ -182,17 +182,29 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			String TrackingUrl = existingItem.getTrackingUrl();
 			String TrackingNumber = existingItem.getTrackingNumber();
 			String CourierName = existingItem.getCourierName();
+			
+			if(updatedItem.getSerialNo() != null && !updatedItem.getSerialNo().isEmpty()) {
+				if(!updatedItem.getSerialNo().equals(existingItem.getSerialNo())) {
+					String auditLogDescription = "Serial number of item "+existingItem.getItemName()+" has been updated from "+existingItem.getSerialNo()+" to "+updatedItem.getSerialNo();
+					String auditLogTitle = "Update Activity";
+					String auditLogStatus = "Line Items";
+					auditLogServiceImpl.setAuditLog(auditLogDescription, auditLogTitle, auditLogStatus, rmaNo, updateBy, updatedItem.getSerialNo());
+					existingItem.setSerialNo(updatedItem.getSerialNo());
+				}		
+			}
 
 			// Update only the fields that are not null in updatedItem
 			if (updatedItem.getProblemDescNote() != null || updatedItem.getProblemDesc() != null) {
 				existingItem.setProblemDescNote(updatedItem.getProblemDescNote());
 				existingItem.setProblemDesc(updatedItem.getProblemDesc());
-				ReturnRoom returnRoom = new ReturnRoom();
-				returnRoom.setName(updateBy);
-				returnRoom.setMessage(updatedItem.getProblemDescNote());
-				returnRoom.setReturnOrderItem(existingItem);
-				returnRoom.setAssignTo(null);
-				returnRoomRepository.save(returnRoom);
+				if(updatedItem.getProblemDescNote() != null && !updatedItem.getProblemDescNote().isEmpty()) {
+					ReturnRoom returnRoom = new ReturnRoom();
+					returnRoom.setName(updateBy);
+					returnRoom.setMessage(updatedItem.getProblemDescNote());
+					returnRoom.setReturnOrderItem(existingItem);
+					returnRoom.setAssignTo(null);
+					returnRoomRepository.save(returnRoom);
+				}
 				returnOrderItemRepository.save(existingItem);
 
 			}
@@ -322,6 +334,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				if(PortalConstants.RECIEVED.equals(updatedItem.getStatus())) {
 					existingItem.setReturnLocationId(updatedItem.getReturnLocationId());
 					updateReturnLocationToErp(rmaNo, existingItem.getItemName(), updatedItem.getReturnLocationId());
+					if(updatedItem.getNote() != null && !updatedItem.getNote().isEmpty()) {
+						ReturnRoom returnRoom = new ReturnRoom();
+						returnRoom.setName(updateBy);
+						returnRoom.setMessage(updatedItem.getNote());
+						returnRoom.setAssignTo(updatedItem.getUser());
+						returnRoom.setFollowUpDate(updatedItem.getFollowUpDate() != null ? updatedItem.getFollowUpDate() : null);
+						returnRoom.setStatus(updatedItem.getStatus());
+						returnRoom.setReturnOrderItem(existingItem);
+						returnRoomRepository.save(returnRoom);
+					}	
 				}
 				BigDecimal existingAmount = BigDecimal.ZERO;
 				BigDecimal existingRestockingFee = BigDecimal.ZERO;
@@ -339,7 +361,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					List<StatusConfig> statusConfigList = statusConfigRepository
 							.findBystatuslabl(updatedItem.getStatus());
 					StatusConfig statusConfig = statusConfigList.get(0);
-					System.err.println(statusConfig.getIsEditable());
 					existingItem.setIsEditable(statusConfig.getIsEditable());
 					existingItem.setIsAuthorized(statusConfig.getIsAuthorized());
 
@@ -1291,16 +1312,18 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					itemQuantitiesList.add(itemQuantity);
 					System.out.println("Item Quantity: " + itemQuantity);
 					
-					if(map.get(itemId).equals("100")) {
-						itemIdsList100.add(itemId);
-						itemQuantitiesList100.add(itemQuantity);
-					}else if(map.get(itemId).equals("190")) {
-						itemIdsList190.add(itemId);
-						itemQuantitiesList190.add(itemQuantity);
-					}else if(map.get(itemId).equals("110")) {
-						itemIdsList110.add(itemId);
-						itemQuantitiesList110.add(itemQuantity);
-					}
+					if(!itemId.equals(masterTenant.getRestockingItemId())) {
+						if(map.get(itemId).equals("100")) {
+							itemIdsList100.add(itemId);
+							itemQuantitiesList100.add(itemQuantity);
+						}else if(map.get(itemId).equals("190")) {
+							itemIdsList190.add(itemId);
+							itemQuantitiesList190.add(itemQuantity);
+						}else if(map.get(itemId).equals("110")) {
+							itemIdsList110.add(itemId);
+							itemQuantitiesList110.add(itemQuantity);
+						}
+					}	
 				}
 
 				logger.info("This is orderNo: " + orderNo);

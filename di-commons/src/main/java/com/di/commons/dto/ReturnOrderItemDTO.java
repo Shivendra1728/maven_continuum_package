@@ -80,7 +80,7 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	private Boolean isActive;
 	private String deleteNote;
 	private String returnLocationId;
-	private boolean isSerialized;
+	private Boolean isSerialized;
 	private String serialNo;
 
 }
