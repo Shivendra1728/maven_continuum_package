@@ -975,7 +975,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			auditLog.setTitle("Update Activity");
 			auditLog.setDescription(
 					updateBy + " has updated the restocking fee of item - " + returnOrderItem.getItemName() + " from $"
-							+ preRestocking + " to $" + returnOrderItem.getReStockingAmount() + ".");
+							+ preRestocking + " to $" + returnOrderItem.getReStockingAmount()+" by "+updateBy + ".;"+"Note : "+returnOrderItem.getNotes()+".");
 			auditLog.setHighlight("restocking fee");
 			auditLog.setStatus("Line Items");
 			auditLog.setRmaNo(rmaNo);
