@@ -80,7 +80,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 	@Autowired
 	RestTemplate restTemplate;
-	
+
 	@Value(IntegrationConstants.ERP_PRODUCT_API_BASE_URL)
 	String ERP_PRODUCT_API_BASE_URL;
 
@@ -943,7 +943,7 @@ public class P21SKUServiceImpl implements P21SKUService {
 	}
 
 	@Override
-	public OrderDTO getProductByProductId(String productId) {
+	public OrderDTO getProductByProductId(String productId) throws Exception {
 		OrderDTO orderDTO = new OrderDTO();
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
@@ -987,9 +987,14 @@ public class P21SKUServiceImpl implements P21SKUService {
 				orderItemDTO.setDescription(p21ProductItem.getItem_desc());
 				orderItemDTO.setQuantity(0);
 				orderItemDTO.setAmount(new BigDecimal(p21ProductItem.getPrice1()));
+				
+				Map<String, Object> serializedInfo = checkSerialized(productId, null);
+				orderItemDTO.setSerialized((boolean) serializedInfo.get("isSerialized"));
+				
 				orderItems.add(orderItemDTO);
 			}
 			orderDTO.setOrderItems(orderItems);
+			
 
 		} catch (URISyntaxException | IOException e) {
 			e.printStackTrace();
