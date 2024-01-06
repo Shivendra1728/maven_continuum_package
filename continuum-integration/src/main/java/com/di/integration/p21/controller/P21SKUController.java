@@ -27,7 +27,7 @@ public class P21SKUController {
 	P21SKUService p21SKUService;
 
 	@GetMapping("/search")
-	public OrderDTO getProductByProductId(@RequestParam(required = true) String productId) {
+	public OrderDTO getProductByProductId(@RequestParam(required = true) String productId) throws Exception {
 		return p21SKUService.getProductByProductId(productId);
 
 	}

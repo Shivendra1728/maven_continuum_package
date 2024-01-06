@@ -34,5 +34,7 @@ public class OrderItemDTO {
 		private String invoiceDate;
 		private boolean isEligibleForReturn= true;
 		private String searchFrom;
+		private boolean isSerialized;
+	
 		
 }
