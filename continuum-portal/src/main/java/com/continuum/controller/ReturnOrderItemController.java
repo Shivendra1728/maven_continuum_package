@@ -8,6 +8,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +26,9 @@ import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.StatusConfig;
 import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.integration.p21.service.P21SKUService;
+import com.di.integration.p21.service.P21UpdateRMAService;
 import com.di.integration.p21.serviceImpl.P21SKUServiceImpl;
+import com.di.integration.p21.transaction.ReturnLocation;
 
 @RestController
 @RequestMapping("/return_order_items")
@@ -47,6 +50,9 @@ public class ReturnOrderItemController {
 	
 	@Autowired
 	P21SKUService p21skuService;
+	
+	@Autowired
+	P21UpdateRMAService p21UpdateRMAService;
 
 	@PutMapping("/updatestatus")
 	public String updateReturnOrderItem(@RequestParam Long id, @RequestParam String rmaNo,
@@ -118,6 +124,16 @@ public class ReturnOrderItemController {
 	        jsonResponse.put("message", "ERP addition not allowed for this line item.");	
 	        return jsonResponse;		}
 		
+	}
+	
+	@GetMapping("/getLocation")
+	public List<ReturnLocation> getLocation(@RequestParam String itemId) throws Exception {
+		return p21UpdateRMAService.getReturnLocations(itemId);
+	}
+	
+	@PostMapping("/updateLocation")
+	public ResponseEntity<String> updateLocation(@RequestParam String rmaNo, @RequestParam String itemId, String locationId) throws Exception {
+		return p21UpdateRMAService.updateItemReturnLocation(rmaNo, itemId, locationId);
 	}
 	
 }

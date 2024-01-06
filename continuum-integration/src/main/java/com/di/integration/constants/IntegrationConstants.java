@@ -15,6 +15,7 @@ public final class IntegrationConstants {
     public static final String DATA_ELEMENT_NAME_ORDER = "TABPAGE_1.order";
     public static final String DATA_ELEMENT_TYPE_FORM = "Form";
     public static final String DATA_ELEMENT_NAME_ORDER_ITEMS = "TP_ITEMS.items";
+    public static final String DATA_ELEMENT_NAME_TP_EXTDINFO = "TP_EXTDINFO.extd_info";
     public static final String DATA_ELEMENT_TYPE_LIST = "List";
     public static final String DATA_ELEMENT_NAME_REASON_CODES = "REASONCODESHDR.reasoncodeshdr";
     
@@ -52,6 +53,7 @@ public final class IntegrationConstants {
     public static final String ERP_ORDER_FORMAT = "${erp.order_format}";
     public static final String ERP_RMA_CREATE_API = "${erp.rma.create}";
     public static final String ERP_RMA_UPDATE_RESTOCKING_API = "${erp.data_update_restocking_url}";
+    public static final String ERP_GET_RETURN_LOCATIONS = "${erp.data_get_location_url}";
     public static final String ERP_SERIALIZED_API = "${erp.serialized_url}";
     public static final String ERP_SELLABLE_API = "${erp.sellable_url}";
     

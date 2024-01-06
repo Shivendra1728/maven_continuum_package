@@ -95,5 +95,8 @@ public class ReturnOrderItem extends BaseEntity {
 	private Boolean isAuthorized;
 	private Boolean isActive;
 	private String deleteNote;
+	private String returnLocationId;
+	private Boolean isSerialized;
+	private String serialNo;
 
 }
