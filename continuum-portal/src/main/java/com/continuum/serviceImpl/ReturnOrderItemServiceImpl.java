@@ -1128,6 +1128,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemDTO.setIsActive(true);
 				returnOrderItemDTO.setUser(returnOrder.getUser());
 				
+				if (returnOrderItemDTO.getReturnAmount() == null && returnOrderItemDTO.getReStockingAmount() == null) {
+
+					returnOrderItemDTO.setReStockingAmount(new BigDecimal(0));
+					returnOrderItemDTO
+							.setReturnAmount(returnOrderItemDTO.getAmount().subtract(returnOrderItemDTO.getReStockingAmount()));
+				}
+				
 
 				ReturnOrderItem returnOrderItem = returnOrderItemMapper
 						.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
