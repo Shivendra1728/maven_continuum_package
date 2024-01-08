@@ -352,6 +352,27 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 		dataElement1.setRows(rowList);
 		dataElements.add(dataElement1);
 		
+		DataElement dataElement3 = new DataElement();
+		dataElement3.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER_ITEMS);
+		dataElement3.setType(IntegrationConstants.DATA_ELEMENT_TYPE_LIST);
+		
+		List<Row> itemRowList = new ArrayList<Row>();
+		
+		Row itemRow = new Row();
+		List<Edit> itemEditList = new ArrayList<Edit>();
+		
+		Edit itemEdit1 = new Edit();
+		itemEdit1.setName("oe_order_item_id");
+		itemEdit1.setValue(itemId);
+			
+		itemEditList.add(itemEdit1);
+		
+		itemRow.setEdits(itemEditList);
+		itemRowList.add(itemRow);
+		
+		dataElement3.setRows(itemRowList);
+		dataElements.add(dataElement3);
+		
 		DataElement dataElement2 = new DataElement();
 		dataElement2.setName(IntegrationConstants.DATA_ELEMENT_NAME_TP_EXTDINFO);
 		dataElement2.setType(IntegrationConstants.DATA_ELEMENT_TYPE_LIST);
