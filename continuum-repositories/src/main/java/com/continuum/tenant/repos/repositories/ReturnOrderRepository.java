@@ -19,4 +19,6 @@ public interface ReturnOrderRepository extends JpaRepository<ReturnOrder, Long>,
 
 	Optional<ReturnOrder> findByRmaOrderNo(String rmaNo);
 	ReturnOrder findFirstByRmaOrderNoStartingWithOrderByRmaOrderNoDesc(String string);
+
+	ReturnOrder findTopByOrderByIdDesc();
 }
