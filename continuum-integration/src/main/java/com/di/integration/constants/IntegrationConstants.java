@@ -57,6 +57,10 @@ public final class IntegrationConstants {
     public static final String ERP_SERIALIZED_API = "${erp.serialized_url}";
     public static final String ERP_SELLABLE_API = "${erp.sellable_url}";
     
+    //Making customized constants for scheduler
+    public static final String ERP_TRANSACTION_GET = "/uiserver0/api/v2/transaction/get";
+    public static final String ERP_RMA_ENDPOINT = "/uiserver0/api/v2/transaction"; 
+    
     
     public static final String ERP_DATA_API_ORDER_VIEW = "${erp.data_api_order_view}";
     public static final String ERP_DATA_API_INVOICE_VIEW="${erp.data_api_invoice_view}";
