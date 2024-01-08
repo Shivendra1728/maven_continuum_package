@@ -57,4 +57,5 @@ public class ReturnOrderDTO {
 	private Boolean isAuthorized;
 //	private Orders orders;
 	private String carrierName;
+	private Boolean isSalesRepLinked;
 }
