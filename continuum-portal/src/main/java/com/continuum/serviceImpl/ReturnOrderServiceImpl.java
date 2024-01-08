@@ -157,7 +157,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			}
 		}
 		returnOrderDTO.setCustomer(customerDTO);
-
+		returnOrderDTO.setIsSalesRepLinked(false);
 		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 
 		for (ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {

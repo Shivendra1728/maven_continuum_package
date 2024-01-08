@@ -40,46 +40,45 @@ public class ReturnOrder extends BaseEntity {
 	private String orderNo;
 	private String invoiceNo;
 
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User user;
 
 	@ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-	
-    @ManyToOne
-    @JoinColumn(name="customerId")
-    private Customer customer;
+	@JoinColumn(name = "customerId")
+	private Customer customer;
 
-	@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "returnOrderId")
 	private List<ReturnOrderItem> returnOrderItem;
 
-	   
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-    @JoinColumn(name ="shipTo")
-    private OrderAddress shipTo;
-    
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name ="billto")
-    private OrderAddress billTo;
-    
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-    @JoinColumn(name ="con_Id")
-    private Contact contact;
-    
-    private String rmaOrderNo;
-    
-    @OneToMany(mappedBy = "returnOrder", cascade = CascadeType.ALL)
-    private List<RmaInvoiceInfo> rmaInvoiceInfos;
-    
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-    @JoinColumn(name ="return_type")
-    private ReturnType returnType;
-    
-    private boolean ISInvoiceLinked;
-    private boolean ISDocumentLinked;
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "shipTo")
+	private OrderAddress shipTo;
 
-    private Date nextActivityDate;
-    private String note;
-    private Boolean isEditable;
-    private Boolean isAuthorized;
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "billto")
+	private OrderAddress billTo;
+
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "con_Id")
+	private Contact contact;
+
+	private String rmaOrderNo;
+
+	@OneToMany(mappedBy = "returnOrder", cascade = CascadeType.ALL)
+	private List<RmaInvoiceInfo> rmaInvoiceInfos;
+
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "return_type")
+	private ReturnType returnType;
+
+	private boolean ISInvoiceLinked;
+	private boolean ISDocumentLinked;
+
+	private Date nextActivityDate;
+	private String note;
+	private Boolean isEditable;
+	private Boolean isAuthorized;
+	private Boolean isSalesRepLinked;
 }
