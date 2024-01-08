@@ -11,9 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
 import javax.persistence.EntityNotFoundException;
@@ -47,7 +47,6 @@ import com.continuum.service.AuditLogService;
 import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.Customer;
-import com.continuum.tenant.repos.entity.EditableConfig;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.ReturnOrder;
@@ -159,7 +158,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	ReturnOrderItemMapper returnOrderItemMapper;
-	
+
 	@Autowired
 	P21SKUServiceImpl p21SKUService;
 
@@ -182,27 +181,31 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			String TrackingUrl = existingItem.getTrackingUrl();
 			String TrackingNumber = existingItem.getTrackingNumber();
 			String CourierName = existingItem.getCourierName();
-			
-			if(updatedItem.getSerialNo() != null && !updatedItem.getSerialNo().isEmpty()) {
-				if(!updatedItem.getSerialNo().equals(existingItem.getSerialNo())) {
+
+			if (updatedItem.getSerialNo() != null && !updatedItem.getSerialNo().isEmpty()) {
+				if (!updatedItem.getSerialNo().equals(existingItem.getSerialNo())) {
 					String auditLogDescription = "";
-					if(existingItem.getSerialNo() == null) {
-						auditLogDescription = "Serial number of item "+existingItem.getItemName()+" has been updated "+updatedItem.getSerialNo();
-					}else {
-						auditLogDescription = "Serial number of item "+existingItem.getItemName()+" has been updated from "+existingItem.getSerialNo()+" to "+updatedItem.getSerialNo();
+					if (existingItem.getSerialNo() == null) {
+						auditLogDescription = "Serial number of item " + existingItem.getItemName()
+								+ " has been updated " + updatedItem.getSerialNo();
+					} else {
+						auditLogDescription = "Serial number of item " + existingItem.getItemName()
+								+ " has been updated from " + existingItem.getSerialNo() + " to "
+								+ updatedItem.getSerialNo();
 					}
 					String auditLogTitle = "Update Activity";
 					String auditLogStatus = "Line Items";
-					auditLogServiceImpl.setAuditLog(auditLogDescription, auditLogTitle, auditLogStatus, rmaNo, updateBy, updatedItem.getSerialNo());
+					auditLogServiceImpl.setAuditLog(auditLogDescription, auditLogTitle, auditLogStatus, rmaNo, updateBy,
+							updatedItem.getSerialNo());
 					existingItem.setSerialNo(updatedItem.getSerialNo());
-				}		
+				}
 			}
 
 			// Update only the fields that are not null in updatedItem
 			if (updatedItem.getProblemDescNote() != null || updatedItem.getProblemDesc() != null) {
 				existingItem.setProblemDescNote(updatedItem.getProblemDescNote());
 				existingItem.setProblemDesc(updatedItem.getProblemDesc());
-				if(updatedItem.getProblemDescNote() != null && !updatedItem.getProblemDescNote().isEmpty()) {
+				if (updatedItem.getProblemDescNote() != null && !updatedItem.getProblemDescNote().isEmpty()) {
 					ReturnRoom returnRoom = new ReturnRoom();
 					returnRoom.setName(updateBy);
 					returnRoom.setMessage(updatedItem.getProblemDescNote());
@@ -264,8 +267,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ existingAmountNote + "'" + " to " + "'" + updatedItem.getAmountNote() + "'");
 				}
 
-				if (existingAmountNote == null && updatedItem.getAmount() != null
-						&& updatedItem.getAmount().equals(existingAmount)) {
+				if (existingAmountNote == null) {
 					updates.add("Amount Note has been updated of item - " + existingItem.getItemName() + " to " + "'"
 							+ updatedItem.getAmountNote() + "'");
 				}
@@ -336,19 +338,20 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			if (updatedItem.getStatus() != null) {
 				String existingStatus = existingItem.getStatus();
 				existingItem.setStatus(updatedItem.getStatus());
-				if(PortalConstants.RECIEVED.equals(updatedItem.getStatus())) {
+				if (PortalConstants.RECIEVED.equals(updatedItem.getStatus())) {
 					existingItem.setReturnLocationId(updatedItem.getReturnLocationId());
 					updateReturnLocationToErp(rmaNo, existingItem.getItemName(), updatedItem.getReturnLocationId());
-					if(updatedItem.getNote() != null && !updatedItem.getNote().isEmpty()) {
+					if (updatedItem.getNote() != null && !updatedItem.getNote().isEmpty()) {
 						ReturnRoom returnRoom = new ReturnRoom();
 						returnRoom.setName(updateBy);
 						returnRoom.setMessage(updatedItem.getNote());
 						returnRoom.setAssignTo(updatedItem.getUser());
-						returnRoom.setFollowUpDate(updatedItem.getFollowUpDate() != null ? updatedItem.getFollowUpDate() : null);
+						returnRoom.setFollowUpDate(
+								updatedItem.getFollowUpDate() != null ? updatedItem.getFollowUpDate() : null);
 						returnRoom.setStatus(updatedItem.getStatus());
 						returnRoom.setReturnOrderItem(existingItem);
 						returnRoomRepository.save(returnRoom);
-					}	
+					}
 				}
 				BigDecimal existingAmount = BigDecimal.ZERO;
 				BigDecimal existingRestockingFee = BigDecimal.ZERO;
@@ -375,7 +378,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					}
 				}
 
-				if(!existingStatus.equalsIgnoreCase(updatedItem.getStatus())) {
+				if (!existingStatus.equalsIgnoreCase(updatedItem.getStatus())) {
 					String auditLogDescription = "";
 					String auditLogStatus = "";
 					String auditLogTitle = "";
@@ -383,10 +386,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 							+ existingStatus + " to " + updatedItem.getStatus() + " by " + updateBy + ".";
 					auditLogTitle = "Update Activity";
 					auditLogStatus = "Line Items";
-	
+
 					auditLogServiceImpl.setAuditLog(auditLogDescription, auditLogTitle, auditLogStatus, rmaNo, updateBy,
 							updatedItem.getStatus());
-				}			
+				}
 				returnOrderItemRepository.save(existingItem);
 
 				// String recipient = existingItem.getReturnOrder().getCustomer().getEmail();
@@ -942,6 +945,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			String existingStatus = returnOrderItem.getStatus();
 
 			BigDecimal preRestocking = returnOrderItem.getReStockingAmount();
+			String previousRestockingNote = returnOrderItem.getNotes();
 			if (preRestocking == null) {
 				preRestocking = BigDecimal.valueOf(0);
 			}
@@ -977,15 +981,41 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 
 			AuditLog auditLog = new AuditLog();
-			auditLog.setTitle("Update Activity");
-			auditLog.setDescription(
-					updateBy + " has updated the restocking fee of item - " + returnOrderItem.getItemName() + " from $"
-							+ preRestocking + " to $" + returnOrderItem.getReStockingAmount()+" by "+updateBy + ".;"+"Note : "+returnOrderItem.getNotes()+".");
-			auditLog.setHighlight("restocking fee");
-			auditLog.setStatus("Line Items");
+			auditLog.setHighlight("Line Items");
 			auditLog.setRmaNo(rmaNo);
 			auditLog.setUserName(updateBy);
-			auditLogRepository.save(auditLog);
+
+			boolean restockingFeeChanged = !Objects.equals(preRestocking, returnOrderItem.getReStockingAmount());
+			boolean notesChanged = !Objects.equals(previousRestockingNote, returnOrderItem.getNotes());
+
+			// Check if the restocking fee has changed
+			if (restockingFeeChanged) {
+				auditLog.setTitle("Update Activity");
+				auditLog.setDescription(updateBy + " has updated the restocking fee of item - "
+						+ returnOrderItem.getItemName() + " from $" + preRestocking + " to $"
+						+ returnOrderItem.getReStockingAmount() + " by " + updateBy + ".");
+				auditLog.setStatus("Line Items	");
+				auditLogRepository.save(auditLog);
+			}
+
+			// Check if the notes have changed
+			if (notesChanged) {
+				auditLog.setTitle("Update Activity");
+				auditLog.setDescription(updateBy + " has updated the restocking notes of item - "
+						+ returnOrderItem.getItemName() +".;"+"Note : "
+						+ returnOrderItem.getNotes()+".");
+				auditLog.setStatus("Line Items");
+				auditLogRepository.save(auditLog);
+			}
+
+			// If both restocking fee and notes are changed, save both messages
+			if (restockingFeeChanged && notesChanged) {
+				auditLog.setTitle("Update Activity");
+				auditLog.setDescription(updateBy + " has updated the restocking fee of item - "
+						+ returnOrderItem.getItemName() + " from $"+preRestocking+" to $"+returnOrderItem.getReStockingAmount()+".;" + "Note : " + returnOrderItem.getNotes() + ".");
+				auditLog.setStatus("Line Items");
+				auditLogRepository.save(auditLog);
+			}
 
 		}
 		return "Restocking fee and return amount updated successfully";
@@ -1129,16 +1159,15 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				String itemName = returnOrderItemDTO.getItemName();
 
 				ReturnOrderItem existingItem = returnOrderItems.stream()
-			            .filter(item -> itemName.equals(item.getItemName()) && Boolean.TRUE.equals(item.getIsActive()))
-			            .findFirst()
-			            .orElse(null);
+						.filter(item -> itemName.equals(item.getItemName()) && Boolean.TRUE.equals(item.getIsActive()))
+						.findFirst().orElse(null);
 
-			    if (existingItem != null) {
-			        // Handle the case where the item already exists and is active
-			        jsonResponse.put("status", "error");
-			        jsonResponse.put("message", "Item Already Exists");
-			        return jsonResponse;
-			    }
+				if (existingItem != null) {
+					// Handle the case where the item already exists and is active
+					jsonResponse.put("status", "error");
+					jsonResponse.put("message", "Item Already Exists");
+					return jsonResponse;
+				}
 				// Add the item name to the set to prevent duplicates
 				existingItemNames.add(itemName);
 
@@ -1153,14 +1182,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemDTO.setIsAuthorized(false);
 				returnOrderItemDTO.setIsActive(true);
 				returnOrderItemDTO.setUser(returnOrder.getUser());
-				
+
 				if (returnOrderItemDTO.getReturnAmount() == null && returnOrderItemDTO.getReStockingAmount() == null) {
 
 					returnOrderItemDTO.setReStockingAmount(new BigDecimal(0));
-					returnOrderItemDTO
-							.setReturnAmount(returnOrderItemDTO.getAmount().subtract(returnOrderItemDTO.getReStockingAmount()));
+					returnOrderItemDTO.setReturnAmount(
+							returnOrderItemDTO.getAmount().subtract(returnOrderItemDTO.getReStockingAmount()));
 				}
-				
 
 				ReturnOrderItem returnOrderItem = returnOrderItemMapper
 						.returnOrderItemDTOToReturnOrderItem(returnOrderItemDTO);
@@ -1201,16 +1229,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				// Capture in audit logs
 				String reasonCode = returnOrderItem.getReasonCode();
-		        String modifiedReasonCode = reasonCode.replace(",", " ---> ");
+				String modifiedReasonCode = reasonCode.replace(",", " ---> ");
 
 				String description = "Item- " + itemName + " has been added by " + updateBy + ".;" + "Item- " + itemName
 						+ " has been updated to " + returnOrderItem.getStatus() + ".;" + "Reason Listing : "
-						+ modifiedReasonCode+";"+"Note : "+returnOrderItem.getProblemDesc()+".";
+						+ modifiedReasonCode + ";" + "Note : " + returnOrderItem.getProblemDesc() + ".";
 				String title = "Update Activity";
 				String status = "Line Items";
 				String highlight = "added";
 				auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
-				
+
 				ReturnRoom returnRoom = new ReturnRoom();
 				returnRoom.setName(updateBy);
 				returnRoom.setMessage(returnOrderItem.getProblemDesc());
@@ -1276,10 +1304,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				Optional<ReturnOrder> findByRmaOrderNo = returnOrderRepository.findByRmaOrderNo(String.valueOf(rmaNo));
 				ReturnOrder returnOrder = findByRmaOrderNo.get();
 				List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
-				
-				
+
 //				List<Long> distinctReturnLocationIds = returnOrderItems.stream().map(ReturnOrderItem::getReturnLocationId).distinct().collect(Collectors.toList());
-				
+
 //				Map<String, List<ReturnOrderItem>> groupedByLocationId = returnOrderItems.stream().collect(Collectors.groupingBy(ReturnOrderItem::getReturnLocationId));
 //				
 //				groupedByLocationId.forEach((locationId, items) -> {
@@ -1287,27 +1314,27 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 //				});
 //				
 //				Map<String, Map<String, String>> groupMap = new HashMap<String, Map<String,String>>();
-				
+
 				Map<String, String> map = new HashMap<String, String>();
-				for(ReturnOrderItem returnOrderItem : returnOrderItems) {
+				for (ReturnOrderItem returnOrderItem : returnOrderItems) {
 					map.put(returnOrderItem.getItemName(), returnOrderItem.getReturnLocationId());
 				}
-				
+
 				List<String> itemIdsList100 = new ArrayList<>();
 				List<String> itemIdsList190 = new ArrayList<>();
 				List<String> itemIdsList110 = new ArrayList<>();
-				
+
 				List<String> itemQuantitiesList100 = new ArrayList<>();
 				List<String> itemQuantitiesList190 = new ArrayList<>();
 				List<String> itemQuantitiesList110 = new ArrayList<>();
-				
+
 				List<String> itemIdsList = new ArrayList<>();
 				List<String> itemQuantitiesList = new ArrayList<>();
 				for (JsonNode item : itemsNode) {
 					// Picking up item id/item ids from rma
 
 					String itemId = item.path("Edits").get(0).path("Value").asText();
-					
+
 					itemIdsList.add(itemId);
 					System.out.println("Item ID: " + itemId);
 
@@ -1316,55 +1343,55 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					String itemQuantity = item.path("Edits").get(3).path("Value").asText();
 					itemQuantitiesList.add(itemQuantity);
 					System.out.println("Item Quantity: " + itemQuantity);
-					
-					if(!itemId.equals(masterTenant.getRestockingItemId())) {
-						if(map.get(itemId).equals("100")) {
+
+					if (!itemId.equals(masterTenant.getRestockingItemId())) {
+						if (map.get(itemId).equals("100")) {
 							itemIdsList100.add(itemId);
 							itemQuantitiesList100.add(itemQuantity);
-						}else if(map.get(itemId).equals("190")) {
+						} else if (map.get(itemId).equals("190")) {
 							itemIdsList190.add(itemId);
 							itemQuantitiesList190.add(itemQuantity);
-						}else if(map.get(itemId).equals("110")) {
+						} else if (map.get(itemId).equals("110")) {
 							itemIdsList110.add(itemId);
 							itemQuantitiesList110.add(itemQuantity);
 						}
-					}	
+					}
 				}
 
 				logger.info("This is orderNo: " + orderNo);
 				logger.info("This is rmaExpirationDate: " + rmaExpirationDate);
 				logger.info("This is orderNo: " + salesLocId);
 				logger.info("List of item ids: " + itemIdsList);
-				
+
 				String secondApiRequestBody100 = null;
 				String secondApiRequestBody190 = null;
 				String secondApiRequestBody110 = null;
-				
-				if(itemIdsList100 != null && !itemIdsList100.isEmpty()) {
+
+				if (itemIdsList100 != null && !itemIdsList100.isEmpty()) {
 					secondApiRequestBody100 = constructSecondApiRequestBody(orderNo, rmaExpirationDate, "100",
 							itemIdsList100, itemQuantitiesList100);
 				}
-				if(itemIdsList190 != null && !itemIdsList190.isEmpty()) {
+				if (itemIdsList190 != null && !itemIdsList190.isEmpty()) {
 					secondApiRequestBody190 = constructSecondApiRequestBody(orderNo, rmaExpirationDate, "190",
 							itemIdsList190, itemQuantitiesList190);
 				}
-				if(itemIdsList110 != null && !itemIdsList110.isEmpty()) {
+				if (itemIdsList110 != null && !itemIdsList110.isEmpty()) {
 					secondApiRequestBody110 = constructSecondApiRequestBody(orderNo, rmaExpirationDate, "110",
 							itemIdsList110, itemQuantitiesList110);
 				}
-				
+
 				List<String> secondApiRequestBodys = new ArrayList<>();
-				if(secondApiRequestBody100 != null) {
+				if (secondApiRequestBody100 != null) {
 					secondApiRequestBodys.add(secondApiRequestBody100);
 				}
-				if(secondApiRequestBody190 != null) {
+				if (secondApiRequestBody190 != null) {
 					secondApiRequestBodys.add(secondApiRequestBody190);
 				}
-				if(secondApiRequestBody110 != null) {
+				if (secondApiRequestBody110 != null) {
 					secondApiRequestBodys.add(secondApiRequestBody110);
 				}
-				
-				for(String secondApiRequestBody : secondApiRequestBodys) {
+
+				for (String secondApiRequestBody : secondApiRequestBodys) {
 					logger.info("Second API REQUEST BODY: " + secondApiRequestBody);
 					logger.info("API run first time");
 					HttpPost httpPost1 = new HttpPost(rmaReceiptUrl);
@@ -1390,26 +1417,27 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 							logger.info("This is receipt Number" + receiptNumber);
 							JsonNode responseRootNode = objectMapper.readTree(secondApiRequestBody);
-							
-							String loc_id = responseRootNode.path("Transactions").get(0).path("DataElements").get(0).path("Rows").get(0)
-							.path("Edits").get(0).path("Value").asText();
-							
+
+							String loc_id = responseRootNode.path("Transactions").get(0).path("DataElements").get(0)
+									.path("Rows").get(0).path("Edits").get(0).path("Value").asText();
+
 							List<String> items = new ArrayList<String>();
 							if (loc_id.equals("100"))
-							    items = itemIdsList100;
+								items = itemIdsList100;
 							if (loc_id.equals("190"))
-							    items = itemIdsList190;
+								items = itemIdsList190;
 							if (loc_id.equals("110"))
-							    items = itemIdsList110;
+								items = itemIdsList110;
 
 							String itemsString = String.join(", ", items);
-							return "RMA receipt created successfully for item " + itemsString+" your receipt number is "+receiptNumber;
+							return "RMA receipt created successfully for item " + itemsString
+									+ " your receipt number is " + receiptNumber;
 
 						} else {
 							return "RMA Receipt not generated. No successful transactions.";
 						}
 					}
-				}		
+				}
 			} catch (Exception e) {
 				logger.info("First api failed.");
 				e.printStackTrace();
@@ -1485,7 +1513,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		editObject.put("Name", name);
 		editObject.put("Value", value);
 	}
-	
+
 	private ResponseEntity<String> updateReturnLocationToErp(String rmaNo, String itemName, String returnLocationId) {
 		ResponseEntity<String> updateItemReturnLocation = null;
 		try {
