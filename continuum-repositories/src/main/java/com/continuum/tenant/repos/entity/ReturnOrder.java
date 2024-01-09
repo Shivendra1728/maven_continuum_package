@@ -80,5 +80,9 @@ public class ReturnOrder extends BaseEntity {
 	private String note;
 	private Boolean isEditable;
 	private Boolean isAuthorized;
+
+	// for sales rep
 	private Boolean isSalesRepLinked;
+
+	private Integer salesRepLinkAttempts;
 }
