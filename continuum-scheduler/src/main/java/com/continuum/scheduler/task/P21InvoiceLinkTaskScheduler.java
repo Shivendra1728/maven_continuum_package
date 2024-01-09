@@ -205,42 +205,63 @@ public class P21InvoiceLinkTaskScheduler {
 
 		String apiURL = masterTenant.getSubdomain() + IntegrationConstants.ERP_TRANSACTION_GET;
 
-		ReturnOrder lastRma = returnOrderRepository.findTopByOrderByIdDesc();
-		if (lastRma == null || (lastRma.getIsSalesRepLinked() != null && lastRma.getIsSalesRepLinked())) {
-			logger.info("Sales rep is already linked for RMA: " + (lastRma != null ? lastRma.getRmaOrderNo() : "N/A"));
-			return "Linked already";
+		List<ReturnOrder> unlinkedRMAs = returnOrderRepository.findByIsSalesRepLinkedFalse();
+
+		for (ReturnOrder lastRma : unlinkedRMAs) {
+
+			if (lastRma.getSalesRepLinkAttempts() != null && lastRma.getSalesRepLinkAttempts() >= 2) {
+				logger.error("Maximum attempts reached for RMA: " + lastRma.getRmaOrderNo());
+				continue;
+			}
+
+			if (lastRma == null || (lastRma.getIsSalesRepLinked() != null && lastRma.getIsSalesRepLinked())) {
+				logger.info(
+						"Sales rep is already linked for RMA: " + (lastRma != null ? lastRma.getRmaOrderNo() : "N/A"));
+				return "Linked already";
+			}
+			logger.info("Processing unlinked RMA: " + lastRma.getRmaOrderNo());
+			logger.info("This is last RMA in return order table :: " + lastRma.getRmaOrderNo());
+
+			String orderNoStr = lastRma.getOrderNo();
+			int orderNo = Integer.parseInt(orderNoStr);
+
+			logger.info("This is the original order number : : " + orderNo);
+
+			String apiPayload = String.format(
+					"{\"ServiceName\":\"Order\",\"TransactionStates\":[{\"DataElementName\":\"TABPAGE_1.order\",\"Keys\":[{\"Name\":\"order_no\",\"Value\":%d}]}],\"UseCodeValues\":true}",
+					orderNo);
+
+			logger.info("Making post request to get the Primary Sales Rep : : " + apiPayload);
+			String responseJson = makePostRequest(apiURL, apiPayload, masterTenant);
+
+			logger.info("Parsing primary sales rep :: " + responseJson);
+			String primarySalesRep = parsePrimarySalesRep(responseJson);
+
+			logger.info("This is primary Sales Rep for this order :: " + orderNo + " :: " + primarySalesRep);
+
+			if (SetPrimarySalesRepInRma(lastRma, primarySalesRep, masterTenant)) {
+				// If sales rep linking was successful
+				lastRma.setSalesRepLinkAttempts(0);
+				returnOrderRepository.save(lastRma);
+				return "Primary sales rep set complete : :" + primarySalesRep;
+			} else {
+				// If sales rep linking failed
+				if (lastRma.getSalesRepLinkAttempts() == null) {
+					lastRma.setSalesRepLinkAttempts(1);
+				} else {
+					lastRma.setSalesRepLinkAttempts(lastRma.getSalesRepLinkAttempts() + 1);
+				}
+				returnOrderRepository.save(lastRma);
+				return "Sales rep linking failed for RMA: " + lastRma.getRmaOrderNo() + ". Retrying...";
+			}
 		}
-
-		logger.info("This is last RMA in return order table :: " + lastRma.getRmaOrderNo());
-
-		String orderNoStr = lastRma.getOrderNo();
-		int orderNo = Integer.parseInt(orderNoStr);
-
-		logger.info("This is the original order number : : " + orderNo);
-
-		String apiPayload = String.format(
-				"{\"ServiceName\":\"Order\",\"TransactionStates\":[{\"DataElementName\":\"TABPAGE_1.order\",\"Keys\":[{\"Name\":\"order_no\",\"Value\":%d}]}],\"UseCodeValues\":true}",
-				orderNo);
-
-		logger.info("Making post request to get the Primary Sales Rep : : " + apiPayload);
-		String responseJson = makePostRequest(apiURL, apiPayload, masterTenant);
-
-		logger.info("Parsing primary sales rep :: " + responseJson);
-		String primarySalesRep = parsePrimarySalesRep(responseJson);
-
-		logger.info("This is primary Sales Rep for this order :: " + orderNo + " :: " + primarySalesRep);
-
-		logger.info("Now setting this primary sales rep in RMA : : ");
-
-		// This method will help set sales rep in rma
-		SetPrimarySalesRepInRma(lastRma, primarySalesRep, masterTenant);
-		return "Primary sales rep set complete : :" + primarySalesRep;
+		return "Sales Rep setting complete for rma's : : " + unlinkedRMAs;
 	}
 
 	// These methods will help you find primary Sales Rep against order
 	// ----------------------------------------
 
-	private void SetPrimarySalesRepInRma(ReturnOrder lastRma, String primarySalesRep, MasterTenant masterTenant)
+	private boolean SetPrimarySalesRepInRma(ReturnOrder lastRma, String primarySalesRep, MasterTenant masterTenant)
 			throws JsonMappingException, JsonProcessingException {
 
 		int rmaNumber = Integer.parseInt(lastRma.getRmaOrderNo());
@@ -309,12 +330,14 @@ public class P21InvoiceLinkTaskScheduler {
 				lastRma.setIsSalesRepLinked(true);
 
 				returnOrderRepository.save(lastRma);
+				return true;
 			} else {
 				logger.error("Sales rep linking failed, I guess we didn't get succeed count as one.");
 			}
 		} else {
 			logger.error("Failed to make API call. Status code: " + statusCode);
 		}
+		return false;
 
 	}
 

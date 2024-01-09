@@ -21,4 +21,6 @@ public interface ReturnOrderRepository extends JpaRepository<ReturnOrder, Long>,
 	ReturnOrder findFirstByRmaOrderNoStartingWithOrderByRmaOrderNoDesc(String string);
 
 	ReturnOrder findTopByOrderByIdDesc();
+
+	List<ReturnOrder> findByIsSalesRepLinkedFalse();
 }
