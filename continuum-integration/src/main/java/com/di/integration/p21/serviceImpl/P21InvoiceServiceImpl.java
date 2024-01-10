@@ -6,6 +6,10 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,6 +40,11 @@ import org.springframework.web.client.RestTemplate;
 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
+import com.continuum.tenant.repos.entity.EditsObject;
+import com.continuum.tenant.repos.entity.EditsObject.EditItem;
+import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.continuum.tenant.repos.entity.ReturnOrderItem;
+import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.di.commons.dto.StoreDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21InvoiceMapper;
@@ -43,6 +52,9 @@ import com.di.commons.p21.mapper.P21OrderLineItemMapper;
 import com.di.commons.p21.mapper.P21OrderMapper;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21InvoiceService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class P21InvoiceServiceImpl implements P21InvoiceService {
@@ -92,11 +104,20 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 	@Autowired
 	HttpServletRequest httpServletRequest;
+	
+	@Value(IntegrationConstants.ERP_RMA_UPDATE_RESTOCKING_API)
+	private String rmaGetEndPoint;
+	
+	@Autowired
+	ReturnOrderRepository returnOrderRepository;
 
 	@Autowired
 	StoreDTO storeDTO;
 
 	LocalDate localDate;
+	
+	private final ObjectMapper objectMapper = new ObjectMapper();
+	  
 
 	public String getInvoiceLineData(OrderSearchParameters orderSearchParameters, int totalItem) throws Exception {
 		CloseableHttpClient httpClient = HttpClients.custom()
@@ -193,6 +214,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		} else {
 			masterTenant = masterTenantObject;
 		}
+		Integer indexOfInvNo = getIndexOfItem(rmaNo);
 
 		URI sessionEnd = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 		URI sessionEndFullURI = sessionEnd.resolve(sessionEnd.getRawPath());
@@ -493,7 +515,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 			String setFocusOnSpecifiedFieldURI = String.format(
 					"" + masterTenant.getSubdomain()
 							+ "/uiserver0/ui/full/v1/window/%s/elements/focus?datawindowName=%s&fieldName=%s&row=%s",
-					windowId, "tabpage_saleshistory", "invoice_no", "3");
+					windowId, "tabpage_saleshistory", "invoice_no", indexOfInvNo);
+			logger.info("Set Focus on specified Field Request :" + setFocusOnSpecifiedFieldURI);
 			URI setFocusOnSpecifiedFieldFullURI = new URIBuilder(setFocusOnSpecifiedFieldURI).build();
 			HttpPost setFocusOnSpecifiedFieldRequest = new HttpPost(setFocusOnSpecifiedFieldFullURI);
 			setFocusOnSpecifiedFieldRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -519,7 +542,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 			String runToolOnWindowURI = String.format("" + masterTenant.getSubdomain()
 					+ "/uiserver0/ui/full/v1/window/%s/elements/tools/run?dwName=%s&toolName=%s&dwElementName=%s&row=%s",
-					windowId, "tabpage_saleshistory", "m_linktothisrmaline", "tabpage_saleshistory", "3");
+					windowId, "tabpage_saleshistory", "m_linktothisrmaline", "tabpage_saleshistory", indexOfInvNo);
 			URI runToolOnWindowFullURI = new URIBuilder(runToolOnWindowURI).build();
 
 			HttpPut runToolOnWindowRequest = new HttpPut(runToolOnWindowFullURI);
@@ -609,6 +632,70 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		b = true;
 		return b;
 
+	}
+	
+	public Integer getIndexOfItem(String rmaNo) throws Exception {
+		
+		Optional<ReturnOrder> findByRmaOrderNo = returnOrderRepository.findByRmaOrderNo(rmaNo);
+		ReturnOrder returnOrder = findByRmaOrderNo.get();
+		String orderNo = returnOrder.getOrderNo();
+		logger.info(orderNo);
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+
+		String rmaDetailsUrl = masterTenant.getSubdomain() + rmaGetEndPoint + "/get";
+		String accessToken = "Bearer: " + p21TokenServiceImpl.findToken(masterTenant);
+
+		logger.info("First URL" + rmaDetailsUrl);
+		
+		objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+		
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		
+		HttpPost httpPost = new HttpPost(rmaDetailsUrl);
+		httpPost.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+		httpPost.setHeader(HttpHeaders.ACCEPT, "application/json");
+		httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
+		String requestBody = constructFirstApiRequestBody(rmaNo);
+
+		logger.info("This is request Body for first API" + requestBody);
+
+		httpPost.setEntity(new StringEntity(requestBody));	
+		
+		CloseableHttpResponse response = httpClient.execute(httpPost); 
+		String responseBody = EntityUtils.toString(response.getEntity());
+		JsonNode rootNode = objectMapper.readTree(responseBody);
+		JsonNode itemsNode = rootNode.path("Transactions").get(0).path("DataElements").get(70).path("Rows");
+		EditsObject[] array = null;
+		 if (itemsNode != null && itemsNode.isArray()) {
+             array = objectMapper.treeToValue(itemsNode, EditsObject[].class);
+
+             // Now 'array' contains the converted objects
+             for (EditsObject item : array) {
+                 System.out.println(item);
+             }
+         }
+		 Integer i = 1;
+		 for(EditsObject singleItem : array) {
+			 List<EditItem> edits = singleItem.getEdits();
+			 logger.info(edits.get(4).getValue());
+			 if(edits.get(4).getValue().equals(orderNo)) {
+				 System.out.println(i);
+				 return i;
+			 }
+			 i++;
+		 }
+
+		return 1;
+		
+	}
+	
+	private String constructFirstApiRequestBody(String rmaNo) {
+		return "{ \"ServiceName\":\"RMA\", " + "\"TransactionStates\":[{ \"DataElementName\":\"TABPAGE_1.order\", "
+				+ "\"Keys\":[{ \"Name\":\"order_no\", \"Value\":" + rmaNo + " }] }], " + "\"UseCodeValues\":true }";
 	}
 
 }
