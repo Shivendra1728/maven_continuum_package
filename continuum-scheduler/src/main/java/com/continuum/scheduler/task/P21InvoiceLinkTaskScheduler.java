@@ -1,12 +1,12 @@
 package com.continuum.scheduler.task;
-
+ 
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
+ 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
+ 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.tenant.repos.entity.OrderItemDocuments;
@@ -49,16 +49,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+ 
 @Component
 public class P21InvoiceLinkTaskScheduler {
-
+ 
 	private static final Logger logger = LoggerFactory.getLogger(P21InvoiceLinkTaskScheduler.class);
 //	
 //	@Autowired
 //	P21InvoiceService p21InvoiceService;
 //	
-
+ 
 	@Autowired
 	RestTemplate restTemplate;
 	@Autowired
@@ -79,8 +79,8 @@ public class P21InvoiceLinkTaskScheduler {
 	P21DocumentService p21DocumentService;
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
-
-	@Scheduled(cron = "0 0/15 * * * *")
+ 
+	@Scheduled(cron = "0 0/10 * * * *")
 	public void runTasks() throws Exception {
 		List<MasterTenant> masterTenants = masterTenantRepo.findAll();
 		if (null == masterTenants) {
@@ -89,22 +89,22 @@ public class P21InvoiceLinkTaskScheduler {
 		}
 		for (MasterTenant masterTenant : masterTenants) {
 			DBContextHolder.setCurrentDb(masterTenant.getDbName());
-			linkInvoice(masterTenant);
-
-			// Adding sales rep linking
 			linkSalesRep(masterTenant);
-
+			linkInvoice(masterTenant);
+ 
+			// Adding sales rep linking
+ 
 		}
-
+ 
 	}
-
+ 
 	public void linkInvoice(MasterTenant masterTenant) throws Exception {
-
+ 
 		logger.info("In  document linking started");
 		List<RmaInvoiceInfo> rma = rmaInvoiceInfoRepository.findAll();
-
+ 
 		List<RmaInvoiceInfoDTO> rmaDTOList = new ArrayList<>();
-
+ 
 		for (RmaInvoiceInfo rmaInvoiceInfo : rma) {
 			try {
 				if (!rmaInvoiceInfo.isDocumentLinked() && rmaInvoiceInfo.getRetryCount() < 3) {
@@ -117,20 +117,20 @@ public class P21InvoiceLinkTaskScheduler {
 						returnOrderRepository.save(RO);
 					}
 				}
-
+ 
 			} catch (Exception e) {
 				logger.error("error in document linking");
 				rmaInvoiceInfo.setDocumentLinked(false);
 			}
 			RmaInvoiceInfoDTO rmaInvoiceInfoDTO = new RmaInvoiceInfoDTO();
-
+ 
 			// Manually set properties of rmaInvoiceInfoDTO based on rmaInvoiceInfo
 			rmaInvoiceInfoDTO.setRmaOrderNo(rmaInvoiceInfo.getRmaOrderNo());
 			rmaInvoiceInfoDTO.setRetryCount(rmaInvoiceInfo.getRetryCount());
 			// Set other properties as needed
-
+ 
 			rmaDTOList.add(rmaInvoiceInfoDTO);
-
+ 
 			String rmaOrderNo = rmaInvoiceInfoDTO.getRmaOrderNo();
 			Integer retryCount = rmaInvoiceInfoDTO.getRetryCount();
 			if (retryCount < 3) {
@@ -138,82 +138,80 @@ public class P21InvoiceLinkTaskScheduler {
 				boolean bln = p21InvoiceService.linkInvoice(rmaOrderNo, masterTenant);
 				if (bln) {
 					Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
-
+ 
 					if (ro.isPresent()) {
-
+ 
 						ReturnOrder returnOrder = ro.get();
 						returnOrder.setISInvoiceLinked(true);
 						returnOrderRepository.save(returnOrder);
 						rmaInvoiceInfoRepository.delete(rmaInvoiceInfo);
 						// Here you can remove the corresponding DTO from the list
-
+ 
 					}
 				} else {
 					rmaInvoiceInfoDTO.setRetryCount(rmaInvoiceInfoDTO.getRetryCount() + 1);
 					rmaInvoiceInfoDTO.setInvoiceLinked(false);
-
+ 
 					RmaInvoiceInfo rii = rmaInvoiceInfoMapper.RmaInvoiceInfoToRmaInvoiceInfoDTO(rmaInvoiceInfoDTO);
 					rmaInvoiceInfoRepository.save(rii);
 				}
 			}
 		}
-
+ 
 	}
-
+ 
 	public boolean isNotNullAndNotEmpty(String str) {
 		return str != null && !str.trim().isEmpty();
 	}
-
+ 
 	private boolean linkDocuments(RmaInvoiceInfo rmaInvoiceInfo, MasterTenant masterTenant) throws Exception {
 		boolean docLinked = false;
-
+ 
 		Optional<ReturnOrder> ro = returnOrderRepository.findById(rmaInvoiceInfo.getReturnOrder().getId());
 		ReturnOrder returnOrder = ro.get();
-
+ 
 		List<ReturnOrderItem> returnOrderItemList = returnOrderItemRepository.findByReturnOrderId(returnOrder.getId());
-
+ 
 		DocumentLinkDTO docmentLinkDto = new DocumentLinkDTO();
 		docmentLinkDto.setRmaNo(rmaInvoiceInfo.getRmaOrderNo());
 		List<DocumentLinkHelper> documentList = new ArrayList();
-
+ 
 		for (ReturnOrderItem returnOrderItem : returnOrderItemList) {
 			List<OrderItemDocuments> orderItemDocuments = orderItemDocumentRepository
 					.findByReturnOrderItem_Id(returnOrderItem.getId());
-
+ 
 			for (OrderItemDocuments orderItemDocument : orderItemDocuments) {
 				if (isNotNullAndNotEmpty(orderItemDocument.getURL())) {
 					String fileName = Paths.get(new URI(orderItemDocument.getURL()).getPath()).getFileName().toString();
 					documentList.add(new DocumentLinkHelper(fileName, orderItemDocument.getURL()));
 				}
-
+ 
 			}
 		}
-
+ 
 		docmentLinkDto.setDocumentLinkHelperList(documentList);
 		p21DocumentService.linkDocument(docmentLinkDto, masterTenant);
-
+ 
 		docLinked = true;
 		return docLinked;
-
+ 
 	}
-
+ 
 	// Implementing Sales Rep scheduled -
-
+ 
 	private String linkSalesRep(MasterTenant masterTenant) throws Exception {
 		// TODO Auto-generated method stub
 		logger.info("Sales Rep linking started");
-
-		String apiURL = masterTenant.getSubdomain() + IntegrationConstants.ERP_TRANSACTION_GET;
-
+ 
 		List<ReturnOrder> unlinkedRMAs = returnOrderRepository.findByIsSalesRepLinkedFalse();
-
+ 
 		for (ReturnOrder lastRma : unlinkedRMAs) {
-
+ 
 			if (lastRma.getSalesRepLinkAttempts() != null && lastRma.getSalesRepLinkAttempts() >= 2) {
 				logger.error("Maximum attempts reached for RMA: " + lastRma.getRmaOrderNo());
 				continue;
 			}
-
+ 
 			if (lastRma == null || (lastRma.getIsSalesRepLinked() != null && lastRma.getIsSalesRepLinked())) {
 				logger.info(
 						"Sales rep is already linked for RMA: " + (lastRma != null ? lastRma.getRmaOrderNo() : "N/A"));
@@ -221,24 +219,29 @@ public class P21InvoiceLinkTaskScheduler {
 			}
 			logger.info("Processing unlinked RMA: " + lastRma.getRmaOrderNo());
 			logger.info("This is last RMA in return order table :: " + lastRma.getRmaOrderNo());
-
+ 
 			String orderNoStr = lastRma.getOrderNo();
 			int orderNo = Integer.parseInt(orderNoStr);
-
+ 
+			String apiURL = masterTenant.getSubdomain() + "/api/sales/orders/" + orderNo
+					+ "?extendedproperties=Salesreps";
+ 
 			logger.info("This is the original order number : : " + orderNo);
-
-			String apiPayload = String.format(
-					"{\"ServiceName\":\"Order\",\"TransactionStates\":[{\"DataElementName\":\"TABPAGE_1.order\",\"Keys\":[{\"Name\":\"order_no\",\"Value\":%d}]}],\"UseCodeValues\":true}",
-					orderNo);
-
-			logger.info("Making post request to get the Primary Sales Rep : : " + apiPayload);
-			String responseJson = makePostRequest(apiURL, apiPayload, masterTenant);
-
+ 
+//			String apiPayload = String.format(
+//					"{\"ServiceName\":\"Order\",\"TransactionStates\":[{\"DataElementName\":\"TABPAGE_1.order\",\"Keys\":[{\"Name\":\"order_no\",\"Value\":%d}]}],\"UseCodeValues\":true}",
+//					orderNo);
+ 
+			// logger.info("Making post request to get the Primary Sales Rep : : " +
+			// apiPayload);
+			String responseJson = makeGetRequest(apiURL, masterTenant);
+ 
 			logger.info("Parsing primary sales rep :: " + responseJson);
+ 
 			String primarySalesRep = parsePrimarySalesRep(responseJson);
-
+ 
 			logger.info("This is primary Sales Rep for this order :: " + orderNo + " :: " + primarySalesRep);
-
+ 
 			if (SetPrimarySalesRepInRma(lastRma, primarySalesRep, masterTenant)) {
 				// If sales rep linking was successful
 				lastRma.setSalesRepLinkAttempts(0);
@@ -257,21 +260,21 @@ public class P21InvoiceLinkTaskScheduler {
 		}
 		return "Sales Rep setting complete for rma's : : " + unlinkedRMAs;
 	}
-
+ 
 	// These methods will help you find primary Sales Rep against order
 	// ----------------------------------------
-
+ 
 	private boolean SetPrimarySalesRepInRma(ReturnOrder lastRma, String primarySalesRep, MasterTenant masterTenant)
 			throws JsonMappingException, JsonProcessingException {
-
+ 
 		int rmaNumber = Integer.parseInt(lastRma.getRmaOrderNo());
-
+ 
 		logger.info("This is rma number : : " + rmaNumber);
-
+ 
 		String SalesRepInRMA = masterTenant.getSubdomain() + IntegrationConstants.ERP_RMA_ENDPOINT;
-
+ 
 		logger.info("This is sales Rep api in RMA : : " + SalesRepInRMA);
-
+ 
 		String payload = String.format("{\n" + "    \"IgnoreDisabled\": true,\n" + "    \"Name\": \"RMA\",\n"
 				+ "    \"UseCodeValues\": false,\n" + "    \"Transactions\": [\n" + "        {\n"
 				+ "            \"Status\": \"New\",\n" + "            \"DataElements\": [\n" + "                {\n"
@@ -296,7 +299,7 @@ public class P21InvoiceLinkTaskScheduler {
 				+ "                            ],\n" + "                            \"RelativeDateEdits\": []\n"
 				+ "                        }\n" + "                    ]\n" + "                }\n" + "            ]\n"
 				+ "        }\n" + "    ]\n" + "}", rmaNumber, primarySalesRep);
-
+ 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		try {
@@ -305,30 +308,30 @@ public class P21InvoiceLinkTaskScheduler {
 			e.printStackTrace();
 		}
 		HttpEntity<String> requestEntity = new HttpEntity<>(payload, headers);
-
+ 
 		RestTemplate restTemplate = new RestTemplate();
-
+ 
 		ResponseEntity<String> response = restTemplate.exchange(SalesRepInRMA, HttpMethod.POST, requestEntity,
 				String.class);
-
+ 
 		HttpStatus statusCode = response.getStatusCode();
-
+ 
 		String responseBody = response.getBody();
-
+ 
 		logger.info("This is status code " + statusCode + "This is response from setting sales rep in rma : : "
 				+ responseBody);
-
+ 
 		if (statusCode == HttpStatus.OK) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode jsonNode = objectMapper.readTree(responseBody);
-
+ 
 			// Check if the summary succeeded count is 1
 			int succeededCount = jsonNode.path("Summary").path("Succeeded").asInt();
 			if (succeededCount == 1) {
 				logger.info("Sales rep linked successfully");
-
+ 
 				lastRma.setIsSalesRepLinked(true);
-
+ 
 				returnOrderRepository.save(lastRma);
 				return true;
 			} else {
@@ -338,72 +341,44 @@ public class P21InvoiceLinkTaskScheduler {
 			logger.error("Failed to make API call. Status code: " + statusCode);
 		}
 		return false;
-
+ 
 	}
-
-	private String makePostRequest(String URI, String payload, MasterTenant masterTenant) throws Exception {
+ 
+	private String makeGetRequest(String URI, MasterTenant masterTenant) throws Exception {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(p21TokenServiceImpl.findToken(masterTenant));
 		logger.info("API URI: " + URI);
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		RequestEntity<String> requestEntity = new RequestEntity<>(payload, headers, HttpMethod.POST, new URI(URI));
-
+ 
+		RequestEntity<String> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, new URI(URI));
+ 
 		ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
 		return response.getBody();
 	}
-
+ 
 	public static String parsePrimarySalesRep(String jsonStr) {
 		try {
 			JSONObject jsonObject = new JSONObject(jsonStr);
-			JSONArray transactions = jsonObject.getJSONArray("Transactions");
-
-			for (int i = 0; i < transactions.length(); i++) {
-				JSONObject transaction = transactions.getJSONObject(i);
-				JSONArray dataElements = transaction.getJSONArray("DataElements");
-
-				for (int j = 0; j < dataElements.length(); j++) {
-					JSONObject dataElement = dataElements.getJSONObject(j);
-					JSONArray rows = dataElement.getJSONArray("Rows");
-
-					for (int k = 0; k < rows.length(); k++) {
-						JSONObject row = rows.getJSONObject(k);
-						JSONArray edits = row.getJSONArray("Edits");
-
-						JSONObject primarySalesRepEdit = getEditByName(edits, "primary_salesrep");
-
-						if (primarySalesRepEdit != null) {
-							JSONObject salesRepIdEdit = getEditByName(edits, "salesrep_id");
-							if (salesRepIdEdit != null) {
-								return salesRepIdEdit.getString("Value");
-							}
-						}
-					}
+			JSONObject salesreps = jsonObject.getJSONObject("Salesreps");
+			JSONArray salesrepList = salesreps.getJSONArray("list");
+ 
+			for (int i = 0; i < salesrepList.length(); i++) {
+				JSONObject salesrep = salesrepList.getJSONObject(i);
+				boolean isPrimarySalesrep = salesrep.getBoolean("PrimarySalesrep");
+ 
+				if (isPrimarySalesrep) {
+					return salesrep.getString("SalesrepId");
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+ 
 		return null;
 	}
-
-	private static JSONObject getEditByName(JSONArray edits, String name) {
-		try {
-			for (int i = 0; i < edits.length(); i++) {
-				JSONObject edit = edits.getJSONObject(i);
-				if (name.equals(edit.getString("Name"))) {
-					return edit;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
+ 
 	// THESE METHODS WILL HELP YOU GET THE PRIMARY SALES
 	// REP-----------------------------------------------------------------
-
+ 
 }
