@@ -56,6 +56,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/signupCust/**").permitAll()
                 .antMatchers("/forgetPassword/**").permitAll()
                 .antMatchers("/updatePassword/**").permitAll()
+                .antMatchers("/activateAccount/**").permitAll()
                 .antMatchers("/swagger/**").permitAll()
                 .antMatchers("/api/upload-csv/**").permitAll()
                 .antMatchers("/**").authenticated()

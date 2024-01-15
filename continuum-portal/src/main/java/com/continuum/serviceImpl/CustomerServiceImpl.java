@@ -1,9 +1,16 @@
 package com.continuum.serviceImpl;
 
 import java.net.URI;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,15 +26,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
+import com.continuum.constants.PortalConstants;
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.service.CustomerService;
+import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.Customer;
 import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;
@@ -74,21 +85,35 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Value(IntegrationConstants.ERP_DATA_API_ORDER_VIEW)
 	String DATA_API_ORDER_VIEW;
-	
+
 	@Autowired
 	MasterTenantRepository masterTenantRepository;
 
 	@Autowired
 	HttpServletRequest httpServletRequest;
 
+	@Autowired
+	EmailSender emailSender;
+
+	@Lazy
+	@Autowired
+	ReturnOrderServiceImpl returnOrderServiceImpl;
+
 	LocalDate localDate;
+
+	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
 
 	public CustomerDTO findbyCustomerId(String customerId) {
 		Customer customer = customerRepository.findByCustomerId(customerId);
 		return customerMapper.cusotmerTocusotmerDTO(customer);
 	}
 
-	public String createCustomerInDB(CustomerDTO customerDTO) {
+	public Map<String, Object> createCustomerInDB(CustomerDTO customerDTO, HttpServletRequest request) {
+		Map<String, Object> jsonResponse = new HashMap<>();
+		String uuid = UUID.randomUUID().toString();
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.MINUTE, 5);
+		Date expirationTime = calendar.getTime();
 
 		OrderDTO orderDTO = null;
 
@@ -99,10 +124,14 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 		if (orderDTO != null) {
 			if (orderDTO.getCustomer() == null) {
-				return "You are not a customer of us!";
+				jsonResponse.put("status", false);
+				jsonResponse.put("message", "You are not a customer of us!");
+				return jsonResponse;
 			}
 			if (userRepository.existsByEmail(customerDTO.getEmail())) {
-				return "Email already exists.";
+				jsonResponse.put("status", false);
+				jsonResponse.put("message", "Email already exists.");
+				return jsonResponse;
 			}
 
 			Customer customer = new Customer();
@@ -121,19 +150,52 @@ public class CustomerServiceImpl implements CustomerService {
 			user.setPassword(hashedPassword);
 			user.setUserName(customerDTO.getEmail());
 			user.setEmail(customerDTO.getEmail());
-			user.setStatus(true);
+			user.setStatus(false);
+			user.setActivationUuid(uuid);
+			user.setActivationResetTokenExpiration(expirationTime);
 			user.setCustomer(customer);
 			if (role != null) {
 				user.setRole(role);
 			}
 			user.setFullName("None");
 			userRepository.save(user);
-			return "Customer Signed Up SuccessFully";
+
+			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			String subject = "Activate Your Account";
+
+//			emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
+			HashMap<String, String> map = new HashMap<>();
+			String fullUrl = request.getRequestURL().toString();
+			try {
+				URL url = new URL(fullUrl);
+				String host = url.getHost();
+				String scheme = request.getScheme();
+				String link = scheme + "://" + host + "/userlogin?token=" + uuid;
+//			String link="http://tld.localhost:3000/userlogin?token="+uuid;
+
+				map.put("cust_name", orderDTO.getCustomer().getDisplayName());
+				map.put("cust_email", customerDTO.getEmail());
+				map.put("RESET_LINK", link);
+				map.put("user_id", user.getId().toString());
+				map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+				map.put("CLIENT_PHONE",
+						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+
+				String template = emailTemplateRenderer.getACTIVATE_ACCOUNT();
+
+				emailSender.sendEmail(recipient, template, subject, map);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			jsonResponse.put("status", true);
+			jsonResponse.put("message", "Email sent successfully!");
+			return jsonResponse;
 
 		} else {
-
-			return "You are not a customer of us!";
-
+			jsonResponse.put("status", false);
+			jsonResponse.put("message", "You are not a customer of us!");
+			return jsonResponse;
 		}
 
 	}
@@ -166,8 +228,6 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	private URI prepareOrderURI(String email) {
-		
-		
 
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
@@ -179,7 +239,7 @@ public class CustomerServiceImpl implements CustomerService {
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter
 					+ "&$top=1&$orderby=order_date";
 
-			URI uri = new URI(masterTenant.getSubdomain()+DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
+			URI uri = new URI(masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_API_ORDER_VIEW);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			logger.info("Filtering orders with order_date greater than or equal to: {}", localDate);
 			logger.info("Current date: {}", LocalDate.now());
@@ -198,4 +258,5 @@ public class CustomerServiceImpl implements CustomerService {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }
