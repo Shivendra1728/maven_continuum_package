@@ -216,7 +216,6 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			recipient= returnOrderDTO.getContact().getContactEmailId();
 		}else {
 			recipient= PortalConstants.EMAIL_RECIPIENT;
-//			recipient= "priyanshi.porwal@bytesfarms.com";
 
 		}
 		
