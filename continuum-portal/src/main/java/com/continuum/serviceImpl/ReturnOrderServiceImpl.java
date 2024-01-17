@@ -12,6 +12,7 @@ import javax.mail.MessagingException;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
+import javax.servlet.http.HttpServletRequest;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -21,6 +22,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.continuum.constants.PortalConstants;
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.service.CustomerService;
 import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.AuditLog;
@@ -63,7 +66,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	ReturnOrderItemRepository returnOrderItemRepository;
-
+	
 	@Autowired
 	AuditLogRepository auditLogRepository;
 
@@ -109,6 +112,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	AuditLogServiceImpl auditLogServiceImpl;
+	
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
+
+	@Autowired
+	HttpServletRequest httpServletRequest;
 
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 		// Create RMA in p21
@@ -198,7 +207,19 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		auditLogRepository.save(auditlog);
 
 		// String recipient = returnOrder.getCustomer().getEmail();
-		String recipient = PortalConstants.EMAIL_RECIPIENT;
+		
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+		String recipient = "";
+
+		if(masterTenant.getIsProd()) {
+			recipient= returnOrderDTO.getContact().getContactEmailId();
+		}else {
+			recipient= PortalConstants.EMAIL_RECIPIENT;
+//			recipient= "priyanshi.porwal@bytesfarms.com";
+
+		}
+		
 //		String email = returnOrderDTO.getContact().getContactEmailId();
 //		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
 //			recipient="alex@gocontinuum.ai";
@@ -604,7 +625,17 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 //			apply email functionality.
 			// String recipient = user.getEmail();
-			String recipient = PortalConstants.EMAIL_RECIPIENT;
+//			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+			String recipient = "";
+			if(masterTenant.getIsProd()) {
+				recipient= note.getContact().getContactEmailId();
+			}else {
+				recipient= PortalConstants.EMAIL_RECIPIENT;
+
+			}
 			String subject = PortalConstants.ASSIGN_RMA + getRmaaQualifier() + " " + returnOrder.getRmaOrderNo();
 			HashMap<String, String> map = new HashMap<>();
 			map.put("RMA_QUALIFIER", getRmaaQualifier());

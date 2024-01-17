@@ -58,4 +58,7 @@ public class MasterTenant implements Serializable {
     
     @Column(name="restocking_item_id")
     private String restockingItemId;
+    
+    @Column(name="is_prod")
+    private Boolean isProd;
 }
