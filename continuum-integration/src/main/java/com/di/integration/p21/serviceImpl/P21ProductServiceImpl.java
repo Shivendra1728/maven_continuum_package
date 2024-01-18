@@ -128,6 +128,7 @@ public class P21ProductServiceImpl implements P21ProductService {
 
 			for (P21ProductItem p21ProductItem : p21ProductLineItems) {
 				OrderItemDTO orderItemDTO = new OrderItemDTO();
+				orderItemDTO.setId(Long.parseLong(p21ProductItem.getInv_mast_uid()));
 				orderItemDTO.setItemName(p21ProductItem.getItem_id());
 				orderItemDTO.setDescription(p21ProductItem.getItem_desc());
 				orderItemDTO.setQuantity(1);
