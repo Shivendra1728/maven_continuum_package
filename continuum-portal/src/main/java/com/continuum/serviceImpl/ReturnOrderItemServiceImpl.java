@@ -862,6 +862,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			} else {
 				Optional<User> optionalUser = userRepository.findById(assignToId);
 				User user = optionalUser.get();
+				if (updateNote.getFollowUpDate() == null) {
+					existingItem.setFollowUpDate(null);
+				} else {
+					existingItem.setFollowUpDate(updateNote.getFollowUpDate());
+				}
 				existingItem.setNote(updateNote.getNote());
 				existingItem.setUser(user);
 				returnOrderItemRepository.save(existingItem);
