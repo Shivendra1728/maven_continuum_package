@@ -130,9 +130,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	@Value(PortalConstants.MAIL_USERNAME)
 	private String mailUsername;
 
-	@Value(PortalConstants.EMAIL_RECIPIENT)
-	private String recipient;
-
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
 	
@@ -402,7 +399,6 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemRepository.save(existingItem);
 
 				// String recipient = existingItem.getReturnOrder().getCustomer().getEmail();
-				String recipient = PortalConstants.EMAIL_RECIPIENT;
 
 				// Handle Status Configurations
 
@@ -425,6 +421,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
 				MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+				String recipient = "";
+				if(masterTenant.getIsProd()) {
+					recipient= returnOrder.getContact().getContactEmailId();
+				}else {
+					recipient= PortalConstants.EMAIL_RECIPIENT;
+
+				}
 
 				StatusConfig statusConfig = statusConfigRepository.findByPriority(min).get(0);
 				String existingHeaderStatus = returnOrderEntity.getStatus();
@@ -834,6 +837,16 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						+ ". Please review the details and take necessary action.;"
 						+ "Vendor Message added and Email has been sent to the " + contactEmail);
 
+				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+				MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+				String recipient = "";
+				if(masterTenant.getIsProd()) {
+					recipient= contactEmail;
+				}else {
+					recipient= PortalConstants.EMAIL_RECIPIENT;
+
+				}
 				String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier() + " "
 						+ rmaNo;
 				String template2 = emailTemplateRenderer.getVENDER_LINE_ITEM_STATUS_CUSTOMER();
@@ -873,6 +886,17 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
 						+ user.getLastName() + " of item - " + existingItem.getItemName()
 						+ ". Please review the details and take necessary action.");
+				
+				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+
+				MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+				String recipient = "";
+				if(masterTenant.getIsProd()) {
+					recipient= contactEmail;
+				}else {
+					recipient= PortalConstants.EMAIL_RECIPIENT;
+
+				}
 				String subject = PortalConstants.NOTE_STATUS + returnOrderServiceImpl.getRmaaQualifier() + " " + rmaNo;
 				String template2 = emailTemplateRenderer.getRETURN_PROCESSOR_NOTE();
 				HashMap<String, String> map = new HashMap<>();
