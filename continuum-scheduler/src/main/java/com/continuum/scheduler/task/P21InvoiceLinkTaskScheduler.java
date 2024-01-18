@@ -112,7 +112,7 @@ public class P21InvoiceLinkTaskScheduler {
 	@Scheduled(cron = "0 */5 * * * *")
 	public void createRMAReciept() throws Exception {
 
-		DBContextHolder.setCurrentDb("pacedev");
+		DBContextHolder.setCurrentDb("pace");
 		masterTenantRepo.findByDbName(DBContextHolder.getCurrentDb());
 		createRMAreceipt(masterTenantRepo.findByDbName(DBContextHolder.getCurrentDb()));
 
@@ -137,7 +137,7 @@ public class P21InvoiceLinkTaskScheduler {
 						receiptNumbers += receiptNo+", ";
 						itemsString = String.join(", ", rmaReceipts.get(receiptNo));
 						description += "Receipt created successfully for item " + itemsString
-								+ " your receipt number is" + receiptNo + ";";
+								+ " your receipt number is : " + receiptNo + ";";
 					}
 					saveAuditLog(rmaReceiptInfo, description);
 					rmaReceiptInfo.setStatus(ReceiptStatus.SUCCEED.toString());
