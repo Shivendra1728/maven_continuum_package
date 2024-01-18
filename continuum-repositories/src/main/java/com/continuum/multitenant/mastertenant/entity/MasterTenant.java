@@ -61,4 +61,11 @@ public class MasterTenant implements Serializable {
     
     @Column(name="is_prod")
     private Boolean isProd;
+    
+    @Column(name="email_username")
+    private String emailUsername;
+    
+    @Column(name="email_password")
+    private String emailPassword;
+    
 }
