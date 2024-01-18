@@ -67,5 +67,4 @@ public class MasterTenant implements Serializable {
     
     @Column(name="email_password")
     private String emailPassword;
-    
 }

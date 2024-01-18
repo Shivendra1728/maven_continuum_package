@@ -59,6 +59,7 @@ public class EmailSender {
 		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
 		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
 
+	
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		mailUsername = masterTenant.getEmailUsername();
