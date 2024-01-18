@@ -49,6 +49,7 @@ import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.Customer;
 import com.continuum.tenant.repos.entity.OrderAddress;
 import com.continuum.tenant.repos.entity.QuestionConfig;
+import com.continuum.tenant.repos.entity.RMAReceiptInfo;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.ReturnRoom;
@@ -58,6 +59,7 @@ import com.continuum.tenant.repos.repositories.AuditLogRepository;
 import com.continuum.tenant.repos.repositories.CustomerRepository;
 import com.continuum.tenant.repos.repositories.EditableConfigRepository;
 import com.continuum.tenant.repos.repositories.QuestionConfigRepository;
+import com.continuum.tenant.repos.repositories.RMAReceiptInfoRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.continuum.tenant.repos.repositories.ReturnRoomRepository;
@@ -70,6 +72,7 @@ import com.di.integration.p21.service.P21UpdateRMAService;
 import com.di.integration.p21.serviceImpl.P21SKUServiceImpl;
 import com.di.integration.p21.serviceImpl.P21TokenServiceImpl;
 import com.di.integration.p21.serviceImpl.P21UpdateRMAServiceImpl;
+import com.di.integration.p21.serviceImpl.RmaReceiptServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -132,6 +135,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
+	
+	@Autowired
+	RmaReceiptServiceImpl rmaReceiptServiceImpl;
 
 	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
 
@@ -161,6 +167,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	P21SKUServiceImpl p21SKUService;
+	
+	@Autowired
+	RMAReceiptInfoRepository rmaReceiptInfoRepository;
 
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
@@ -576,15 +585,24 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 //					sendRestockingFeeToERP(rmaNo);
 					try {
-						String recieptNumber = processRMAAndGetReceiptNumber(Integer.parseInt(rmaNo));
-						logger.info("Reciept : " + recieptNumber);
-						auditLog.setTitle("Inbox");
-						auditLog.setDescription(recieptNumber);
-						auditLog.setHighlight("");
-						auditLog.setStatus("RMA Header");
-						auditLog.setRmaNo(rmaNo);
-						auditLog.setUserName(updateBy);
-						auditLogRepository.save(auditLog);
+						RMAReceiptInfo rMAReceiptInfo = new RMAReceiptInfo();
+						rMAReceiptInfo.setRmaNo(rmaNo);
+						rMAReceiptInfo.setStatus("SCHEDULED");
+						rMAReceiptInfo.setRetryCount(0);
+						rmaReceiptInfoRepository.save(rMAReceiptInfo);
+//						Map<String, List<String>> createRmaReceipt = rmaReceiptServiceImpl.createRmaReceipt(rmaNo);
+//						String description = "";
+//						for(String receiptNo : createRmaReceipt.keySet()) {
+//							String itemsString = String.join(", ", createRmaReceipt.get(receiptNo));
+//							description += "Receipt created successfully for item "+itemsString+" your receipt number is"+receiptNo+";";
+//						}
+//						auditLog.setTitle("Inbox");
+//						auditLog.setDescription(description);
+//						auditLog.setHighlight("");
+//						auditLog.setStatus("RMA Header");
+//						auditLog.setRmaNo(rmaNo);
+//						auditLog.setUserName(updateBy);
+//						auditLogRepository.save(auditLog);
 
 					} catch (Exception e) {
 						e.printStackTrace();
