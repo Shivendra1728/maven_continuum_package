@@ -10,6 +10,7 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletRequest;
 import javax.sound.sampled.Port;
 
 import org.apache.velocity.VelocityContext;
@@ -18,6 +19,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.continuum.constants.PortalConstants;
+import com.continuum.multitenant.mastertenant.entity.MasterTenant;
+import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.CustomerDTO;
@@ -40,6 +43,12 @@ public class EmailSender {
 
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
+	
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
+
+	@Autowired
+	HttpServletRequest httpServletRequest;
 
 	
 	public void sendEmail(String recipient, String template, String subject, HashMap<String, String> map) throws AddressException, MessagingException {
@@ -50,6 +59,12 @@ public class EmailSender {
 		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
 		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
 
+	
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+		mailUsername = masterTenant.getEmailUsername();
+		mailPassword= masterTenant.getEmailPassword();
+		
 		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
 			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
