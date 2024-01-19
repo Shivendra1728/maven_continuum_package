@@ -9,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
-
 @Getter
 @Setter
 
@@ -18,10 +16,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 public class RmaInvoiceInfo extends BaseEntity {
-	
+
 	private String rmaOrderNo;
-	private boolean isInvoiceLinked=false;
-	private boolean isDocumentLinked=false;
+	private boolean isInvoiceLinked = false;
+	private boolean isDocumentLinked = false;
 	private String description;
 	private Integer retryCount;
 	@ManyToOne

@@ -9,6 +9,6 @@ import com.continuum.tenant.repos.entity.AuditLog;
 
 @Repository
 public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
-	 List<AuditLog> findByRmaNo(String rmaNo);
+	List<AuditLog> findByRmaNo(String rmaNo);
 
 }

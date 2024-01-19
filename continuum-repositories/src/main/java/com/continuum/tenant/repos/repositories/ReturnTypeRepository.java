@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.continuum.tenant.repos.entity.ReturnType;
 
 @Repository
-public interface ReturnTypeRepository extends JpaRepository<ReturnType, Long>{
+public interface ReturnTypeRepository extends JpaRepository<ReturnType, Long> {
 
 }

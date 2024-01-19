@@ -13,14 +13,13 @@ import com.continuum.tenant.repos.entity.EditableConfig;
 @RestController
 @RequestMapping("/editable")
 public class EditableConfigController {
-	
+
 	@Autowired
 	EditableConfigService editableConfigService;
 
-	
 	@GetMapping("/search")
 	public List<EditableConfig> getConfigurableEdits() {
-		
+
 		return editableConfigService.findAll();
 
 	}

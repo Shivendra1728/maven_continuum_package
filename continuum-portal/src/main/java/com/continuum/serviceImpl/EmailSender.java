@@ -11,7 +11,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
-import javax.sound.sampled.Port;
 
 import org.apache.velocity.VelocityContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +20,7 @@ import org.springframework.stereotype.Component;
 import com.continuum.constants.PortalConstants;
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
-import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.UserRepository;
-import com.di.commons.dto.CustomerDTO;
-import com.di.commons.dto.ReturnOrderDTO;
-import com.di.commons.helper.P21OrderData;
 
 @Component
 public class EmailSender {
@@ -43,15 +38,15 @@ public class EmailSender {
 
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
-	
+
 	@Autowired
 	MasterTenantRepository masterTenantRepository;
 
 	@Autowired
 	HttpServletRequest httpServletRequest;
 
-	
-	public void sendEmail(String recipient, String template, String subject, HashMap<String, String> map) throws AddressException, MessagingException {
+	public void sendEmail(String recipient, String template, String subject, HashMap<String, String> map)
+			throws AddressException, MessagingException {
 		Properties props = new Properties();
 
 		props.put(PortalConstants.SMTP_HOST, mailHost);
@@ -59,24 +54,23 @@ public class EmailSender {
 		props.put(PortalConstants.SMTP_AUTH, PortalConstants.TRUE);
 		props.put(PortalConstants.SMTP_STARTTLS_ENABLE, PortalConstants.TRUE); // Enable STARTTLS
 
-	
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		mailUsername = masterTenant.getEmailUsername();
-		mailPassword= masterTenant.getEmailPassword();
-		
+		mailPassword = masterTenant.getEmailPassword();
+
 		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
 			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
 				return new javax.mail.PasswordAuthentication(mailUsername, mailPassword);
 			}
 		});
-		
+
 		VelocityContext context = new VelocityContext();
-		for(String key : map.keySet()) {
+		for (String key : map.keySet()) {
 			context.put(key, map.get(key));
 		}
-		
-		String renderedBody = EmailTemplateRenderer.renderer(template ,context);
+
+		String renderedBody = EmailTemplateRenderer.renderer(template, context);
 		Message message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(PortalConstants.EMAIL_FROM));
 		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));

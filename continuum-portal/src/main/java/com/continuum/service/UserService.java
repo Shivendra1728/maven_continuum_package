@@ -11,10 +11,10 @@ public interface UserService {
 
 	List<User> getUserById(Long id);
 
-	String deleteUserById(Long id,String userName);
+	String deleteUserById(Long id, String userName);
 
-	String updateUser(Long id,User user);
-	
+	String updateUser(Long id, User user);
+
 	List<TNC> getTnc();
 
-	}
+}

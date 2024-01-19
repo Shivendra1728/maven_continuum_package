@@ -7,5 +7,5 @@ import com.continuum.tenant.repos.entity.EditableConfig;
 
 @Repository
 public interface EditableConfigRepository extends JpaRepository<EditableConfig, Long> {
-	
+
 }

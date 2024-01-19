@@ -8,5 +8,6 @@ import com.continuum.tenant.repos.entity.RMAReceiptInfo;
 
 public interface RMAReceiptInfoRepository extends JpaRepository<RMAReceiptInfo, Long> {
 	List<RMAReceiptInfo> findByStatus(String status);
+
 	List<RMAReceiptInfo> findByStatusAndRetryCountLessThan(String status, Integer retryCount);
 }

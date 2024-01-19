@@ -10,10 +10,9 @@ import org.springframework.stereotype.Component;
 import com.continuum.tenant.repos.entity.RmaInvoiceInfo;
 import com.di.commons.dto.RmaInvoiceInfoDTO;
 
-
 @Component
 public class RmaInvoiceInfoMapper {
-	
+
 	@Autowired
 	ModelMapper modelMapper;
 

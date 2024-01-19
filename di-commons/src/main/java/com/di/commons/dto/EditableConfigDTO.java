@@ -12,9 +12,8 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @ToString
 
-
 public class EditableConfigDTO {
-	
+
 	private String assignRMA;
 	private String changeStatus;
 	private String restockingFees;

@@ -1,5 +1,7 @@
 package com.continuum.multitenant.security;
 
+import java.util.Map;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -13,8 +15,6 @@ import org.springframework.stereotype.Component;
 import com.continuum.multitenant.mastertenant.service.MasterTenantService;
 import com.di.commons.helper.DBContextHolder;
 
-import java.util.Map;
-
 /**
  * @author RK
  */
@@ -22,25 +22,25 @@ import java.util.Map;
 @Component
 public class RequestAuthorizationIntercept {
 
-    @Autowired
-    ApplicationContext applicationContext;
+	@Autowired
+	ApplicationContext applicationContext;
 
-    @Autowired
-    MasterTenantService masterTenantService;
+	@Autowired
+	MasterTenantService masterTenantService;
 
-    @Around("@annotation(com.continuum.multitenant.security.RequestAuthorization)")
-    public Object checkPermission(ProceedingJoinPoint pjp) throws Throwable {
-        UserTenantInformation tenantInformation = applicationContext.getBean(UserTenantInformation.class);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        if (null == userDetails) {
-            throw new RuntimeException("Access is Denied. Please again login or  contact service provider");
-        }
-        Map<String, String> map = tenantInformation.getMap();
-        String tenantName = map.get(userDetails.getUsername());
-        if (tenantName != null && tenantName.equals(DBContextHolder.getCurrentDb())) {
-            return pjp.proceed();
-        }
-        throw new RuntimeException("Access is Denied. Please again login or contact service provider");
-    }
+	@Around("@annotation(com.continuum.multitenant.security.RequestAuthorization)")
+	public Object checkPermission(ProceedingJoinPoint pjp) throws Throwable {
+		UserTenantInformation tenantInformation = applicationContext.getBean(UserTenantInformation.class);
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+		if (null == userDetails) {
+			throw new RuntimeException("Access is Denied. Please again login or  contact service provider");
+		}
+		Map<String, String> map = tenantInformation.getMap();
+		String tenantName = map.get(userDetails.getUsername());
+		if (tenantName != null && tenantName.equals(DBContextHolder.getCurrentDb())) {
+			return pjp.proceed();
+		}
+		throw new RuntimeException("Access is Denied. Please again login or contact service provider");
+	}
 }

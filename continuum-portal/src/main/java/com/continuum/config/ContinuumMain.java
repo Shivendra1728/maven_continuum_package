@@ -2,7 +2,6 @@ package com.continuum.config;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
 public class ContinuumMain {
@@ -12,4 +11,3 @@ public class ContinuumMain {
 		SpringApplication.run(ContinuumMain.class, args);
 	}
 }
-	

@@ -14,16 +14,16 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReturnRoomDTO extends BaseEntity{
+public class ReturnRoomDTO extends BaseEntity {
 
 	private Long id;
 
 	private String name;
 
 	private String message;
-	
+
 	private String status;
-	
+
 	private Date followUpDate;
 
 	private User assignTo;

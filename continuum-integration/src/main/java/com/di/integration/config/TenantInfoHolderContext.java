@@ -1,7 +1,6 @@
 package com.di.integration.config;
 
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
 import lombok.Getter;

@@ -10,8 +10,7 @@ import com.continuum.tenant.repos.entity.ReturnOrderItem;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<QuestionMap, Long> {
-	
-  List<QuestionMap>	findQuestionMapByReturnOrderItem(ReturnOrderItem returnOrderItem);
-  
+
+	List<QuestionMap> findQuestionMapByReturnOrderItem(ReturnOrderItem returnOrderItem);
 
 }

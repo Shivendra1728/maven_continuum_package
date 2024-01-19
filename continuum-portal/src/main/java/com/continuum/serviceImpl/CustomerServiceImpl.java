@@ -9,7 +9,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,14 +30,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import com.continuum.constants.PortalConstants;
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.service.CustomerService;
-import com.continuum.service.ReturnOrderService;
 import com.continuum.tenant.repos.entity.Customer;
 import com.continuum.tenant.repos.entity.Role;
 import com.continuum.tenant.repos.entity.User;

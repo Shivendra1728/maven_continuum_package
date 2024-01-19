@@ -1,8 +1,6 @@
 package com.continuum.tenant.repos.entity;
 
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,7 +29,5 @@ public class OrderAddress extends BaseEntity {
 	private String lastName;
 	private String emailAddress;
 	private String returnLocNote;
-
-	
 
 }

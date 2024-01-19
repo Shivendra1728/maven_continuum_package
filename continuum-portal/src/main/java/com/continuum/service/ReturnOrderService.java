@@ -1,25 +1,29 @@
 package com.continuum.service;
-import java.util.List;
-import javax.mail.MessagingException;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 
-import com.continuum.tenant.repos.entity.ReturnOrder;
-import com.di.commons.dto.OrderDTO;
+import java.util.List;
+
+import javax.mail.MessagingException;
+
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.integration.p21.transaction.P21RMAResponse;
 
 public interface ReturnOrderService {
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception;
+
 	public List<ReturnOrderDTO> getReturnOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters);
-	//@Async
-	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO,P21RMAResponse p21RMARespo) throws MessagingException ;
+
+	// @Async
+	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO, P21RMAResponse p21RMARespo)
+			throws MessagingException;
+
 	public List<ReturnOrderDTO> getAllReturnOrder(Long userId);
 
 	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(String rmaOrderNo);
-	
-	public String updateReturnOrder(String rmaNo,String updateBy,String status);
+
+	public String updateReturnOrder(String rmaNo, String updateBy, String status);
+
 	public String getSearchRmaInvoiceinfo() throws Exception;
-	public String assignRMA(String rmaNo,Long assignToId,String updateBy,Long returnTypeId,ReturnOrderDTO note);
+
+	public String assignRMA(String rmaNo, Long assignToId, String updateBy, Long returnTypeId, ReturnOrderDTO note);
 }

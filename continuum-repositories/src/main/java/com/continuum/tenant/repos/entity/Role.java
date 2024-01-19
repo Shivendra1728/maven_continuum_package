@@ -1,9 +1,7 @@
 package com.continuum.tenant.repos.entity;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -39,7 +37,7 @@ public class Role {
 
 	@Column(name = "role", nullable = false)
 	private String role;
-	
+
 	private String page;
 
 	public Role(Long id, String role) {
@@ -50,7 +48,6 @@ public class Role {
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinTable(name = "permissions_roles", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
 	private List<Permission> permissions = new ArrayList<>();
-
 
 	@Override
 	public boolean equals(Object o) {

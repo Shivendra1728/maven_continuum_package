@@ -25,8 +25,8 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class ReturnRoom extends BaseEntity{
-	
+public class ReturnRoom extends BaseEntity {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
 	@GenericGenerator(name = "native", strategy = "native")
@@ -36,17 +36,16 @@ public class ReturnRoom extends BaseEntity{
 	private String name;
 
 	private String message;
-	
+
 	private String status;
-	
+
 	private Date followUpDate;
 
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
 	private User assignTo;
-	
-	
+
 	@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "return_order_item_id")
-    private ReturnOrderItem returnOrderItem;
+	@JoinColumn(name = "return_order_item_id")
+	private ReturnOrderItem returnOrderItem;
 }

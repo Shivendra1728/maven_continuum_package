@@ -1,9 +1,5 @@
 package com.di.integration.p21.serviceImpl;
 
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,23 +27,17 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
-import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderRepository;
 import com.di.integration.p21.service.P21RmaReceiptService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 @Service
 public class RmaReceiptServiceImpl implements P21RmaReceiptService {

@@ -3,23 +3,16 @@ package com.continuum.config;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration.AccessLevel;
 import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import com.continuum.multitenant.mastertenant.config.MasterDatabaseConfig;
-import com.continuum.multitenant.tenant.config.DataSourceBasedMultiTenantConnectionProviderImpl;
-import com.continuum.multitenant.tenant.config.TenantDatabaseConfig;
 import com.continuum.serviceImpl.IntegrationConstantsProvider;
-import com.di.integration.config.TenantInfoHolderContext;
 import com.di.integration.p21.service.TenantInfoProviderService;
 
 @Configuration

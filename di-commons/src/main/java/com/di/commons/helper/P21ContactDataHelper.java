@@ -11,5 +11,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class P21ContactDataHelper {
 
-private List<P21ContactData> value;
+	private List<P21ContactData> value;
 }

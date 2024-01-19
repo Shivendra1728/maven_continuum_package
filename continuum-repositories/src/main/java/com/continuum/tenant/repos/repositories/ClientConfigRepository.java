@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import com.continuum.tenant.repos.entity.ClientConfig;
 
 @Repository
-public interface ClientConfigRepository extends JpaRepository<ClientConfig, Long>, JpaSpecificationExecutor<ClientConfig>{
-
+public interface ClientConfigRepository
+		extends JpaRepository<ClientConfig, Long>, JpaSpecificationExecutor<ClientConfig> {
 
 	ClientConfig findByErpCompanyId(String companyId);
 
