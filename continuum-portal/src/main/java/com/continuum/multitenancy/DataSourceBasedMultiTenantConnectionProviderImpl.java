@@ -1,4 +1,4 @@
-package com.continuum.multitenant.tenant.config;
+package com.continuum.multitenancy;
 
 import java.util.List;
 import java.util.Map;

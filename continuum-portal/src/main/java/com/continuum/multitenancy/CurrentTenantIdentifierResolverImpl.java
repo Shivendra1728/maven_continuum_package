@@ -1,4 +1,4 @@
-package com.continuum.multitenant.tenant.config;
+package com.continuum.multitenancy;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;

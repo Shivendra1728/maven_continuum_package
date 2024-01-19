@@ -1,4 +1,4 @@
-package com.continuum.multitenant.mastertenant.config;
+package com.continuum.multitenancy;
 
 import java.util.Properties;
 
@@ -21,6 +21,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.continuum.multitenant.mastertenant.config.MasterDatabaseConfigProperties;
+import com.continuum.multitenant.mastertenant.config.PhysicalNamingStrategyImpl;
 import com.zaxxer.hikari.HikariDataSource;
 
 /**
