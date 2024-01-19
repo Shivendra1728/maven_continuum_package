@@ -2,7 +2,6 @@ package com.continuum.tenant.repos.entity;
 
 import java.util.Date;
 
-import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -11,8 +10,6 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,11 +24,11 @@ public abstract class BaseEntity {
 	private Long id;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	//@JsonIgnore
+	// @JsonIgnore
 	private Date createdDate;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	//@JsonIgnore
+	// @JsonIgnore
 	private Date updatedDate;
 
 	@PrePersist

@@ -1,11 +1,8 @@
 package com.di.commons.dto;
 
 import java.math.BigDecimal;
-import java.util.List;
-import org.springframework.stereotype.Component;
 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
-import com.continuum.tenant.repos.entity.StoreAddress;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,10 +39,9 @@ public class ClientConfigDTO {
 	private String emailFrom;
 	private String emailTO;
 	private String rmaQualifier;
-	
+
 	private boolean questionsRequired;
 
 	private MasterTenant masterTenant;
-	
-	 
+
 }

@@ -5,13 +5,11 @@ import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;
 import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -23,8 +21,6 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.continuum.multitenant.mastertenant.entity.MasterTenant;
-import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.zaxxer.hikari.HikariDataSource;
 
 /**
@@ -32,82 +28,82 @@ import com.zaxxer.hikari.HikariDataSource;
  */
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = {"com.continuum.multitenant.mastertenant.entity", "com.continuum.multitenant.mastertenant.repository","com.continuum.tenant.repos.repositories"},
-        entityManagerFactoryRef = "masterEntityManagerFactory",
-        transactionManagerRef = "masterTransactionManager")
+@EnableJpaRepositories(basePackages = { "com.continuum.multitenant.mastertenant.entity",
+		"com.continuum.multitenant.mastertenant.repository",
+		"com.continuum.tenant.repos.repositories" }, entityManagerFactoryRef = "masterEntityManagerFactory", transactionManagerRef = "masterTransactionManager")
 public class MasterDatabaseConfig {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MasterDatabaseConfig.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MasterDatabaseConfig.class);
 
-    @Autowired
-    private MasterDatabaseConfigProperties masterDbProperties;
-    
-    @Autowired
-    public MasterDatabaseConfig(MasterDatabaseConfigProperties masterDbProperties) {
-        this.masterDbProperties = masterDbProperties;
-    }
-   
-    
+	@Autowired
+	private MasterDatabaseConfigProperties masterDbProperties;
 
-    @Bean(name = "masterDataSource")
-    public DataSource masterDataSource() {
-        HikariDataSource hikariDataSource = new HikariDataSource();
-        hikariDataSource.setUsername(masterDbProperties.getUsername());
-        hikariDataSource.setPassword(masterDbProperties.getPassword());
-        hikariDataSource.setJdbcUrl(masterDbProperties.getUrl());
-        hikariDataSource.setDriverClassName(masterDbProperties.getDriverClassName());
-        hikariDataSource.setPoolName(masterDbProperties.getPoolName());
-        // HikariCP settings
-        hikariDataSource.setMaximumPoolSize(masterDbProperties.getMaxPoolSize());
-        hikariDataSource.setMinimumIdle(masterDbProperties.getMinIdle());
-        hikariDataSource.setConnectionTimeout(masterDbProperties.getConnectionTimeout());
-        hikariDataSource.setIdleTimeout(masterDbProperties.getIdleTimeout());
-        LOG.info("Setup of masterDataSource succeeded.");
-        return hikariDataSource;
-    }
+	@Autowired
+	public MasterDatabaseConfig(MasterDatabaseConfigProperties masterDbProperties) {
+		this.masterDbProperties = masterDbProperties;
+	}
 
-    @Primary
-    @Bean(name = "masterEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean masterEntityManagerFactory() {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        // Set the master data source
-        em.setDataSource(masterDataSource());
-        // The master tenant entity and repository need to be scanned
-        em.setPackagesToScan("com.continuum");
-        // Setting a name for the persistence unit as Spring sets it as
-        // 'default' if not defined
-        em.setPersistenceUnitName("masterdb-persistence-unit");
-        // Setting Hibernate as the JPA provider
+	@Bean(name = "masterDataSource")
+	public DataSource masterDataSource() {
+		HikariDataSource hikariDataSource = new HikariDataSource();
+		hikariDataSource.setUsername(masterDbProperties.getUsername());
+		hikariDataSource.setPassword(masterDbProperties.getPassword());
+		hikariDataSource.setJdbcUrl(masterDbProperties.getUrl());
+		hikariDataSource.setDriverClassName(masterDbProperties.getDriverClassName());
+		hikariDataSource.setPoolName(masterDbProperties.getPoolName());
+		// HikariCP settings
+		hikariDataSource.setMaximumPoolSize(masterDbProperties.getMaxPoolSize());
+		hikariDataSource.setMinimumIdle(masterDbProperties.getMinIdle());
+		hikariDataSource.setConnectionTimeout(masterDbProperties.getConnectionTimeout());
+		hikariDataSource.setIdleTimeout(masterDbProperties.getIdleTimeout());
+		LOG.info("Setup of masterDataSource succeeded.");
+		return hikariDataSource;
+	}
 
-        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
-        // Set the hibernate properties
-        em.setJpaProperties(hibernateProperties());
-        LOG.info("Setup of masterEntityManagerFactory succeeded.");
-        return em;
-    }
+	@Primary
+	@Bean(name = "masterEntityManagerFactory")
+	public LocalContainerEntityManagerFactoryBean masterEntityManagerFactory() {
+		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+		// Set the master data source
+		em.setDataSource(masterDataSource());
+		// The master tenant entity and repository need to be scanned
+		em.setPackagesToScan("com.continuum");
+		// Setting a name for the persistence unit as Spring sets it as
+		// 'default' if not defined
+		em.setPersistenceUnitName("masterdb-persistence-unit");
+		// Setting Hibernate as the JPA provider
 
-    @Bean(name = "masterTransactionManager")
-    public JpaTransactionManager masterTransactionManager(@Qualifier("masterEntityManagerFactory") EntityManagerFactory emf) {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(emf);
-        return transactionManager;
-    }
+		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+		em.setJpaVendorAdapter(vendorAdapter);
+		// Set the hibernate properties
+		em.setJpaProperties(hibernateProperties());
+		LOG.info("Setup of masterEntityManagerFactory succeeded.");
+		return em;
+	}
 
-    @Bean
-    public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
-        return new PersistenceExceptionTranslationPostProcessor();
-    }
+	@Bean(name = "masterTransactionManager")
+	public JpaTransactionManager masterTransactionManager(
+			@Qualifier("masterEntityManagerFactory") EntityManagerFactory emf) {
+		JpaTransactionManager transactionManager = new JpaTransactionManager();
+		transactionManager.setEntityManagerFactory(emf);
+		return transactionManager;
+	}
 
-    //Hibernate configuration properties
-    private Properties hibernateProperties() {
-        Properties properties = new Properties();
-        properties.put(org.hibernate.cfg.Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
-        properties.put(org.hibernate.cfg.Environment.SHOW_SQL, true);
-        properties.put(org.hibernate.cfg.Environment.FORMAT_SQL, true);
-        properties.put(org.hibernate.cfg.Environment.HBM2DDL_AUTO, "none");
-       // properties.put(Environment.IMPLICIT_NAMING_STRATEGY, SpringImplicitNamingStrategy.class.getName());
-        properties.put(Environment.PHYSICAL_NAMING_STRATEGY, PhysicalNamingStrategyImpl.class.getName());
-        return properties;
-    }
+	@Bean
+	public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
+		return new PersistenceExceptionTranslationPostProcessor();
+	}
+
+	// Hibernate configuration properties
+	private Properties hibernateProperties() {
+		Properties properties = new Properties();
+		properties.put(org.hibernate.cfg.Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
+		properties.put(org.hibernate.cfg.Environment.SHOW_SQL, true);
+		properties.put(org.hibernate.cfg.Environment.FORMAT_SQL, true);
+		properties.put(org.hibernate.cfg.Environment.HBM2DDL_AUTO, "none");
+		// properties.put(Environment.IMPLICIT_NAMING_STRATEGY,
+		// SpringImplicitNamingStrategy.class.getName());
+		properties.put(Environment.PHYSICAL_NAMING_STRATEGY, PhysicalNamingStrategyImpl.class.getName());
+		return properties;
+	}
 }

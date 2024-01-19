@@ -32,5 +32,4 @@ public class OrderAddressDTO {
 	private String emailAddress;
 	private String returnLocNote;
 
-	
 }

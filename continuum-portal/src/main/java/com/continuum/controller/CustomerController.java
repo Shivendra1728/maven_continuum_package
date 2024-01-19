@@ -2,12 +2,10 @@ package com.continuum.controller;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,16 +28,16 @@ public class CustomerController {
 
 	@Autowired
 	CustomerService customerService;
-	
+
 	@Autowired
 	CustomerRepository repo;
-	
+
 	@Autowired
 	UserRepository userRepository;
 
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;
-	
+
 	@Autowired
 	public CustomerController(CustomerService customerService, JwtTokenUtil jwtTokenUtil) {
 
@@ -49,22 +47,19 @@ public class CustomerController {
 
 	}
 
-	
-
 	public CustomerDTO createCustomer(@RequestBody CustomerDTO customerDTO) throws Exception {
 
 		return customerService.createCustomer(customerDTO);
 
 	}
-	
-	@PostMapping("/signupCust")
-	public  Map<String, Object> createCustomerInDB(@RequestBody CustomerDTO customerDTO, HttpServletRequest request)  {
 
-		return customerService.createCustomerInDB(customerDTO,request);
+	@PostMapping("/signupCust")
+	public Map<String, Object> createCustomerInDB(@RequestBody CustomerDTO customerDTO, HttpServletRequest request) {
+
+		return customerService.createCustomerInDB(customerDTO, request);
 
 	}
 
-	
 	@GetMapping("/activateAccount")
 	public String activateAccount(@RequestParam String uuid) {
 		User user = userRepository.findByActivationUuid(uuid);
@@ -86,9 +81,7 @@ public class CustomerController {
 		} else {
 			return "Invalid User";
 		}
-		
 
 	}
-	
 
 }

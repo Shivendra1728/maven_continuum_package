@@ -8,7 +8,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.continuum.service.StoreService;
-import com.continuum.tenant.repos.entity.Orders;
 import com.continuum.tenant.repos.entity.Store;
 import com.continuum.tenant.repos.repositories.StoreRepository;
 import com.di.commons.dto.StoreDTO;

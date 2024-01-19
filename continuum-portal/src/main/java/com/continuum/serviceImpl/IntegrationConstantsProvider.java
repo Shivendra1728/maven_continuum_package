@@ -1,6 +1,5 @@
 package com.continuum.serviceImpl;
 
-import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.TenantInfoProviderService;
 
 public class IntegrationConstantsProvider implements TenantInfoProviderService {

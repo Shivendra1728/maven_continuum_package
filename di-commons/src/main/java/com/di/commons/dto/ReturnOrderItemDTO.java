@@ -5,14 +5,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import com.continuum.tenant.repos.entity.BaseEntity;
 import com.continuum.tenant.repos.entity.QuestionMap;
-import com.continuum.tenant.repos.entity.ReturnType;
 import com.continuum.tenant.repos.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -20,7 +18,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.Accessors;
 
 @Getter
 @Setter
@@ -29,14 +26,14 @@ import lombok.experimental.Accessors;
 //@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 
-public class ReturnOrderItemDTO extends BaseEntity{
+public class ReturnOrderItemDTO extends BaseEntity {
 
 	private Long id;
 	private OrderAddressDTO shipTo;
 	private OrderAddressDTO billTo;
 	private List<OrderItemDocumentsDTO> orderItemDocuments;
-    private List<ReturnRoomDTO> returnRooms;
-    
+	private List<ReturnRoomDTO> returnRooms;
+
 	private String reasonCode;
 	private String returnComments;
 	private int quanity;
@@ -60,18 +57,17 @@ public class ReturnOrderItemDTO extends BaseEntity{
 	private BigDecimal Amount;
 	private String amountNote;
 
-
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
 	private User user;
 
 	private Date followUpDate;
 	private String itemDesc;
-	
+
 	@OneToMany
 	@JoinColumn(name = "returnOrderItemId")
 	Set<QuestionMap> questionMap;
-	
+
 	private Long reasonCodeId;
 	private String problemDescNote;
 	private String vendorMessage;

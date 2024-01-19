@@ -6,7 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import org.springframework.boot.context.config.ConfigData;
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
@@ -60,7 +59,5 @@ public class ClientConfig extends BaseEntity {
 	public ClientConfig() {
 		// No-argument constructor
 	}
-	
 
-	
 }

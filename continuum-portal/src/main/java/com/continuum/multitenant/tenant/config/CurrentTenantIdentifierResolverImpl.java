@@ -10,16 +10,16 @@ import com.di.commons.helper.DBContextHolder;
  */
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver {
 
-    private static final String DEFAULT_TENANT_ID = "continuum";
+	private static final String DEFAULT_TENANT_ID = "continuum";
 
-    @Override
-    public String resolveCurrentTenantIdentifier() {
-        String tenant = DBContextHolder.getCurrentDb();
-        return StringUtils.isNotBlank(tenant) ? tenant : DEFAULT_TENANT_ID;
-    }
+	@Override
+	public String resolveCurrentTenantIdentifier() {
+		String tenant = DBContextHolder.getCurrentDb();
+		return StringUtils.isNotBlank(tenant) ? tenant : DEFAULT_TENANT_ID;
+	}
 
-    @Override
-    public boolean validateExistingCurrentSessions() {
-        return true;
-    }
+	@Override
+	public boolean validateExistingCurrentSessions() {
+		return true;
+	}
 }

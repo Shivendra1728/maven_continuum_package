@@ -12,14 +12,18 @@ import com.continuum.tenant.repos.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
 	User findByUuid(String uuid);
-	 User findByUserName(String userName);
 
-		User findByEmail(String email);
+	User findByUserName(String userName);
 
-		boolean existsByEmail(String email);
+	User findByEmail(String email);
 
-		Optional<User> findById(Long id);
-		List<User> findByStatus(Boolean i);
-		Optional<User> findByCustomerId(Long id);
-		User findByActivationUuid(String uuid);
+	boolean existsByEmail(String email);
+
+	Optional<User> findById(Long id);
+
+	List<User> findByStatus(Boolean i);
+
+	Optional<User> findByCustomerId(Long id);
+
+	User findByActivationUuid(String uuid);
 }

@@ -22,7 +22,7 @@ public class StatusRelation extends BaseEntity {
 	@JsonIgnore
 	@JoinColumn(name = "status_config_id")
 	private StatusConfig statusConfig;
-	
+
 	private Long StatusId;
 
 	private Boolean editable;

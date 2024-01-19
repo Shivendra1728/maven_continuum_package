@@ -18,8 +18,8 @@ import lombok.Setter;
 class StoreLocale extends BaseEntity {
 
 	private String locale;
-	
+
 	@OneToOne(mappedBy = "storeLocale")
 	private Store store;
-	
+
 }

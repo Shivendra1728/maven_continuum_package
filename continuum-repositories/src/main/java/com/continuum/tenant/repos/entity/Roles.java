@@ -9,8 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 
-import com.continuum.tenant.repos.entity.Permission;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,8 +26,7 @@ public class Roles extends BaseEntity {
 	public static final long USER = 1;
 	public static final long ADMINISTRATOR = 2;
 
-	//private String role;
-	
+	// private String role;
 
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "permissions_roles", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))

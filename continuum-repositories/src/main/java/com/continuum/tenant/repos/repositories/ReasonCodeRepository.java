@@ -12,19 +12,15 @@ import com.continuum.tenant.repos.entity.ReasonCode;
 import com.continuum.tenant.repos.entity.Store;
 
 @Repository
-public interface ReasonCodeRepository extends JpaRepository<ReasonCode,Long >,JpaSpecificationExecutor<ReasonCode>{
+public interface ReasonCodeRepository extends JpaRepository<ReasonCode, Long>, JpaSpecificationExecutor<ReasonCode> {
 
-	
-	
-	  @Query("SELECT rc FROM ReasonCode rc " +
-	  "left JOIN FETCH rc.parentReasonCode prc  where rc.parentReasonCode is null and rc.store=:storeId"
-	  ) List<ReasonCode> findNestedReasonCodesByStoreId(@Param("storeId") Store
-	  storeId);
-	 
-	
-	    @Query("SELECT rc FROM ReasonCode rc " +
-	           "left JOIN FETCH rc.parentReasonCode prc  where rc.parentReasonCode is null and rc.store=1" )
-	 List<ReasonCode> findAll();
+	@Query("SELECT rc FROM ReasonCode rc "
+			+ "left JOIN FETCH rc.parentReasonCode prc  where rc.parentReasonCode is null and rc.store=:storeId")
+	List<ReasonCode> findNestedReasonCodesByStoreId(@Param("storeId") Store storeId);
 
-		List<ReasonCode>  findByStore(Store store);
-	}
+	@Query("SELECT rc FROM ReasonCode rc "
+			+ "left JOIN FETCH rc.parentReasonCode prc  where rc.parentReasonCode is null and rc.store=1")
+	List<ReasonCode> findAll();
+
+	List<ReasonCode> findByStore(Store store);
+}

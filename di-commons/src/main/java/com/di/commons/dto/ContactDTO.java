@@ -2,8 +2,6 @@ package com.di.commons.dto;
 
 import javax.persistence.Entity;
 
-import com.continuum.tenant.repos.entity.Contact;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +27,6 @@ public class ContactDTO {
 	private String website;
 	private String linkedin;
 	private String facebook;
-	
+
 	private String custId;
 }

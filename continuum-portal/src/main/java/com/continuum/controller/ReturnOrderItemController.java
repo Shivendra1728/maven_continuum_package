@@ -47,10 +47,10 @@ public class ReturnOrderItemController {
 
 	@Autowired
 	P21SKUServiceImpl p21SKUServiceImpl;
-	
+
 	@Autowired
 	P21SKUService p21skuService;
-	
+
 	@Autowired
 	P21UpdateRMAService p21UpdateRMAService;
 
@@ -97,43 +97,45 @@ public class ReturnOrderItemController {
 	public Map<String, Object> deleteItem(@RequestBody ReturnOrderItem returnOrderItem, @RequestParam String updateBy,
 			@RequestParam String rmaNo) throws Exception {
 
-	    Map<String, Object> jsonResponse = new HashMap<>();
+		Map<String, Object> jsonResponse = new HashMap<>();
 		String response = p21SKUServiceImpl.deleteSKU(returnOrderItem.getItemName(), rmaNo, null);
 		logger.info("This is response from ERP Deletion method :: " + response);
 		if ("Line Item Deleted".equals(response)) {
 			return returnOrderItemService.deleteItem(returnOrderItem, updateBy, rmaNo);
-			
+
 		} else {
 			jsonResponse.put("status", "error");
-	        jsonResponse.put("message", "ERP deletion not allowed for this line item.");	
-	        return jsonResponse;
+			jsonResponse.put("message", "ERP deletion not allowed for this line item.");
+			return jsonResponse;
 		}
 
 	}
-	
-	
-	@PostMapping("/add")
-	public Map<String, Object> addItem(@RequestBody List<ReturnOrderItemDTO> returnOrderItemDTOList , @RequestParam String updateBy , @RequestParam String rmaNo) throws Exception{
-		String response = p21skuService.addSKU(rmaNo, returnOrderItemDTOList, null);
-	    Map<String, Object> jsonResponse = new HashMap<>();
 
-		if(response.equalsIgnoreCase("Line Item Added")) {
-		return returnOrderItemService.addItem(returnOrderItemDTOList,updateBy,rmaNo);
-		}else {
+	@PostMapping("/add")
+	public Map<String, Object> addItem(@RequestBody List<ReturnOrderItemDTO> returnOrderItemDTOList,
+			@RequestParam String updateBy, @RequestParam String rmaNo) throws Exception {
+		String response = p21skuService.addSKU(rmaNo, returnOrderItemDTOList, null);
+		Map<String, Object> jsonResponse = new HashMap<>();
+
+		if (response.equalsIgnoreCase("Line Item Added")) {
+			return returnOrderItemService.addItem(returnOrderItemDTOList, updateBy, rmaNo);
+		} else {
 			jsonResponse.put("status", "error");
-	        jsonResponse.put("message", "ERP addition not allowed for this line item.");	
-	        return jsonResponse;		}
-		
+			jsonResponse.put("message", "ERP addition not allowed for this line item.");
+			return jsonResponse;
+		}
+
 	}
-	
+
 	@GetMapping("/getLocation")
 	public List<ReturnLocation> getLocation(@RequestParam String itemId) throws Exception {
 		return p21UpdateRMAService.getReturnLocations(itemId);
 	}
-	
+
 	@PostMapping("/updateLocation")
-	public ResponseEntity<String> updateLocation(@RequestParam String rmaNo, @RequestParam String itemId, String locationId) throws Exception {
+	public ResponseEntity<String> updateLocation(@RequestParam String rmaNo, @RequestParam String itemId,
+			String locationId) throws Exception {
 		return p21UpdateRMAService.updateItemReturnLocation(rmaNo, itemId, locationId);
 	}
-	
+
 }

@@ -1,13 +1,6 @@
 package com.continuum.tenant.repos.entity;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +16,6 @@ import lombok.Setter;
 @Setter
 public class StoreAddress extends BaseEntity {
 
-	
 	private String phoneNumber;
 	private String fax;
 	private String street1;
@@ -34,5 +26,5 @@ public class StoreAddress extends BaseEntity {
 	private String zipcode;
 	private String email;
 	private String addressType;
-	
+
 }

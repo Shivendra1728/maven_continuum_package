@@ -30,7 +30,4 @@ public class EditableConfig extends BaseEntity {
 	private boolean isSerialized;
 	private boolean isSellable;
 
-
-	
-
 }

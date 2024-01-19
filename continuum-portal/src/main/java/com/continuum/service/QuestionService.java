@@ -4,13 +4,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.QuestionMap;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 
 @Service
-public interface QuestionService{
-	
+public interface QuestionService {
+
 	List<QuestionMap> getQuestions(ReturnOrderItem returnOrderItem);
 
 }

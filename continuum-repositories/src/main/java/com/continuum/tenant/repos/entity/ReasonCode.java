@@ -8,9 +8,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -52,10 +50,10 @@ public class ReasonCode extends BaseEntity {
 	@JoinColumn(name = "store")
 	// @JsonIgnore
 	private Store store;
-	
+
 	@Builder.Default
-	private boolean img_mandatory=true;
-	
+	private boolean img_mandatory = true;
+
 	/*
 	 * @ManyToOne(fetch = FetchType.LAZY)
 	 * 
@@ -66,7 +64,7 @@ public class ReasonCode extends BaseEntity {
 	private String popUpDetails;
 	private boolean noteMandatory;
 	private String problemNoteHeader;
-	
+
 	@JsonIgnore
 	@ManyToOne(fetch = FetchType.EAGER)
 	private ReturnType returnType;

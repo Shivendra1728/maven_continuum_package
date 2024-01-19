@@ -1,7 +1,5 @@
 package com.di.commons.exceptions;
 
-import java.util.Date;
-
 import javax.persistence.EntityNotFoundException;
 
 import org.hibernate.exception.ConstraintViolationException;

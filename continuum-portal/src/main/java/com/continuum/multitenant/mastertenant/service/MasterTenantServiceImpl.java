@@ -14,32 +14,29 @@ import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
  * @author RK
  */
 @Service
-public class MasterTenantServiceImpl implements MasterTenantService{
+public class MasterTenantServiceImpl implements MasterTenantService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MasterTenantServiceImpl.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MasterTenantServiceImpl.class);
 
-    @Autowired
-    MasterTenantRepository masterTenantRepository;
+	@Autowired
+	MasterTenantRepository masterTenantRepository;
 
-
-    @Override
-    public MasterTenant findByClientId(Integer clientId) {
-        LOG.info("findByClientId() method call...");
-        return masterTenantRepository.findByTenantClientId(clientId);
-    }
-
+	@Override
+	public MasterTenant findByClientId(Integer clientId) {
+		LOG.info("findByClientId() method call...");
+		return masterTenantRepository.findByTenantClientId(clientId);
+	}
 
 	@Override
 	public MasterTenant findByDbName(String tenentId) {
-		 LOG.info("findByDbName() method call...");
-	        return masterTenantRepository.findByDbName(tenentId);
-	    }
-
+		LOG.info("findByDbName() method call...");
+		return masterTenantRepository.findByDbName(tenentId);
+	}
 
 	@Override
 	public List<MasterTenant> getAllTenants() {
 		// TODO Auto-generated method stub
-		  return masterTenantRepository.findAll();
+		return masterTenantRepository.findAll();
 	}
-	
+
 }

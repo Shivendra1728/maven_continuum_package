@@ -10,7 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RmaInvoiceInfoDTO {
-	
+
 	private String rmaOrderNo;
 	private boolean isInvoiceLinked;
 	private boolean isDocumentLinked;

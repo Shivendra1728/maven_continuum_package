@@ -27,8 +27,7 @@ public class ReturnType {
 	@GenericGenerator(name = "native", strategy = "native")
 	@Column(name = "id")
 	private Long id;
-	
+
 	private String type;
 	private Boolean isDisplayed;
 }
-

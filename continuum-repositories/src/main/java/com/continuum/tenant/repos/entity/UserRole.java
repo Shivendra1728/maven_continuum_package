@@ -3,12 +3,7 @@ package com.continuum.tenant.repos.entity;
 import java.util.List;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +17,7 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class UserRole  extends BaseEntity{
+public class UserRole extends BaseEntity {
 
 //	@OneToMany
 //	@JsonIgnore
@@ -30,8 +25,7 @@ public class UserRole  extends BaseEntity{
 //	
 	@OneToMany
 	private List<Role> roles;
-	
+
 	private String userRoles;
-	
 
 }
