@@ -40,10 +40,6 @@ import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.AuthResponse;
 import com.di.commons.dto.UserLoginDTO;
 import com.di.commons.helper.DBContextHolder;
-import com.di.integration.config.TenantInfoHolder;
-import com.di.integration.config.TenantInfoHolderContext;
-import com.di.integration.p21.service.TenantInfoProviderService;
-import com.di.integration.p21.service.TenantInfoService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -77,11 +73,6 @@ public class AuthenticationController implements Serializable {
 	@Autowired
 	ReturnOrderServiceImpl returnOrderServiceImpl;
 
-	@Autowired
-	private TenantInfoProviderService tenantInfoProvider;
-
-	@Autowired
-	private TenantInfoService tenantInfoService;
 
 //    @Autowired
 //    private TenantInfoHolderContext tenantInfoHolderContext;
@@ -116,16 +107,16 @@ public class AuthenticationController implements Serializable {
 //		httpSession.setAttribute("domainUsername", masterTenant.getDomainUsername());
 //		httpSession.setAttribute("domainPassword", masterTenant.getDomainPassword());	
 
-		TenantInfoHolder tenantInfoHolder = new TenantInfoHolder();
-		tenantInfoHolder.setDomain(masterTenant.getSubdomain());
-		tenantInfoHolder.setDomainUsername(masterTenant.getDomainUsername());
-		tenantInfoHolder.setDomainPassword(masterTenant.getDomainPassword());
-
-		// Set in ThreadLocal
-		TenantInfoHolderContext.setCurrentTenantInfo(tenantInfoHolder);
-
-		log.info("Subdomain : - " + TenantInfoHolderContext.getCurrentTenantInfo().getDomain());
-		// TenantInfoHolderContext.setCurrentTenantInfo(tenantInfoHolder);
+//		TenantInfoHolder tenantInfoHolder = new TenantInfoHolder();
+//		tenantInfoHolder.setDomain(masterTenant.getSubdomain());
+//		tenantInfoHolder.setDomainUsername(masterTenant.getDomainUsername());
+//		tenantInfoHolder.setDomainPassword(masterTenant.getDomainPassword());
+//
+//		// Set in ThreadLocal
+//		TenantInfoHolderContext.setCurrentTenantInfo(tenantInfoHolder);
+//
+//		log.info("Subdomain : - " + TenantInfoHolderContext.getCurrentTenantInfo().getDomain());
+//		// TenantInfoHolderContext.setCurrentTenantInfo(tenantInfoHolder);
 
 //		log.info(tenantInfoHolder.getDomainUsername());
 //

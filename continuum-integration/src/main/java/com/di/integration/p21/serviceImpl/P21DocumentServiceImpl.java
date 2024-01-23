@@ -42,7 +42,7 @@ import com.di.integration.p21.service.P21DocumentService;
 
 @Service
 public class P21DocumentServiceImpl implements P21DocumentService {
-	private static final Logger logger = LoggerFactory.getLogger(P21OrderLineServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(P21DocumentServiceImpl.class);
 
 	@Autowired
 	RestTemplate restTemplate;

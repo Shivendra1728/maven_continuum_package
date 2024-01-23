@@ -34,7 +34,6 @@ import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.dto.StoreDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21OrderLineItemMapper;
-import com.di.integration.config.TenantInfoHolderContext;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21OrderLineService;
 import com.fasterxml.jackson.core.JsonProcessingException;

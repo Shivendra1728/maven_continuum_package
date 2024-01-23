@@ -65,7 +65,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 @Service
 public class P21SKUServiceImpl implements P21SKUService {
-	private static final Logger logger = LoggerFactory.getLogger(P21OrderLineServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(P21SKUServiceImpl.class);
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Autowired
@@ -85,9 +85,6 @@ public class P21SKUServiceImpl implements P21SKUService {
 
 	@Autowired
 	P21ReturnOrderMarshller p21ReturnOrderMarshller;
-
-	@Autowired
-	P21OrderLineServiceImpl p21orderLineServiceImpl;
 
 	@Value(IntegrationConstants.ERP_RMA_CREATE_API)
 	String RMA_CREATE_API;

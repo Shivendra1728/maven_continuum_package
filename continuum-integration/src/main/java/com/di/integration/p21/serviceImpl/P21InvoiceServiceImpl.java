@@ -58,7 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class P21InvoiceServiceImpl implements P21InvoiceService {
-	private static final Logger logger = LoggerFactory.getLogger(P21OrderLineServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(P21InvoiceServiceImpl.class);
 
 	@Autowired
 	RestTemplate restTemplate;
@@ -86,9 +86,6 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
-
-	@Autowired
-	P21OrderLineServiceImpl p21OrderLineServiceImpl;
 
 	@Autowired
 	P21OrderLineItemMapper p21orderLineItemMapper;

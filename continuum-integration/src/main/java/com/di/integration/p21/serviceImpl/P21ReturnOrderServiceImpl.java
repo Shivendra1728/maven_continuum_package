@@ -89,9 +89,6 @@ public class P21ReturnOrderServiceImpl implements P21ReturnOrderService {
 	@Autowired
 	P21ReturnOrderMarshller p21ReturnOrderMarshller;
 
-	@Autowired
-	P21OrderLineServiceImpl p21orderLineServiceImpl;
-
 	@Override
 	public P21RMAResponse createReturnOrder(ReturnOrderDTO returnOrderDTO) throws Exception {
 
