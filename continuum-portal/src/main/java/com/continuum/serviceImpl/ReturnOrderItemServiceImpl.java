@@ -132,10 +132,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Value(PortalConstants.MAIL_PASSWORD)
 	private String mailPassword;
-	
+
 	@Autowired
 	RmaReceiptServiceImpl rmaReceiptServiceImpl;
-	
+
 	@Autowired
 	EmailTemplateRenderer emailTemplateRenderer;
 
@@ -165,7 +165,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	P21SKUServiceImpl p21SKUService;
-	
+
 	@Autowired
 	RMAReceiptInfoRepository rmaReceiptInfoRepository;
 
@@ -419,14 +419,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				}
 
-				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
-
+//				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+				String tenentId = httpServletRequest.getHeader("tenant");
 				MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 				String recipient = "";
-				if(masterTenant.getIsProd()) {
-					recipient= returnOrder.getContact().getContactEmailId();
-				}else {
-					recipient= PortalConstants.EMAIL_RECIPIENT;
+				if (masterTenant.getIsProd()) {
+					recipient = returnOrder.getContact().getContactEmailId();
+				} else {
+					recipient = PortalConstants.EMAIL_RECIPIENT;
 
 				}
 
@@ -838,14 +838,14 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						+ ". Please review the details and take necessary action.;"
 						+ "Vendor Message added and Email has been sent to the " + contactEmail);
 
-				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
-
+//				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+				String tenentId = httpServletRequest.getHeader("tenant");
 				MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 				String recipient = "";
-				if(masterTenant.getIsProd()) {
-					recipient= contactEmail;
-				}else {
-					recipient= PortalConstants.EMAIL_RECIPIENT;
+				if (masterTenant.getIsProd()) {
+					recipient = contactEmail;
+				} else {
+					recipient = PortalConstants.EMAIL_RECIPIENT;
 
 				}
 				String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier() + " "
@@ -887,15 +887,15 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
 						+ user.getLastName() + " of item - " + existingItem.getItemName()
 						+ ". Please review the details and take necessary action.");
-				
-				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 
+//				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+				String tenentId = httpServletRequest.getHeader("tenant");
 				MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 				String recipient = "";
-				if(masterTenant.getIsProd()) {
-					recipient= contactEmail;
-				}else {
-					recipient= PortalConstants.EMAIL_RECIPIENT;
+				if (masterTenant.getIsProd()) {
+					recipient = contactEmail;
+				} else {
+					recipient = PortalConstants.EMAIL_RECIPIENT;
 
 				}
 				String subject = PortalConstants.NOTE_STATUS + returnOrderServiceImpl.getRmaaQualifier() + " " + rmaNo;
@@ -1050,8 +1050,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			if (notesChanged) {
 				auditLog.setTitle("Update Activity");
 				auditLog.setDescription(updateBy + " has updated the restocking notes of item - "
-						+ returnOrderItem.getItemName() +".;"+"Note : "
-						+ returnOrderItem.getNotes()+".");
+						+ returnOrderItem.getItemName() + ".;" + "Note : " + returnOrderItem.getNotes() + ".");
 				auditLog.setStatus("Line Items");
 				auditLogRepository.save(auditLog);
 			}
@@ -1060,7 +1059,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			if (restockingFeeChanged && notesChanged) {
 				auditLog.setTitle("Update Activity");
 				auditLog.setDescription(updateBy + " has updated the restocking fee of item - "
-						+ returnOrderItem.getItemName() + " from $"+preRestocking+" to $"+returnOrderItem.getReStockingAmount()+".;" + "Note : " + returnOrderItem.getNotes() + ".");
+						+ returnOrderItem.getItemName() + " from $" + preRestocking + " to $"
+						+ returnOrderItem.getReStockingAmount() + ".;" + "Note : " + returnOrderItem.getNotes() + ".");
 				auditLog.setStatus("Line Items");
 				auditLogRepository.save(auditLog);
 			}
@@ -1307,7 +1307,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	public String processRMAAndGetReceiptNumber(int rmaNo) throws Exception {
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
 		String rmaDetailsUrl = masterTenant.getSubdomain() + rmaGetEndPoint + "/get";

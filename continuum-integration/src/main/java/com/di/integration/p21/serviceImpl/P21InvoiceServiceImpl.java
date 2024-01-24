@@ -175,7 +175,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 		}
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId=httpServletRequest.getHeader("tenant");
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		try {
@@ -206,7 +207,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		MasterTenant masterTenant;
 
 		if (masterTenantObject == null) {
-			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+//			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenantId =httpServletRequest.getHeader("tenant");
 			masterTenant = masterTenantRepository.findByDbName(tenantId);
 		} else {
 			masterTenant = masterTenantObject;

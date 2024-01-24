@@ -233,7 +233,8 @@ public class CustomerServiceImpl implements CustomerService {
 
 	private URI prepareOrderURI(String email) {
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 

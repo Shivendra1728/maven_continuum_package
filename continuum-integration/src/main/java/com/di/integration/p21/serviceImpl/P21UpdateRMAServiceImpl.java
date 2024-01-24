@@ -75,7 +75,8 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 	public String updateRMARestocking(String rmaNumber, Double totalRestocking) throws Exception {
 		
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		
@@ -105,7 +106,8 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 	@Override
 	public String updateAmount(String rmaNo, ReturnOrderItem returnOrderItem) throws Exception {
 		
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 				
@@ -292,7 +294,9 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 
 	@Override
 	public ResponseEntity<String> updateItemReturnLocation(String rmaNo, String itemId, String returLocationId) throws Exception {
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		
+		String tenentId = httpServletRequest.getHeader("tenant");
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 				
@@ -423,7 +427,9 @@ public class P21UpdateRMAServiceImpl implements P21UpdateRMAService{
 
 	@Override
 	public List<ReturnLocation> getReturnLocations(String itemId) throws Exception {
-	    String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//	    String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		
+		String tenentId = httpServletRequest.getHeader("tenant");
 
 	    MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 	    CloseableHttpClient httpClient = HttpClients.custom()

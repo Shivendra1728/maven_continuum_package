@@ -91,7 +91,8 @@ public class AuthenticationController implements Serializable {
 		}
 		// set database parameter
 
-		String tenentId = request.getHeader("host").split("\\.")[0];
+//		String tenentId = request.getHeader("host").split("\\.")[0];
+		String tenentId = request.getHeader("tenant");
 		MasterTenant masterTenant = masterTenantService.findByDbName(tenentId);
 		if (null == masterTenant || masterTenant.getStatus().toUpperCase().equals(UserStatus.INACTIVE)) {
 			throw new RuntimeException("Please contact service provider.");

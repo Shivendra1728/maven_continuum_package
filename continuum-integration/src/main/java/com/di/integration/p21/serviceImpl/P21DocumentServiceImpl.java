@@ -86,7 +86,8 @@ public class P21DocumentServiceImpl implements P21DocumentService {
 		MasterTenant masterTenant;
 
 		if (masterTenantObject == null) {
-		    String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		    String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenantId = httpServletRequest.getHeader("tenant");
 		    masterTenant = masterTenantRepository.findByDbName(tenantId);
 
 		    if (masterTenant == null) {

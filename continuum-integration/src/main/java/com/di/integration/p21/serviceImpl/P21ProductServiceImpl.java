@@ -88,7 +88,8 @@ public class P21ProductServiceImpl implements P21ProductService {
 	@Override
 	public List<OrderDTO> getProductByProductId(String productId, String customerId) throws ParseException, Exception {
 		List<OrderDTO> orderDTOList = new ArrayList<>();
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		try {
@@ -202,7 +203,8 @@ public class P21ProductServiceImpl implements P21ProductService {
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter
 					+ "&$top=1&$orderby=order_date";
 
-			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenentId = httpServletRequest.getHeader("tenant");
 
 			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
@@ -240,7 +242,8 @@ public class P21ProductServiceImpl implements P21ProductService {
 
 	private URI prepareContactURI(String email) {
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 

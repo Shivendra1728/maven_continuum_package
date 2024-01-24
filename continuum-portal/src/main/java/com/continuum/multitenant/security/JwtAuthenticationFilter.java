@@ -53,7 +53,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			try {
 				username = jwtTokenUtil.getUsernameFromToken(authToken);
 				audience = jwtTokenUtil.getAudienceFromToken(authToken);
-				String host = httpServletRequest.getHeader("host").split("\\.")[0];
+//				String host = httpServletRequest.getHeader("host").split("\\.")[0];
+				String host = httpServletRequest.getHeader("tenant");
 				MasterTenant masterTenant = masterTenantService.findByDbName((audience));
 				if (null == masterTenant) {
 					logger.error("An error during getting tenant name");
@@ -72,7 +73,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				|| httpServletRequest.getRequestURI().contains("/updatePassword")
 				|| httpServletRequest.getRequestURI().contains("/api/upload-csv")
 				|| httpServletRequest.getRequestURI().contains("/activateAccount")) {
-			String host = httpServletRequest.getHeader("host").split("\\.")[0];
+//			String host = httpServletRequest.getHeader("host").split("\\.")[0];
+			String host = httpServletRequest.getHeader("tenant");
 			// MasterTenant masterTenant = masterTenantService.findByDbName((audience));
 			// if(null == masterTenant){
 			// logger.error("An error during getting tenant name");
