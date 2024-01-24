@@ -6,7 +6,6 @@ import com.continuum.tenant.repos.entity.Role;
 
 public interface RolesService {
 
-
 	List<Role> getRolesWithPermissions();
 
 }

@@ -28,20 +28,6 @@ public class OrderMapper {
 		return po;
 	}
 
-	/*
-	 * public ReturnOrderDTO returnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
-	 * 
-	 * ReturnOrderDTO poDTO = modelMapper.map(returnOrder, ReturnOrderDTO.class);
-	 * returnOrder.getId();
-	 * 
-	 * return poDTO; }
-	 * 
-	 * public ReturnOrder returnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO)
-	 * { ReturnOrder returOrder; returOrder = modelMapper.map(returnOrderDTO,
-	 * ReturnOrder.class); returOrder.setReturnOrderItem(mapList(returnOrderDTO.
-	 * getReturnOrderItemDTOList(), ReturnOrderItem.class)); return returOrder; }
-	 */
-
 	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
 		return source.stream().map(element -> modelMapper.map(element, targetClass)).collect(Collectors.toList());
 	}

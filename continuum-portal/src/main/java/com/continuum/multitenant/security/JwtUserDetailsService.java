@@ -19,19 +19,20 @@ import com.continuum.tenant.repos.repositories.UserRepository;
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    UserRepository userRepository;
+	@Autowired
+	UserRepository userRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        User user = userRepository.findByUserName(userName);
-        if(null == user){
-            throw new UsernameNotFoundException("Invalid user name or password.");
-        }
-        return new org.springframework.security.core.userdetails.User(user.getUserName(), user.getPassword(), getAuthority());
-    }
+	@Override
+	public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
+		User user = userRepository.findByUserName(userName);
+		if (null == user) {
+			throw new UsernameNotFoundException("Invalid user name or password.");
+		}
+		return new org.springframework.security.core.userdetails.User(user.getUserName(), user.getPassword(),
+				getAuthority());
+	}
 
-    private List<SimpleGrantedAuthority> getAuthority() {
-        return Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN"));
-    }
+	private List<SimpleGrantedAuthority> getAuthority() {
+		return Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN"));
+	}
 }

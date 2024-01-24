@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,10 +31,10 @@ public class P21OrderMapper {
 
 	@Autowired
 	CustomerMapper customerMapper;
-	
+
 	@Autowired
 	StoreAddressRepository storeAddressRepository;
-	
+
 	@Autowired
 	CustomerRepository customerRepository;
 
@@ -93,27 +92,23 @@ public class P21OrderMapper {
 			customerDTO.setDisplayName(p21OrderData.getBill2_name());
 			customerDTO.setPhone(p21OrderData.getContact_phone_number());
 			orderDTO.setCustomer(customerDTO);
-			
-			
-			
-			
+
 			Customer existingCustomer = customerRepository.findByCustomerId(customerDTO.getCustomerId());
 
 			if (existingCustomer != null) {
-			    // Customer already exists, update the customer entity with new data.
-			    existingCustomer.setFirstName(customerDTO.getFirstName());
-			    existingCustomer.setLastname(customerDTO.getLastname());
-			    existingCustomer.setEmail(customerDTO.getEmail());
-			    existingCustomer.setDisplayName(customerDTO.getDisplayName());
-			    existingCustomer.setPhone(customerDTO.getPhone());
-			   
-			    
-			    // Save the updated customer entity back to the database.
-			    customerRepository.save(existingCustomer);
+				// Customer already exists, update the customer entity with new data.
+				existingCustomer.setFirstName(customerDTO.getFirstName());
+				existingCustomer.setLastname(customerDTO.getLastname());
+				existingCustomer.setEmail(customerDTO.getEmail());
+				existingCustomer.setDisplayName(customerDTO.getDisplayName());
+				existingCustomer.setPhone(customerDTO.getPhone());
+
+				// Save the updated customer entity back to the database.
+				customerRepository.save(existingCustomer);
 			} else {
-			    // Customer doesn't exist, create a new customer entity and save it.
-			    Customer newCustomer = customerMapper.cusotmerDTOTocusotmer(customerDTO);
-			    customerRepository.save(newCustomer);
+				// Customer doesn't exist, create a new customer entity and save it.
+				Customer newCustomer = customerMapper.cusotmerDTOTocusotmer(customerDTO);
+				customerRepository.save(newCustomer);
 			}
 
 			OrderAddressDTO orderAddressShipTODTO = new OrderAddressDTO();
@@ -132,9 +127,9 @@ public class P21OrderMapper {
 //			orderAddressShipTODTO.setCity(p21OrderData.getShip2_city());
 //			orderAddressShipTODTO.setZipcode(p21OrderData.getShip2_zip());
 			// orderAddressShipTODTO.setAddressType(p21OrderData.getaddresstype());
-			
+
 			StoreAddress shipTo = getShipToAddress();
-			
+
 			orderAddressShipTODTO.setFax(shipTo.getFax());
 			orderAddressShipTODTO.setStreet1(shipTo.getStreet1());
 			orderAddressShipTODTO.setStreet2(shipTo.getStreet2());
@@ -143,12 +138,10 @@ public class P21OrderMapper {
 			orderAddressShipTODTO.setCity(shipTo.getCity());
 			orderAddressShipTODTO.setZipcode(shipTo.getZipcode());
 			orderAddressShipTODTO.setAddressType(shipTo.getAddressType());
-			
+
 			// orderAddressShipTODTO.setAddressType(p21OrderData.getaddresstype());
-			
+
 			orderDTO.setShipTo(orderAddressShipTODTO);
-			
-			
 
 			OrderAddressDTO orderAddressBillTODTO = new OrderAddressDTO();
 
@@ -172,15 +165,14 @@ public class P21OrderMapper {
 
 		return orderDTOList;
 	}
-	
+
 	public StoreAddress getShipToAddress() {
 		return storeAddressRepository.findByaddressType("Warehouse");
-	} 
-	
+	}
+
 	public OrderDTO convertP21OrderObjectToOrderDTOForCustomer(String order)
 			throws JsonMappingException, JsonProcessingException, ParseException {
 		P21OrderDataHelper p21OrderDataHelper = objectMapper.readValue(order, P21OrderDataHelper.class);
-		
 
 		OrderDTO orderDTO = new OrderDTO();
 		List<OrderDTO> orderDTOList = new ArrayList<>();
@@ -196,5 +188,5 @@ public class P21OrderMapper {
 			orderDTO.setCustomer(customerDTO);
 		}
 		return orderDTO;
-}
+	}
 }

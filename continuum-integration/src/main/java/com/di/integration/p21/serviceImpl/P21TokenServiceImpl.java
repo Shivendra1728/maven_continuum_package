@@ -1,12 +1,10 @@
 package com.di.integration.p21.serviceImpl;
 
-import java.io.StringReader;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.cache.Cache;
@@ -16,7 +14,6 @@ import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -28,9 +25,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,15 +35,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
-import com.di.integration.config.TenantInfoHolderContext;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21TokenSerivce;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
 
 @Service
 public class P21TokenServiceImpl implements P21TokenSerivce {

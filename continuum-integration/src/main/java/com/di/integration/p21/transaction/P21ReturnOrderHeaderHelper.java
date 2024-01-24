@@ -1,12 +1,5 @@
 package com.di.integration.p21.transaction;
 
-import java.util.Date;
-import java.util.List;
-
-import com.di.commons.dto.CustomerDTO;
-import com.di.commons.dto.OrderAddressDTO;
-import com.di.commons.dto.OrderDTO;
-import com.di.commons.dto.OrderItemDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;

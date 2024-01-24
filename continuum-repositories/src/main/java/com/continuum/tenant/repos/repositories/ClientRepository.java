@@ -8,5 +8,4 @@ import com.continuum.tenant.repos.entity.Client;
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {
 
-	
 }

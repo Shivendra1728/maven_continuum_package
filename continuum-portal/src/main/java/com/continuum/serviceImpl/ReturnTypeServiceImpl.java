@@ -10,15 +10,15 @@ import com.continuum.tenant.repos.entity.ReturnType;
 import com.continuum.tenant.repos.repositories.ReturnTypeRepository;
 
 @Service
-public class ReturnTypeServiceImpl implements ReturnTypeService{
-	
+public class ReturnTypeServiceImpl implements ReturnTypeService {
+
 	@Autowired
 	ReturnTypeRepository returnTypeRepository;
-	
+
 	@Override
-	public List<ReturnType> getAll(){
+	public List<ReturnType> getAll() {
 		return returnTypeRepository.findAll();
-		
+
 	}
 
 }

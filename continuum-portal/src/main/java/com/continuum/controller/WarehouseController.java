@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.WarehouseService;
-import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.entity.Warehouse;
 
 @RestController
@@ -17,15 +16,15 @@ public class WarehouseController {
 
 	@Autowired
 	WarehouseService warehouseService;
-	
+
 	@PostMapping("/createWarehouse")
-	public String createWarehouse(@RequestBody Warehouse warehouse) throws Exception{
+	public String createWarehouse(@RequestBody Warehouse warehouse) throws Exception {
 		return warehouseService.createWarehouse(warehouse);
 	}
-	
+
 	@GetMapping("/getWarehouse")
-	public List<Warehouse> getWarehouse(){
+	public List<Warehouse> getWarehouse() {
 		return warehouseService.findAll();
 	}
-	
+
 }

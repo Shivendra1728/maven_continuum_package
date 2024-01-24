@@ -5,13 +5,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+
 @Getter
 @Setter
 @Accessors(chain = true)
 @NoArgsConstructor
 @ToString
-class StoreAddressDTO{
-	
+class StoreAddressDTO {
+
 	private Long id;
 	private String phoneNumber;
 	private String fax;
@@ -23,5 +24,5 @@ class StoreAddressDTO{
 	private String zipcode;
 	private String email;
 	private String addressType;
-	
+
 }

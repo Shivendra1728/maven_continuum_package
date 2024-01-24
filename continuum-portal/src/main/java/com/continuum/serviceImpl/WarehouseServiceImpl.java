@@ -14,16 +14,16 @@ public class WarehouseServiceImpl implements WarehouseService {
 
 	@Autowired
 	WarehouseRepository warehouseRepository;
-	
+
 	public List<Warehouse> findAll() {
 		return warehouseRepository.findAll();
 	}
-	
+
 	public String createWarehouse(Warehouse warehouse) {
 		List<Warehouse> findAll = warehouseRepository.findAll();
-		for(Warehouse wh : findAll) {
+		for (Warehouse wh : findAll) {
 			if (wh.getAddressType().equalsIgnoreCase(warehouse.getAddressType())) {
-				return wh.getAddressType()+" warehouse already existed";
+				return wh.getAddressType() + " warehouse already existed";
 			}
 		}
 		warehouseRepository.save(warehouse);

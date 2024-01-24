@@ -23,37 +23,36 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class Orders  extends BaseEntity{
-	
-	  
-	    private Long ORMOrder;
-	    private Long salesLocationId;
-	
-	    private Long contactId;
-	    private String PONumber;
-	    private Date orderDate;
-	    private Date requestedDate;
-	    private String status;
-	    private String currency;
-	    private String invoiceNo;
-	    
-	    @ManyToOne
-	    @JoinColumn(name="userId")
-	    private User users;
-	    
-	    @ManyToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-	    @JoinColumn(name="customerId")
-	    private Customer customer;
-	    
-	    @OneToMany( fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-	    @JoinColumn(name="orderId")
-	    private List<OrderItem> orderItems;
-	    
-	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-	    @JoinColumn(name ="shipTo")
-	    private OrderAddress shipTo;
-	    
-	    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	    @JoinColumn(name ="billto")
-	    private OrderAddress billTo;
+public class Orders extends BaseEntity {
+
+	private Long ORMOrder;
+	private Long salesLocationId;
+
+	private Long contactId;
+	private String PONumber;
+	private Date orderDate;
+	private Date requestedDate;
+	private String status;
+	private String currency;
+	private String invoiceNo;
+
+	@ManyToOne
+	@JoinColumn(name = "userId")
+	private User users;
+
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "customerId")
+	private Customer customer;
+
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "orderId")
+	private List<OrderItem> orderItems;
+
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "shipTo")
+	private OrderAddress shipTo;
+
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "billto")
+	private OrderAddress billTo;
 }

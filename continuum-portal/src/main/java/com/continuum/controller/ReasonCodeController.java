@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.ReasonCodeService;
-import com.continuum.tenant.repos.entity.ReasonCode;
-import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.ReasonCodeDTO;
-import com.di.commons.helper.OrderSearchParameters;
 
 @RestController
 @RequestMapping("/reasoncodes")
@@ -25,8 +22,6 @@ public class ReasonCodeController {
 	public ReasonCodeController(ReasonCodeService reasonCodeService) {
 		this.reasonCodeService = reasonCodeService;
 	}
-	
-	
 
 	@GetMapping("/searchbyStore")
 	public ResponseEntity<List<ReasonCodeDTO>> searchReasonFlatCodesByStoreId(@RequestParam("storeId") Long storeId) {

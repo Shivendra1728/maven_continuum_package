@@ -4,9 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.continuum.tenant.repos.entity.Orders;
 import com.continuum.tenant.repos.entity.Store;
-import com.di.commons.dto.OrderDTO;
 import com.di.commons.dto.StoreDTO;
 
 @Component

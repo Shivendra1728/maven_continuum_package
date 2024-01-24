@@ -9,7 +9,7 @@ import com.continuum.multitenant.mastertenant.entity.MasterTenant;
  */
 public interface MasterTenantService {
 
-    MasterTenant findByClientId(Integer clientId);
+	MasterTenant findByClientId(Integer clientId);
 
 	MasterTenant findByDbName(String tenentId);
 

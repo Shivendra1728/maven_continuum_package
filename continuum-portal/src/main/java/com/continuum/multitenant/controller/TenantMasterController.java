@@ -17,10 +17,10 @@ import com.continuum.multitenant.mastertenant.service.MasterTenantService;
 public class TenantMasterController {
 	@Autowired
 	MasterTenantService tenantMasterservice;
-	 @RequestMapping(value = "/all", method = RequestMethod.GET)
-	    public ResponseEntity<List<MasterTenant>> getAllProduct() {
-	        return new ResponseEntity<>(tenantMasterservice.getAllTenants(),HttpStatus.OK);
-	    }
-	    
-	    
+
+	@RequestMapping(value = "/all", method = RequestMethod.GET)
+	public ResponseEntity<List<MasterTenant>> getAllProduct() {
+		return new ResponseEntity<>(tenantMasterservice.getAllTenants(), HttpStatus.OK);
+	}
+
 }

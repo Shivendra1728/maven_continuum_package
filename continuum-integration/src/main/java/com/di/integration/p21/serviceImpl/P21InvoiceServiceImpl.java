@@ -58,7 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class P21InvoiceServiceImpl implements P21InvoiceService {
-	private static final Logger logger = LoggerFactory.getLogger(P21OrderLineServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(P21InvoiceServiceImpl.class);
 
 	@Autowired
 	RestTemplate restTemplate;
@@ -86,9 +86,6 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 	@Autowired
 	P21TokenServiceImpl p21TokenServiceImpl;
-
-	@Autowired
-	P21OrderLineServiceImpl p21OrderLineServiceImpl;
 
 	@Autowired
 	P21OrderLineItemMapper p21orderLineItemMapper;
@@ -214,7 +211,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		} else {
 			masterTenant = masterTenantObject;
 		}
-		Integer indexOfInvNo = getIndexOfItem(rmaNo);
+		Integer indexOfInvNo = getIndexOfItem(rmaNo,masterTenantObject);
 
 		URI sessionEnd = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 		URI sessionEndFullURI = sessionEnd.resolve(sessionEnd.getRawPath());
@@ -634,17 +631,17 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 	}
 	
-	public Integer getIndexOfItem(String rmaNo) throws Exception {
+	public Integer getIndexOfItem(String rmaNo, MasterTenant masterTenantObject) throws Exception {
 		
 		Optional<ReturnOrder> findByRmaOrderNo = returnOrderRepository.findByRmaOrderNo(rmaNo);
 		ReturnOrder returnOrder = findByRmaOrderNo.get();
 		String orderNo = returnOrder.getOrderNo();
 		logger.info(orderNo);
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
-		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+		//String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		//MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
-		String rmaDetailsUrl = masterTenant.getSubdomain() + rmaGetEndPoint + "/get";
-		String accessToken = "Bearer: " + p21TokenServiceImpl.findToken(masterTenant);
+		String rmaDetailsUrl = masterTenantObject.getSubdomain() + rmaGetEndPoint + "/get";
+		String accessToken = "Bearer: " + p21TokenServiceImpl.findToken(masterTenantObject);
 
 		logger.info("First URL" + rmaDetailsUrl);
 		

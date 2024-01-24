@@ -54,21 +54,23 @@ public class ReturnOrderController {
 	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(@RequestParam String rmaOrderNo) throws Exception {
 		return returnOrderService.getAllReturnOrderByRmaNo(rmaOrderNo);
 	}
-	
+
 	@PutMapping("/updateRmaStatus")
-	public String updateReturnOrder(@RequestParam String rmaNo,@RequestParam String updateBy, @RequestBody Map<String, String> requestBody) {
+	public String updateReturnOrder(@RequestParam String rmaNo, @RequestParam String updateBy,
+			@RequestBody Map<String, String> requestBody) {
 		String status = requestBody.get("status");
-		return returnOrderService.updateReturnOrder(rmaNo,updateBy,status);
+		return returnOrderService.updateReturnOrder(rmaNo, updateBy, status);
 	}
-	
+
 	@GetMapping("/rma/invoice/info")
 	public String getSearchRmaInvoiceInfo() throws Exception {
 		return returnOrderService.getSearchRmaInvoiceinfo();
 	}
-	
+
 	@PostMapping("/assignRMA")
-	public String assignRMA(@RequestParam String rmaNo , @RequestParam Long assigntoId ,@RequestParam String updateBy,@RequestParam Long returnTypeId,@RequestBody ReturnOrderDTO note) throws Exception {
-		return returnOrderService.assignRMA(rmaNo,assigntoId,updateBy,returnTypeId,note);
+	public String assignRMA(@RequestParam String rmaNo, @RequestParam Long assigntoId, @RequestParam String updateBy,
+			@RequestParam Long returnTypeId, @RequestBody ReturnOrderDTO note) throws Exception {
+		return returnOrderService.assignRMA(rmaNo, assigntoId, updateBy, returnTypeId, note);
 	}
-	
+
 }

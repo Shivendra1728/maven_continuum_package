@@ -66,7 +66,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	ReturnOrderItemRepository returnOrderItemRepository;
-	
+
 	@Autowired
 	AuditLogRepository auditLogRepository;
 
@@ -112,7 +112,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	AuditLogServiceImpl auditLogServiceImpl;
-	
+
 	@Autowired
 	MasterTenantRepository masterTenantRepository;
 
@@ -207,18 +207,18 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		auditLogRepository.save(auditlog);
 
 		// String recipient = returnOrder.getCustomer().getEmail();
-		
+
 		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		String recipient = "";
 
-		if(masterTenant.getIsProd()) {
-			recipient= returnOrderDTO.getContact().getContactEmailId();
-		}else {
-			recipient= PortalConstants.EMAIL_RECIPIENT;
+		if (masterTenant.getIsProd()) {
+			recipient = returnOrderDTO.getContact().getContactEmailId();
+		} else {
+			recipient = PortalConstants.EMAIL_RECIPIENT;
 
 		}
-		
+
 //		String email = returnOrderDTO.getContact().getContactEmailId();
 //		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
 //			recipient="alex@gocontinuum.ai";
@@ -629,10 +629,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 			String recipient = "";
-			if(masterTenant.getIsProd()) {
-				recipient= note.getContact().getContactEmailId();
-			}else {
-				recipient= PortalConstants.EMAIL_RECIPIENT;
+			if (masterTenant.getIsProd()) {
+				recipient = note.getContact().getContactEmailId();
+			} else {
+				recipient = PortalConstants.EMAIL_RECIPIENT;
 
 			}
 			String subject = PortalConstants.ASSIGN_RMA + getRmaaQualifier() + " " + returnOrder.getRmaOrderNo();

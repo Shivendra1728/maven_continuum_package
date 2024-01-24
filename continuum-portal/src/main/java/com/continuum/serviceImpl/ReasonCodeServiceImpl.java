@@ -1,14 +1,12 @@
 package com.continuum.serviceImpl;
 
 import java.util.ArrayList;
-
-import java.util.Iterator;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.continuum.service.ReasonCodeService;
-import com.continuum.tenant.repos.entity.Orders;
 import com.continuum.tenant.repos.entity.ReasonCode;
 import com.continuum.tenant.repos.entity.Store;
 import com.continuum.tenant.repos.repositories.ReasonCodeRepository;

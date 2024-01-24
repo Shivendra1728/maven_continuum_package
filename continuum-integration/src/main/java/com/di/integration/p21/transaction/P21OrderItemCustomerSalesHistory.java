@@ -1,9 +1,5 @@
 package com.di.integration.p21.transaction;
 
-import java.util.List;
-
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

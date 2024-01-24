@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import com.continuum.tenant.repos.entity.Orders;
 
 @Repository
-public interface OrderRepository  extends JpaRepository<Orders, Long>, JpaSpecificationExecutor<Orders>{
-
+public interface OrderRepository extends JpaRepository<Orders, Long>, JpaSpecificationExecutor<Orders> {
 
 }

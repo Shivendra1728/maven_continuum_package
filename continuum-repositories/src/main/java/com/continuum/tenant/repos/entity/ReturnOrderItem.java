@@ -43,11 +43,11 @@ public class ReturnOrderItem extends BaseEntity {
 	@OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
 	@JoinColumn(name = "returnOrderItemId")
 	private List<OrderItemDocuments> orderItemDocuments;
-	
-	@OneToMany(mappedBy = "returnOrderItem",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ReturnRoom> returnRooms = new HashSet<ReturnRoom>();
-	
-	@OneToMany(cascade = CascadeType.PERSIST,fetch = FetchType.EAGER)
+
+	@OneToMany(mappedBy = "returnOrderItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ReturnRoom> returnRooms = new HashSet<ReturnRoom>();
+
+	@OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
 	@JoinColumn(name = "returnOrderItemId")
 	private Set<QuestionMap> questionMap;
 
@@ -80,8 +80,8 @@ public class ReturnOrderItem extends BaseEntity {
 	private String courierName;
 	private String note;
 	private String Notes;
-    private BigDecimal Amount;
-    private String amountNote;
+	private BigDecimal Amount;
+	private String amountNote;
 	@ManyToOne
 	@JoinColumn(name = "assignTo")
 	private User user;

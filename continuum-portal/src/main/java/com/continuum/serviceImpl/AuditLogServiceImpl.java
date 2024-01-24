@@ -10,7 +10,7 @@ import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
 
 @Service
-public class AuditLogServiceImpl implements AuditLogService{
+public class AuditLogServiceImpl implements AuditLogService {
 	@Autowired
 	AuditLogRepository auditLogRepository;
 
@@ -19,17 +19,17 @@ public class AuditLogServiceImpl implements AuditLogService{
 		List<AuditLog> auditLogs = auditLogRepository.findAll();
 		return auditLogs;
 	}
-	
-	@Override
-	 public List<AuditLog> getByRmaNo(String rmaNo) {
-        return auditLogRepository.findByRmaNo(rmaNo);
-    }
 
 	@Override
-	public AuditLog setAuditLog(String description, String title, String status, String rmaNumber, String updateBy, String highlight)
-	{
+	public List<AuditLog> getByRmaNo(String rmaNo) {
+		return auditLogRepository.findByRmaNo(rmaNo);
+	}
+
+	@Override
+	public AuditLog setAuditLog(String description, String title, String status, String rmaNumber, String updateBy,
+			String highlight) {
 		AuditLog auditLog = new AuditLog();
-		
+
 		auditLog.setDescription(description);
 		auditLog.setHighlight(highlight);
 		auditLog.setTitle(title);
@@ -37,7 +37,7 @@ public class AuditLogServiceImpl implements AuditLogService{
 		auditLog.setRmaNo(rmaNumber);
 		auditLog.setUserName(updateBy);
 		auditLogRepository.save(auditLog);
-		
+
 		return auditLog;
 	}
 }

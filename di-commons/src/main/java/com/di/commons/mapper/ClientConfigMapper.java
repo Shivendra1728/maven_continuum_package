@@ -13,22 +13,22 @@ import com.di.commons.dto.ClientConfigDTO;
 public class ClientConfigMapper {
 
 	@Autowired
-    ModelMapper modelMapper;
+	ModelMapper modelMapper;
 
 	public ClientConfigDTO clientConfigToClientConfigDTO(ClientConfig clientConfig) {
 		System.out.println("ClientConfigMapper.clientConfigToClientConfigDTO()");
-        ClientConfigDTO clientConfigDTO = modelMapper.map(clientConfig, ClientConfigDTO.class);
-        return clientConfigDTO;
-    }
+		ClientConfigDTO clientConfigDTO = modelMapper.map(clientConfig, ClientConfigDTO.class);
+		return clientConfigDTO;
+	}
 
 	public ClientConfig clientConfigDTOToClientConfig(ClientConfigDTO clientConfigDTO) {
-        System.out.println("ClientConfigMapper.clientConfigDTOToClientConfig()");
-        ClientConfig clientConfig = modelMapper.map(clientConfigDTO, ClientConfig.class);
-        return clientConfig;
-    }
+		System.out.println("ClientConfigMapper.clientConfigDTOToClientConfig()");
+		ClientConfig clientConfig = modelMapper.map(clientConfigDTO, ClientConfig.class);
+		return clientConfig;
+	}
 
 	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
-        return source.stream().map(element -> modelMapper.map(element, targetClass)).collect(Collectors.toList());
+		return source.stream().map(element -> modelMapper.map(element, targetClass)).collect(Collectors.toList());
 	}
 
 }

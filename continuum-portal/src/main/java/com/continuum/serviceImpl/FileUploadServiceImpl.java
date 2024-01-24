@@ -1,8 +1,6 @@
 package com.continuum.serviceImpl;
 
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +12,12 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.continuum.service.FileUploadService;
-import com.continuum.tenant.repos.entity.OrderItemDocuments;
 import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.UserRepository;
 
 @Service
 public class FileUploadServiceImpl implements FileUploadService {
 
-//	@Autowired
-//	FileUploadHelper fileuploadhelper;
 	@Value("${azure.storage.connection-string-value}")
 	private String connectionString;
 	@Value("${azure.storage.container-name}")
@@ -75,4 +70,3 @@ public class FileUploadServiceImpl implements FileUploadService {
 	}
 
 }
-

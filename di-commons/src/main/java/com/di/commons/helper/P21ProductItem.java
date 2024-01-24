@@ -16,5 +16,4 @@ public class P21ProductItem {
 	private String item_desc;
 	private String price1;
 
-
 }

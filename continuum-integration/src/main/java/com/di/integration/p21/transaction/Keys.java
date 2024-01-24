@@ -2,7 +2,6 @@ package com.di.integration.p21.transaction;
 
 import java.util.List;
 
-import com.di.commons.dto.CustomerDTO;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
 import lombok.AllArgsConstructor;

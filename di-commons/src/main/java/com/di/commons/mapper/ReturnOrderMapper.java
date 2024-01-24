@@ -8,35 +8,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.continuum.tenant.repos.entity.ReturnOrder;
-import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.di.commons.dto.ReturnOrderDTO;
+
 @Component
 public class ReturnOrderMapper {
-	
-	@Autowired
-    private ModelMapper modelMapper;
 
-	
-	public  ReturnOrderDTO returnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
-		
-		ReturnOrderDTO poDTO=  modelMapper.map(returnOrder, ReturnOrderDTO.class);
+	@Autowired
+	private ModelMapper modelMapper;
+
+	public ReturnOrderDTO returnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
+
+		ReturnOrderDTO poDTO = modelMapper.map(returnOrder, ReturnOrderDTO.class);
 		returnOrder.getId();
-	
-	return poDTO;
+
+		return poDTO;
 	}
 
-	public  ReturnOrder returnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
+	public ReturnOrder returnOrderDTOToReturnOrder(ReturnOrderDTO returnOrderDTO) {
 		ReturnOrder returOrder;
 		returOrder = modelMapper.map(returnOrderDTO, ReturnOrder.class);
-	//	returOrder.setReturnOrderItem(mapList(returnOrderDTO.getReturnOrderItemDTOList(), ReturnOrderItem.class));
-	return returOrder;
+		// returOrder.setReturnOrderItem(mapList(returnOrderDTO.getReturnOrderItemDTOList(),
+		// ReturnOrderItem.class));
+		return returOrder;
 	}
 
-	
 	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
-	    return source
-	      .stream()
-	      .map(element -> modelMapper.map(element, targetClass))
-	      .collect(Collectors.toList());
+		return source.stream().map(element -> modelMapper.map(element, targetClass)).collect(Collectors.toList());
 	}
 }

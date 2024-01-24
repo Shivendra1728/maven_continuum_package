@@ -22,7 +22,7 @@ import lombok.experimental.Accessors;
 
 public class ReturnOrderDTO {
 
-	//private Long id;
+	// private Long id;
 	private Long ORMOrder;
 	private String salesLocationId;
 	private String companyId;
@@ -37,13 +37,13 @@ public class ReturnOrderDTO {
 	private String status;
 	private String currency;
 	private String quantity;
-	
+
 	private CustomerDTO customer;
-	//private OrderDTO order;
+	// private OrderDTO order;
 	private List<ReturnOrderItemDTO> returnOrderItem;
 
 	private OrderAddressDTO shipTo;
-	
+
 	private ContactDTO contact;
 
 	private OrderAddressDTO billTo;

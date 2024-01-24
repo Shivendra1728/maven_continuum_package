@@ -13,8 +13,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class P21ProductItemHelper {
 
-    @JsonProperty("odata.metadata")
-    private String odataMetadata;
+	@JsonProperty("odata.metadata")
+	private String odataMetadata;
 
 	private List<P21ProductItem> value;
 

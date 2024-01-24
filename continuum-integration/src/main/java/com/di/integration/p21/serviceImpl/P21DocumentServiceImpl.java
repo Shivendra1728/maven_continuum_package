@@ -25,7 +25,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -43,7 +42,7 @@ import com.di.integration.p21.service.P21DocumentService;
 
 @Service
 public class P21DocumentServiceImpl implements P21DocumentService {
-	private static final Logger logger = LoggerFactory.getLogger(P21OrderLineServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(P21DocumentServiceImpl.class);
 
 	@Autowired
 	RestTemplate restTemplate;
