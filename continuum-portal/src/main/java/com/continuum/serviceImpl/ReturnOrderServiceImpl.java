@@ -102,8 +102,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	ReturnTypeRepository returnTypeRepository;
-
-	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
+	
+	@Autowired
+	EmailTemplateRenderer emailTemplateRenderer ;
 
 	ReturnOrder returnOrder;
 
