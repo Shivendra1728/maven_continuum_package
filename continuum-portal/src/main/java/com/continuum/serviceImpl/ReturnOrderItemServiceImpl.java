@@ -135,8 +135,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	
 	@Autowired
 	RmaReceiptServiceImpl rmaReceiptServiceImpl;
-
-	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
+	
+	@Autowired
+	EmailTemplateRenderer emailTemplateRenderer;
 
 	@Autowired
 	ReturnOrderServiceImpl returnOrderServiceImpl;

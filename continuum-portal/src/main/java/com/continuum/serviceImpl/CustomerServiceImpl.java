@@ -97,8 +97,15 @@ public class CustomerServiceImpl implements CustomerService {
 	ReturnOrderServiceImpl returnOrderServiceImpl;
 
 	LocalDate localDate;
+	
+	 private final EmailTemplateRenderer emailTemplateRenderer;
 
-	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
+	    @Autowired
+	    public CustomerServiceImpl(EmailTemplateRenderer emailTemplateRenderer) {
+	        this.emailTemplateRenderer = emailTemplateRenderer;
+	    }
+
+	//EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
 
 	public CustomerDTO findbyCustomerId(String customerId) {
 		Customer customer = customerRepository.findByCustomerId(customerId);
