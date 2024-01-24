@@ -110,7 +110,8 @@ public class P21SKUServiceImpl implements P21SKUService {
 		MasterTenant masterTenant;
 
 		if (masterTenantObject == null) {
-			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+//			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenantId = httpServletRequest.getHeader("tenant");
 			masterTenant = masterTenantRepository.findByDbName(tenantId);
 		} else {
 			masterTenant = masterTenantObject;
@@ -624,7 +625,8 @@ public class P21SKUServiceImpl implements P21SKUService {
 		MasterTenant masterTenant;
 
 		if (masterTenantObject == null) {
-			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+//			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenantId = httpServletRequest.getHeader("tenant");
 			masterTenant = masterTenantRepository.findByDbName(tenantId);
 		} else {
 			masterTenant = masterTenantObject;
@@ -824,7 +826,8 @@ public class P21SKUServiceImpl implements P21SKUService {
 		MasterTenant masterTenant;
 
 		if (masterTenantObject == null) {
-			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+//			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenantId = httpServletRequest.getHeader("tenant");
 			masterTenant = masterTenantRepository.findByDbName(tenantId);
 		} else {
 			masterTenant = masterTenantObject;
@@ -875,7 +878,8 @@ public class P21SKUServiceImpl implements P21SKUService {
 		MasterTenant masterTenant;
 		Map<String, Object> jsonResponse = new HashMap<>();
 		if (masterTenantObject == null) {
-			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+//			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenantId = httpServletRequest.getHeader("tenant");
 			masterTenant = masterTenantRepository.findByDbName(tenantId);
 		} else {
 			masterTenant = masterTenantObject;
@@ -932,8 +936,8 @@ public class P21SKUServiceImpl implements P21SKUService {
 	@Override
 	public OrderDTO getProductByProductId(String productId) throws Exception {
 		OrderDTO orderDTO = new OrderDTO();
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
-
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		try {
 			CloseableHttpClient httpClient = HttpClients.custom()
