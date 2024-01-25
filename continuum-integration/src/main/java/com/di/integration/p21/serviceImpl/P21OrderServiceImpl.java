@@ -264,7 +264,8 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 	private URI prepareCarrierNameURI() {
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
 		try {
@@ -326,7 +327,8 @@ public class P21OrderServiceImpl implements P21OrderService {
 		// p21_view_contacts?$select=&$filter=email_address eq
 		// 'SOUSADA.SALINTHONE@AZZUR.COM'&$format=json
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
@@ -392,7 +394,8 @@ public class P21OrderServiceImpl implements P21OrderService {
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + ORDER_SELECT_FIELDS + "&$filter=" + encodedFilter
 					+ "&$top=1&$orderby=order_date";
 
-			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenentId = httpServletRequest.getHeader("tenant");
 
 			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
@@ -438,7 +441,9 @@ public class P21OrderServiceImpl implements P21OrderService {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter;
 
-			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+			
+			String tenentId = httpServletRequest.getHeader("tenant");
 
 			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 

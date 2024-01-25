@@ -74,14 +74,15 @@ public class P21TokenServiceImpl implements P21TokenSerivce {
 			MasterTenant masterTenant;
 
 			if (masterTenantObject == null) {
-			    String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+//			    String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+				String tenantId = httpServletRequest.getHeader("tenant");
 			    masterTenant = masterTenantRepository.findByDbName(tenantId);
 			} else {
 			    masterTenant = masterTenantObject;
 			}
 		
 			URIBuilder uriBuilder = new URIBuilder(masterTenant.getSubdomain() + TOKEN_ENDPOINT);
-			logger.info(uriBuilder.toString());
+			logger.info("URI : "+uriBuilder.toString());
 			uriBuilder.addParameter("username", masterTenant.getDomainUsername());
 			uriBuilder.addParameter("password", masterTenant.getDomainPassword());
 			HttpPost request = new HttpPost(uriBuilder.build());
@@ -129,7 +130,8 @@ public class P21TokenServiceImpl implements P21TokenSerivce {
 	
 	public String findToken(MasterTenant masterTenantObject) throws Exception {
 	    if (masterTenantObject == null) {
-	        String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+//	        String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
+	    	String tenantId = httpServletRequest.getHeader("tenant");
 	        masterTenantObject = masterTenantRepository.findByDbName(tenantId);
 	    }
 

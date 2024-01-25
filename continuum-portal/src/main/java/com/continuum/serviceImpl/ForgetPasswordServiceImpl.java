@@ -43,8 +43,9 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 
 	@Autowired
 	ReturnOrderServiceImpl returnOrderServiceImpl;
-
-	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
+	
+	@Autowired
+	EmailTemplateRenderer emailTemplateRenderer;
 
 	@Autowired
 	EmailSender emailSender;

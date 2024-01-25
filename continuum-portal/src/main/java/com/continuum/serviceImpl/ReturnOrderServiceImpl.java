@@ -102,8 +102,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	ReturnTypeRepository returnTypeRepository;
-
-	EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
+	
+	@Autowired
+	EmailTemplateRenderer emailTemplateRenderer ;
 
 	ReturnOrder returnOrder;
 
@@ -208,7 +209,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		// String recipient = returnOrder.getCustomer().getEmail();
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId= httpServletRequest.getHeader("tenant");
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		String recipient = "";
 
@@ -625,8 +627,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 //			apply email functionality.
 			// String recipient = user.getEmail();
 //			String recipient = PortalConstants.EMAIL_RECIPIENT;
-			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
-
+//			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenentId = httpServletRequest.getHeader("tenant");
 			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 			String recipient = "";
 			if (masterTenant.getIsProd()) {
