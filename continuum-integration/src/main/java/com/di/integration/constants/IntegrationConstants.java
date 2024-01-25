@@ -56,6 +56,7 @@ public final class IntegrationConstants {
     public static final String ERP_GET_RETURN_LOCATIONS = "${erp.data_get_location_url}";
     public static final String ERP_SERIALIZED_API = "${erp.serialized_url}";
     public static final String ERP_SELLABLE_API = "${erp.sellable_url}";
+    public static final String ERP_DATA_API_SERIAL_LINE = "${erp.serial_numbers}";
     
     //Making customized constants for scheduler
     public static final String ERP_TRANSACTION_GET = "/uiserver0/api/v2/transaction/get";

@@ -33,5 +33,6 @@ public class OrderItemDTO {
 	private boolean isEligibleForReturn = true;
 	private String searchFrom;
 	private boolean isSerialized;
+	private String lineNo;
 
 }

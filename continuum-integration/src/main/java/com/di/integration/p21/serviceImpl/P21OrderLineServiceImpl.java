@@ -4,6 +4,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
@@ -13,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -36,8 +40,12 @@ import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21OrderLineItemMapper;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21OrderLineService;
+import com.di.integration.p21.transaction.SerialData;
+import com.di.integration.p21.transaction.SerialDataResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class P21OrderLineServiceImpl implements P21OrderLineService {
@@ -52,6 +60,9 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 	@Value(IntegrationConstants.ERP_DATA_API_ORDER_LINE)
 	String DATA_API_ORDER_LINE;
+	
+	@Value(IntegrationConstants.ERP_DATA_API_SERIAL_LINE)
+	String DATA_API_SERIAL_LINE;
 
 	@Value(IntegrationConstants.ERP_ORDER_LINE_SELECT_FIELDS)
 	String ORDER_LINE_SELECT_FIELDS;
@@ -168,6 +179,35 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 	public boolean isNotNullAndNotEmpty(String str) {
 		return str != null && !str.trim().isEmpty();
+	}
+	
+	@Override
+	public List<SerialData> getSerialNumbers(String orderNo, String lineNo) throws Exception {
+	    CloseableHttpClient httpClient = HttpClients.custom()
+	            .setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+	            .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+	    String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+	    MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+
+	    URIBuilder uriBuilder = new URIBuilder(masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_API_SERIAL_LINE);
+	    uriBuilder.setParameter("$format", "json");
+	    uriBuilder.setParameter("$filter", "document_no eq " + URLEncoder.encode(orderNo, StandardCharsets.UTF_8.toString()) + " and line_no eq " + URLEncoder.encode(lineNo, StandardCharsets.UTF_8.toString()));
+
+	    URI uri = uriBuilder.build();
+
+	    HttpGet request = new HttpGet(uri);
+
+	    request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
+
+	    HttpResponse response = httpClient.execute(request);
+	    HttpEntity entity = response.getEntity();
+
+	    ObjectMapper objectMapper = new ObjectMapper();
+	    SerialDataResponse serialDataResponse = objectMapper.readValue(EntityUtils.toString(entity), SerialDataResponse.class);
+	    List<SerialData> serialDataList = serialDataResponse.getValue();
+
+	    return serialDataList;
 	}
 
 }
