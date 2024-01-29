@@ -326,34 +326,34 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 //			            .collect(Collectors.toList());
 
-				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
-
-					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
-
-					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
-
-						Date currentDate = new Date(); // Current date
-
-						List<Date> upcomingDates = returnOrderItems.stream()
-
-								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
-																									// ReturnOrderItemDTO
-
-								.filter(date -> date != null && date.after(currentDate))
-
-								.collect(Collectors.toList());
-
-						upcomingDates.sort(Date::compareTo);
-
-						if (!upcomingDates.isEmpty()) {
-
-							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
-
-						}
-
-					}
-
-				}
+//				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
+//
+//					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
+//
+//					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
+//
+//						Date currentDate = new Date(); // Current date
+//
+//						List<Date> upcomingDates = returnOrderItems.stream()
+//
+//								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
+//																									// ReturnOrderItemDTO
+//
+//								.filter(date -> date != null && date.after(currentDate))
+//
+//								.collect(Collectors.toList());
+//
+//						upcomingDates.sort(Date::compareTo);
+//
+//						if (!upcomingDates.isEmpty()) {
+//
+//							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
+//
+//						}
+//
+//					}
+//
+//				}
 			} else {
 				List<ReturnOrder> returnOrder = returnOrderRepository.findByUserId(userId);
 				List<ReturnOrder> returnOrder1 = returnOrderRepository.findAll();
@@ -366,35 +366,34 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 						.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
 
-				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
-
-					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
-
-					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
-
-						Date currentDate = new Date(); // Current date
-
-						List<Date> upcomingDates = returnOrderItems.stream()
-
-								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
-																									// ReturnOrderItemDTO
-
-								.filter(date -> date != null && date.after(currentDate))
-
-								.collect(Collectors.toList());
-
-						upcomingDates.sort(Date::compareTo);
-
-						if (!upcomingDates.isEmpty()) {
-
-							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
-
-						}
-
-					}
-
-				}
-
+//				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
+//
+//					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
+//
+//					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
+//
+//						Date currentDate = new Date(); // Current date
+//
+//						List<Date> upcomingDates = returnOrderItems.stream()
+//
+//								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
+//																									// ReturnOrderItemDTO
+//
+//								.filter(date -> date != null && date.after(currentDate))
+//
+//								.collect(Collectors.toList());
+//
+//						upcomingDates.sort(Date::compareTo);
+//
+//						if (!upcomingDates.isEmpty()) {
+//
+//							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
+//
+//						}
+//
+//					}
+//
+//				}
 			}
 
 		}
@@ -674,7 +673,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			List<String> updates = new ArrayList<>();
 			if (!previousNote.equalsIgnoreCase(note.getNote())) {
 				updates.add("Note '" + note.getNote() + "'" + " added, while assigning RMA " + getRmaaQualifier() + " "
-						+ rmaNo + ".");
+						+ rmaNo);
 				highlight = note.getNote();
 
 			}
