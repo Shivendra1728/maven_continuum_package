@@ -65,6 +65,7 @@ public final class IntegrationConstants {
     
     public static final String ERP_DATA_API_ORDER_VIEW = "${erp.data_api_order_view}";
     public static final String ERP_DATA_API_INVOICE_VIEW="${erp.data_api_invoice_view}";
+    public static final String ERP_DATA_API_INVOICE_LINE_VIEW = "${erp.data_api_invoice_line_view}";
     public static final String ERP_ORDER_SELECT_FIELDS = "${erp.order_select_fields}";
     public static final String ERP_DATA_P21_OE_ORDER_VIEW = "${erp.p21_data_order_view}";
 
