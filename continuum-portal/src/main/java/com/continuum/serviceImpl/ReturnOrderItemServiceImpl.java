@@ -935,6 +935,38 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnRoomRepository.save(returnRoom);
 			}
 
+			Optional<ReturnOrder> optionalReturnOrder = returnOrderRepository.findByRmaOrderNo(rmaNo);
+			if (optionalReturnOrder.isPresent()) {
+				ReturnOrder returnOrder = optionalReturnOrder.get();
+				List<ReturnOrderItem> returnOrderItems = returnOrder.getReturnOrderItem();
+
+				List<Date> followUpDates = new ArrayList<>();
+				for (ReturnOrderItem returnOrderItem : returnOrderItems) {
+					if (returnOrderItem.getFollowUpDate() != null) {
+						followUpDates.add(returnOrderItem.getFollowUpDate());
+					}
+				}
+
+				if (!followUpDates.isEmpty()) {
+					Date currentDate = new Date(); // Current date initialization
+					Date nearestFollowUpDate = null;
+					long minDifference = Long.MAX_VALUE;
+
+					for (Date followUpDate : followUpDates) {
+						long difference = followUpDate.getTime() - currentDate.getTime();
+						if (difference >= 0 && difference < minDifference) {
+							minDifference = difference;
+							nearestFollowUpDate = followUpDate;
+						}
+					}
+
+					if (nearestFollowUpDate != null) {
+						returnOrder.setNextActivityDate(nearestFollowUpDate);
+						returnOrderRepository.save(returnOrder);
+					}
+				}
+			}
+
 			auditLog.setTitle("Update Activity");
 			auditLog.setHighlight("reassigned note");
 			auditLog.setStatus("Line Items");
