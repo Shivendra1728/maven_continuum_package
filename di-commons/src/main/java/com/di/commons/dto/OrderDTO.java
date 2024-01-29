@@ -44,5 +44,6 @@ public class OrderDTO {
 	private String contactEmailId;
 	private String companyName;
 	private String carrierName;
+	private String message;
 
 }

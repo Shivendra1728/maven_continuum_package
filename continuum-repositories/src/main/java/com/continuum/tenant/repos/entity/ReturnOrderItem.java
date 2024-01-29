@@ -14,6 +14,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,6 +52,11 @@ public class ReturnOrderItem extends BaseEntity {
 	@OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
 	@JoinColumn(name = "returnOrderItemId")
 	private Set<QuestionMap> questionMap;
+	
+	
+	@OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
+	@JoinColumn(name = "returnOrderItemId")
+	private Set<SerialData> serialData;
 
 	/*
 	 * @OneToOne(mappedBy = "returnOrderItem", cascade = { CascadeType.ALL}) private
@@ -98,5 +105,6 @@ public class ReturnOrderItem extends BaseEntity {
 	private String returnLocationId;
 	private Boolean isSerialized;
 	private String serialNo;
+	private Integer invoiceNo;
 
 }

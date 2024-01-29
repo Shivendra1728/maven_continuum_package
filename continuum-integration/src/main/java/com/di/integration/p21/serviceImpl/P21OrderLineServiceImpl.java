@@ -6,13 +6,16 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -36,8 +39,12 @@ import com.di.commons.helper.OrderSearchParameters;
 import com.di.commons.p21.mapper.P21OrderLineItemMapper;
 import com.di.integration.constants.IntegrationConstants;
 import com.di.integration.p21.service.P21OrderLineService;
+import com.di.integration.p21.transaction.SerialData;
+import com.di.integration.p21.transaction.SerialDataResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class P21OrderLineServiceImpl implements P21OrderLineService {
@@ -53,8 +60,14 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 	@Value(IntegrationConstants.ERP_DATA_API_ORDER_LINE)
 	String DATA_API_ORDER_LINE;
 
+	@Value(IntegrationConstants.ERP_DATA_API_SERIAL_LINE)
+	String DATA_API_SERIAL_LINE;
+
 	@Value(IntegrationConstants.ERP_ORDER_LINE_SELECT_FIELDS)
 	String ORDER_LINE_SELECT_FIELDS;
+
+	@Value(IntegrationConstants.ERP_DATA_API_INVOICE_LINE_VIEW)
+	String INVOICE_LINE_VIEW;
 
 	@Value(IntegrationConstants.ERP_ORDER_FORMAT)
 	String ORDER_FORMAT;
@@ -64,7 +77,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 	@Autowired
 	P21OrderLineItemMapper p21orderLineItemMapper;
-	
+
 	@Autowired
 	StoreDTO storeDTO;
 
@@ -73,7 +86,6 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 	@Autowired
 	StoreRepository storeRepository;
-	
 
 	@Autowired
 	MasterTenantRepository masterTenantRepository;
@@ -83,16 +95,92 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 	LocalDate localDate;
 
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
 	@Override
-	public List<OrderItemDTO> getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters, int totalItem,String invoiceNo)
+	public List<OrderItemDTO> getordersLineBySearchcriteria(OrderSearchParameters orderSearchParameters,
+			MasterTenant masterTenantObject, int totalItem, String invoiceNo)
 			throws JsonMappingException, JsonProcessingException, ParseException, Exception {
+
+		List<OrderItemDTO> orderItemDTOList = p21orderLineItemMapper.convertP21OrderLineObjectToOrderLineDTO(
+				getOrderLineData(orderSearchParameters, totalItem), orderSearchParameters, invoiceNo);
+
+		List<OrderItemDTO> updatedOrderItemDTOList = new ArrayList<>();
+
+		// Here we set invoice Number against items
 		
-		List<OrderItemDTO> orderItemDTOList=p21orderLineItemMapper
-		.convertP21OrderLineObjectToOrderLineDTO(getOrderLineData(orderSearchParameters, totalItem),orderSearchParameters,invoiceNo);
-		return orderItemDTOList;
+		long idCounter = 1; 
+		
+		for (OrderItemDTO orderItemDTO : orderItemDTOList) {
+			String orderNo = orderItemDTO.getOrderNo();
+			String itemId = orderItemDTO.getPartNo();
+
+			// let's hit the api
+			CloseableHttpClient httpClient = HttpClients.custom()
+					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+			MasterTenant masterTenant;
+			if (masterTenantObject == null) {
+				String tenantId = httpServletRequest.getHeader("tenant");
+				masterTenant = masterTenantRepository.findByDbName(tenantId);
+			} else {
+				masterTenant = masterTenantObject;
+			}
+
+			String invoiceDetailsURL = null;
+			try {
+				URIBuilder uriBuilder = new URIBuilder(
+						masterTenant.getSubdomain() + DATA_API_BASE_URL + INVOICE_LINE_VIEW);
+				uriBuilder.addParameter("$filter", "order_no eq '" + orderNo + "' and item_id eq '" + itemId + "'");
+				invoiceDetailsURL = uriBuilder.build().toString();
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
+
+			logger.info("URL to get Invoice number against Item : " + invoiceDetailsURL);
+			String accessToken = p21TokenServiceImpl.findToken(masterTenantObject);
+
+			HttpGet httpGet = new HttpGet(invoiceDetailsURL);
+			httpGet.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+			httpGet.setHeader(HttpHeaders.ACCEPT, "application/json");
+			httpGet.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
+			CloseableHttpResponse response = httpClient.execute(httpGet);
+			String responseBody = EntityUtils.toString(response.getEntity());
+
+			JsonNode responseNode = objectMapper.readTree(responseBody);
+
+			// Process response data
+			JsonNode valueNode = responseNode.get("value");
+
+			for (JsonNode itemNode : valueNode) {
+				String invoiceNoFromResponse = itemNode.get("invoice_no").asText();
+				long invoiceNoLong = itemNode.get("invoice_no").asLong();
+
+				double qtyShipped = Double.parseDouble(itemNode.get("qty_shipped").asText());
+
+				if (orderNo.equals(itemNode.get("order_no").asText())
+						&& itemId.equals(itemNode.get("item_id").asText())) {
+
+					OrderItemDTO updatedOrderItemDTO = new OrderItemDTO(orderItemDTO);
+
+					updatedOrderItemDTO.setId(idCounter++);
+					updatedOrderItemDTO.setInvoiceNo(invoiceNoFromResponse);
+
+					updatedOrderItemDTO.setQuantity((int) qtyShipped);
+
+					updatedOrderItemDTOList.add(updatedOrderItemDTO);
+				}
+			}
+
+		}
+
+		return updatedOrderItemDTOList;
 	}
 
-	private String getOrderLineData(OrderSearchParameters orderSearchParameters, int totalItem) throws Exception {		
+	private String getOrderLineData(OrderSearchParameters orderSearchParameters, int totalItem) throws Exception {
 		CloseableHttpClient httpClient = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
@@ -143,20 +231,18 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 					.append(" ").append(orderSearchParameters.getCustomerId());
 		}
 
-
 //		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 		String tenentId = httpServletRequest.getHeader("tenant");
 
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
-		
-		
+
 		try {
 			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
 			String query = "$format=" + ORDER_FORMAT + "&$select=&$filter=" + encodedFilter;
 			if (totalItem == 1) {
 				query = query + "&$top=1";
 			}
-			URI uri = new URI(masterTenant.getSubdomain()+DATA_API_BASE_URL + DATA_API_ORDER_LINE);
+			URI uri = new URI(masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_API_ORDER_LINE);
 			URI fullURI = uri.resolve(uri.getRawPath() + "?" + query);
 			return fullURI;
 		} catch (Exception e) {
@@ -169,6 +255,38 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 
 	public boolean isNotNullAndNotEmpty(String str) {
 		return str != null && !str.trim().isEmpty();
+	}
+
+	@Override
+	public List<SerialData> getSerialNumbers(String orderNo, String lineNo) throws Exception {
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+
+		URIBuilder uriBuilder = new URIBuilder(masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_API_SERIAL_LINE);
+		uriBuilder.setParameter("$format", "json");
+		uriBuilder.setParameter("$filter",
+				"document_no eq " + URLEncoder.encode(orderNo, StandardCharsets.UTF_8.toString()) + " and line_no eq "
+						+ URLEncoder.encode(lineNo, StandardCharsets.UTF_8.toString()));
+
+		URI uri = uriBuilder.build();
+
+		HttpGet request = new HttpGet(uri);
+
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
+
+		HttpResponse response = httpClient.execute(request);
+		HttpEntity entity = response.getEntity();
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		SerialDataResponse serialDataResponse = objectMapper.readValue(EntityUtils.toString(entity),
+				SerialDataResponse.class);
+		List<SerialData> serialDataList = serialDataResponse.getValue();
+
+		return serialDataList;
 	}
 
 }

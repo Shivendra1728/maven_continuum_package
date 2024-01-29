@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.di.commons.dto.OrderItemDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.integration.p21.service.P21OrderLineService;
+import com.di.integration.p21.transaction.SerialData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -32,8 +33,13 @@ public class P21OrderLineController {
 		orderSearchParameters.setInvoiceNo(invoiceNo);
 		orderSearchParameters.setOrderNo(orderNo);
 		orderSearchParameters.setZipcode(zipcode);
-		return p21orderLineService.getordersLineBySearchcriteria(orderSearchParameters,-1,invoiceNo);
+		return p21orderLineService.getordersLineBySearchcriteria(orderSearchParameters,null, -1,invoiceNo);
 
+	}
+	
+	@GetMapping("/getSerial")
+	public List<SerialData> getSerialNumberBySearchCriteria(@RequestParam(required = true) String orderNo, @RequestParam(required = true) String lineNo) throws Exception {
+		return p21orderLineService.getSerialNumbers(orderNo, lineNo);
 	}
 
 }

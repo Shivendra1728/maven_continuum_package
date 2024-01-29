@@ -173,6 +173,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		for (ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {
 			returnOrderItem.setShipTo(null);
 			returnOrderItem.setIsActive(true);
+			returnOrderItem.setInvoiceNo(returnOrderItem.getInvoiceNo());
 			if (returnOrderItem.getReturnAmount() == null && returnOrderItem.getReStockingAmount() == null) {
 
 				returnOrderItem.setReStockingAmount(new BigDecimal(0));
