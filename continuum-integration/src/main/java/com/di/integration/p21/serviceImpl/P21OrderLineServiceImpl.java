@@ -108,9 +108,9 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 		List<OrderItemDTO> updatedOrderItemDTOList = new ArrayList<>();
 
 		// Here we set invoice Number against items
-		
-		long idCounter = 1; 
-		
+
+		long idCounter = 1;
+
 		for (OrderItemDTO orderItemDTO : orderItemDTOList) {
 			String orderNo = orderItemDTO.getOrderNo();
 			String itemId = orderItemDTO.getPartNo();
@@ -287,6 +287,55 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 		List<SerialData> serialDataList = serialDataResponse.getValue();
 
 		return serialDataList;
+	}
+
+	// Fetch items from invoice -
+
+	public List<OrderItemDTO> getordersLineByInvoice(String invoiceNo, int totalItem) throws Exception {
+		List<OrderItemDTO> orderItemDTOList = p21orderLineItemMapper.convertP21OrderLineObjectToOrderLineDTOForInvoice(
+				getOrderLineDataFromInvoice(invoiceNo, totalItem), invoiceNo);
+		return orderItemDTOList;
+	}
+
+	private String getOrderLineDataFromInvoice(String invoiceNo, int totalItem) throws Exception {
+		CloseableHttpClient httpClient = HttpClients.custom()
+				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+		URI fullURI = prepareOrderLineURIForInvoice(invoiceNo, totalItem);
+		logger.info("This is URL to search items against invoice : : " + fullURI);
+		HttpGet request = new HttpGet(fullURI);
+
+		request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + p21TokenServiceImpl.findToken(null));
+
+		HttpResponse response = httpClient.execute(request);
+		HttpEntity entity = response.getEntity();
+
+		return EntityUtils.toString(entity);
+	}
+
+	private URI prepareOrderLineURIForInvoice(String invoiceNo, int totalItem) {
+		StringBuilder filter = new StringBuilder();
+
+		if (isNotNullAndNotEmpty(invoiceNo)) {
+			filter.append(IntegrationConstants.INVOICE_NO).append(" ").append(IntegrationConstants.CONDITION_EQ)
+					.append(" '").append(invoiceNo).append("'");
+		}
+
+		String tenentId = httpServletRequest.getHeader("tenant");
+
+		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+
+		try {
+			String encodedFilter = URLEncoder.encode(filter.toString(), StandardCharsets.UTF_8.toString());
+			String query = "$format=" + ORDER_FORMAT + "&$filter=" + encodedFilter;
+			URI uri = new URI(masterTenant.getSubdomain() + DATA_API_BASE_URL + INVOICE_LINE_VIEW + "?" + query);
+			logger.info("This is URL to search items against invoice: {}", uri);
+			return uri;
+		} catch (Exception e) {
+			logger.error("An error occurred while preparing the order line URI: {}", e.getMessage());
+			return null;
+		}
 	}
 
 }

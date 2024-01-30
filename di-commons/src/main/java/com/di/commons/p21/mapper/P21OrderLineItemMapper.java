@@ -17,6 +17,7 @@ import com.di.commons.helper.P21OrderLineItem;
 import com.di.commons.helper.P21OrderLineItemHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
@@ -90,4 +91,58 @@ public class P21OrderLineItemMapper {
 		}
 		return orderItemDTOList;
 	}
+
+	public List<OrderItemDTO> convertP21OrderLineObjectToOrderLineDTOForInvoice(String orderLineDataFromInvoice,
+			String invoiceNo) throws JsonMappingException, JsonProcessingException {
+		List<OrderItemDTO> orderItemDTOList = new ArrayList<>();
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		JsonNode jsonNode = objectMapper.readTree(orderLineDataFromInvoice);
+		JsonNode valueNode = jsonNode.get("value");
+
+		for (JsonNode itemNode : valueNode) {
+			OrderItemDTO orderItemDTO = new OrderItemDTO();
+
+			orderItemDTO.setOrderNo(itemNode.get("order_no").asText());
+			orderItemDTO.setDescription(itemNode.get("item_desc").asText());
+			orderItemDTO.setPartNo(itemNode.get("item_id").asText());
+			orderItemDTO.setAmount(new BigDecimal(itemNode.get("unit_price").asText()));
+			orderItemDTO.setItemName(itemNode.get("item_id").asText());
+			orderItemDTO.setId(Long.parseLong(itemNode.get("invoice_line_uid").asText()));
+			orderItemDTO.setLineNo(itemNode.get("line_no").asText());
+			orderItemDTO.setInvoiceNo(invoiceNo);
+			orderItemDTO.setQuantity(Math.abs((int) Double.parseDouble(itemNode.get("qty_shipped").asText())));
+			orderItemDTO.setInvoiceDate(itemNode.get("date_created").asText());
+
+			P21OrderData p21OrderData = new P21OrderData();
+			OrderAddressDTO orderAddressShipTODTO = new OrderAddressDTO();
+
+			orderAddressShipTODTO.setAddressId(p21OrderData.getAddress_id());
+			orderAddressShipTODTO.setFax(p21OrderData.getContact_fax_number());
+			orderAddressShipTODTO.setStreet1(p21OrderData.getShip2_add1());
+			orderAddressShipTODTO.setStreet2(p21OrderData.getShip2_add2());
+			orderAddressShipTODTO.setCountry(p21OrderData.getShip2_country());
+			orderAddressShipTODTO.setProvince(p21OrderData.getShip2_state());
+			orderAddressShipTODTO.setCity(p21OrderData.getShip2_city());
+			orderAddressShipTODTO.setZipcode(p21OrderData.getShip2_zip());
+
+			orderItemDTO.setShipTo(orderAddressShipTODTO);
+
+			OrderAddressDTO orderAddressBillTODTO = new OrderAddressDTO();
+
+			orderAddressBillTODTO.setStreet1(p21OrderData.getMail_address1_a());
+			orderAddressShipTODTO.setStreet2(p21OrderData.getMail_address2_a());
+			orderAddressShipTODTO.setCountry(p21OrderData.getMail_country_a());
+			orderAddressShipTODTO.setProvince(p21OrderData.getMail_state_a());
+			orderAddressShipTODTO.setCity(p21OrderData.getMail_city_a());
+			orderAddressShipTODTO.setZipcode(p21OrderData.getMail_postal_code_a());
+
+			orderItemDTO.setBillTo(orderAddressBillTODTO);
+
+			orderItemDTOList.add(orderItemDTO);
+		}
+
+		return orderItemDTOList;
+	}
+
 }
