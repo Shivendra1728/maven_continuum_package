@@ -167,6 +167,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 					OrderItemDTO updatedOrderItemDTO = new OrderItemDTO(orderItemDTO);
 
 					updatedOrderItemDTO.setId(idCounter++);
+				
 					updatedOrderItemDTO.setInvoiceNo(invoiceNoFromResponse);
 
 					updatedOrderItemDTO.setQuantity((int) qtyShipped);
