@@ -262,8 +262,11 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 		CloseableHttpClient httpClient = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		
+		logger.info("RMA Reciept getSerialNumber Method called.....");
 
-		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		//String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		String tenentId = httpServletRequest.getHeader("tenant");
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
 		URIBuilder uriBuilder = new URIBuilder(masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_API_SERIAL_LINE);
