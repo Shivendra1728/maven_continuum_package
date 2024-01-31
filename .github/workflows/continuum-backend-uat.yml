@@ -6,7 +6,7 @@ name: Build and deploy WAR app to Azure Web App - continuum-backend-uat
 on:
   push:
     branches:
-      - development
+      - uat
   workflow_dispatch:
 
 jobs:
@@ -24,11 +24,9 @@ jobs:
       - name: Build with Maven
         run: mvn clean install
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v3
-        with:
-          name: java-app
-          path: '${{ github.workspace }}/target/*.war'
+      - name: Upload artifact to Azure Blob Storage
+        run: |
+          az storage blob upload-batch --account-name continuumartifacts --account-key JkrBMwT0pkuGhfBTILLxyr3x3czIfmuhg7JW2MGmLYgimTIW4M5tfNU/4maDJODN3hdEBhL4BZjk+AStsCObNg== --destination uat --source '${{ github.workspace }}/continuum-portal/target' --pattern '*.jar' --overwrite
 
   deploy:
     runs-on: ubuntu-latest
@@ -38,10 +36,17 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
-        with:
-          name: java-app
+      
+      - name: Create destination directory
+        run: mkdir -p '$GITHUB_WORKSPACE/continuum-portal/target'
+
+      - name: Download artifact from Azure Blob Storage
+        run: |
+          az storage blob download-batch --account-name continuumartifacts --account-key JkrBMwT0pkuGhfBTILLxyr3x3czIfmuhg7JW2MGmLYgimTIW4M5tfNU/4maDJODN3hdEBhL4BZjk+AStsCObNg== --destination '$GITHUB_WORKSPACE/continuum-portal/target' --source uat
+
+      - name: List contents of the target directory
+        run: ls -R '$GITHUB_WORKSPACE/continuum-portal/target'
+
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -50,4 +55,4 @@ jobs:
           app-name: 'continuum-backend-uat'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_71697269AC884C4BAAD841F7C2C1FAA5 }}
-          package: '*.war'
+          package: '*.jar'
