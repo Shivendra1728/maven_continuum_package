@@ -47,6 +47,7 @@ public class User extends BaseEntity implements Serializable {
 	private String userName;
 	@Size(max = 100)
 	@Column(name = "password", nullable = false)
+	@JsonIgnore
 	private String password;
 	@Size(max = 10)
 	@Column(name = "status")
