@@ -1,59 +1,3 @@
-# name: Build and deploy WAR app to Azure Web App - continuum-base-backend
-
-# on:
-#   push:
-#     branches:
-#       - master
-#   workflow_dispatch:
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - uses: actions/checkout@v4
-
-#       - name: Set up Java version
-#         uses: actions/setup-java@v1
-#         with:
-#           java-version: '17'
-
-#       - name: Build with Maven
-#         run: mvn clean install
-
-#       - name: Upload artifact to Azure Blob Storage
-#         run: |
-#           az storage blob upload-batch --account-name continuumbaseblob --account-key sf0G9YVBrKsk87z9rrdBFe9Kx4udwPQWlx5lvQoK60sDTJAHdUXOyYNccZkn5MUqTXL8mYPEKuMz+AStv3UCWA== --destination continuum-base-backend --source '${{ github.workspace }}/continuum-portal/target' --pattern '*.jar' --overwrite
-#   deploy:
-#     runs-on: ubuntu-latest
-#     needs: build
-#     environment:
-#       name: 'Production'
-#       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-#     steps:
-      
-#       - name: Create destination directory
-#         run: mkdir -p '$GITHUB_WORKSPACE/continuum-portal/target'
-
-#       - name: Download artifact from Azure Blob Storage
-#         run: |
-#           az storage blob download-batch --account-name continuumbaseblob --account-key sf0G9YVBrKsk87z9rrdBFe9Kx4udwPQWlx5lvQoK60sDTJAHdUXOyYNccZkn5MUqTXL8mYPEKuMz+AStv3UCWA== --destination '$GITHUB_WORKSPACE/continuum-portal/target' --source continuum-base-backend
-#       - name: List contents of the target directory
-#         run: ls -R '$GITHUB_WORKSPACE/continuum-portal/target'
-
-        
-#       - name: Deploy to Azure Web App
-#         id: deploy-to-webapp
-#         uses: azure/webapps-deploy@v2
-#         with:
-#           app-name: 'continuum-base-backend'
-#           slot-name: 'Production'
-#           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_42BE350D49C24BDD80CE369B7ECE97F1 }}
-#           package: '$GITHUB_WORKSPACE/continuum-portal/target/continuum-portal-0.0.1-SNAPSHOT.jar'
-#         env:
-#           JAVA_OPTS: '-jar $WEBSITE_RUN_FROM_PACKAGE'
-
 name: Build and deploy WAR app to Azure Web App - continuum-base-backend
 
 on:
@@ -80,7 +24,6 @@ jobs:
       - name: Upload artifact to Azure Blob Storage
         run: |
           az storage blob upload-batch --account-name continuumbaseblob --account-key sf0G9YVBrKsk87z9rrdBFe9Kx4udwPQWlx5lvQoK60sDTJAHdUXOyYNccZkn5MUqTXL8mYPEKuMz+AStv3UCWA== --destination continuum-base-backend --source '${{ github.workspace }}/continuum-portal/target' --pattern '*.jar' --overwrite
-
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -89,35 +32,18 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
+      
       - name: Create destination directory
         run: mkdir -p '$GITHUB_WORKSPACE/continuum-portal/target'
 
       - name: Download artifact from Azure Blob Storage
         run: |
           az storage blob download-batch --account-name continuumbaseblob --account-key sf0G9YVBrKsk87z9rrdBFe9Kx4udwPQWlx5lvQoK60sDTJAHdUXOyYNccZkn5MUqTXL8mYPEKuMz+AStv3UCWA== --destination '$GITHUB_WORKSPACE/continuum-portal/target' --source continuum-base-backend
-
       - name: List contents of the target directory
         run: ls -R '$GITHUB_WORKSPACE/continuum-portal/target'
 
-      - name: Set Deployment Approval Status
-        run: echo "::set-output name=deployment_approval_status::pending"
-
-      - name: Wait for approval
-        id: wait-for-approval
-        run: echo "Waiting for manual approval"
-
-      - name: Check Approval
-        run: |
-          if [ "${{ steps.wait-for-approval.outputs.approved }}" == "true" ]; then
-            echo "Deployment approved. Proceeding with deployment."
-            echo "::set-output name=deployment_approval_status::approved"
-          else
-            echo "Manual approval not received. Cancelling deployment."
-            echo "::set-output name=deployment_approval_status::rejected"
-          fi
-
+        
       - name: Deploy to Azure Web App
-        if: matrix.deploy && steps.check-approval.outputs.deployment_approval_status == 'approved'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
@@ -127,3 +53,77 @@ jobs:
           package: '$GITHUB_WORKSPACE/continuum-portal/target/continuum-portal-0.0.1-SNAPSHOT.jar'
         env:
           JAVA_OPTS: '-jar $WEBSITE_RUN_FROM_PACKAGE'
+
+# name: Build and deploy WAR app to Azure Web App - continuum-base-backend
+
+# on:
+#   push:
+#     branches:
+#       - master
+#   workflow_dispatch:
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Set up Java version
+#         uses: actions/setup-java@v1
+#         with:
+#           java-version: '17'
+
+#       - name: Build with Maven
+#         run: mvn clean install
+
+#       - name: Upload artifact to Azure Blob Storage
+#         run: |
+#           az storage blob upload-batch --account-name continuumbaseblob --account-key sf0G9YVBrKsk87z9rrdBFe9Kx4udwPQWlx5lvQoK60sDTJAHdUXOyYNccZkn5MUqTXL8mYPEKuMz+AStv3UCWA== --destination continuum-base-backend --source '${{ github.workspace }}/continuum-portal/target' --pattern '*.jar' --overwrite
+
+#   deploy:
+#     runs-on: ubuntu-latest
+#     needs: build
+#     environment:
+#       name: 'Production'
+#       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+#     steps:
+#       - name: Create destination directory
+#         run: mkdir -p '$GITHUB_WORKSPACE/continuum-portal/target'
+
+#       - name: Download artifact from Azure Blob Storage
+#         run: |
+#           az storage blob download-batch --account-name continuumbaseblob --account-key sf0G9YVBrKsk87z9rrdBFe9Kx4udwPQWlx5lvQoK60sDTJAHdUXOyYNccZkn5MUqTXL8mYPEKuMz+AStv3UCWA== --destination '$GITHUB_WORKSPACE/continuum-portal/target' --source continuum-base-backend
+
+#       - name: List contents of the target directory
+#         run: ls -R '$GITHUB_WORKSPACE/continuum-portal/target'
+
+#       - name: Set Deployment Approval Status
+#         run: echo "::set-output name=deployment_approval_status::pending"
+
+#       - name: Wait for approval
+#         id: wait-for-approval
+#         run: echo "Waiting for manual approval"
+
+#       - name: Check Approval
+#         run: |
+#           if [ "${{ steps.wait-for-approval.outputs.approved }}" == "true" ]; then
+#             echo "Deployment approved. Proceeding with deployment."
+#             echo "::set-output name=deployment_approval_status::approved"
+#           else
+#             echo "Manual approval not received. Cancelling deployment."
+#             echo "::set-output name=deployment_approval_status::rejected"
+#           fi
+
+#       - name: Deploy to Azure Web App
+#         if: matrix.deploy && steps.check-approval.outputs.deployment_approval_status == 'approved'
+#         id: deploy-to-webapp
+#         uses: azure/webapps-deploy@v2
+#         with:
+#           app-name: 'continuum-base-backend'
+#           slot-name: 'Production'
+#           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_42BE350D49C24BDD80CE369B7ECE97F1 }}
+#           package: '$GITHUB_WORKSPACE/continuum-portal/target/continuum-portal-0.0.1-SNAPSHOT.jar'
+#         env:
+#           JAVA_OPTS: '-jar $WEBSITE_RUN_FROM_PACKAGE'
