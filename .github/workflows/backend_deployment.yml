@@ -99,7 +99,7 @@ jobs:
         if: matrix.deploy
         uses: wei/cancel-workflow-action@v2
         with:
-          workflow_file: '.github/workflows/main.yml'
+          workflow_file: '.github/workflows/backend_deployment.yml'
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create destination directory
