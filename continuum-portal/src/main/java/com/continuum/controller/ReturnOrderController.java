@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.continuum.service.ReturnOrderService;
+import com.di.commons.dto.ReturnDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.integration.p21.transaction.P21RMAResponse;
@@ -46,7 +47,7 @@ public class ReturnOrderController {
 	}
 
 	@GetMapping("/getReturnOrder")
-	public List<ReturnOrderDTO> getAllReturnOrder(@RequestParam Long userId) {
+	public List<ReturnDTO> getAllReturnOrder(@RequestParam Long userId) {
 		return returnOrderService.getAllReturnOrder(userId);
 	}
 

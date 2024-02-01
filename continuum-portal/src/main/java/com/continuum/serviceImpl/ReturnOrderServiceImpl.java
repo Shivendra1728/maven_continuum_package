@@ -43,6 +43,7 @@ import com.continuum.tenant.repos.repositories.ReturnTypeRepository;
 import com.continuum.tenant.repos.repositories.RmaInvoiceInfoRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
 import com.di.commons.dto.CustomerDTO;
+import com.di.commons.dto.ReturnDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.dto.ReturnOrderItemDTO;
 import com.di.commons.dto.RmaInvoiceInfoDTO;
@@ -308,99 +309,27 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 //	}
 
 	@Override
-	public List<ReturnOrderDTO> getAllReturnOrder(Long userId) {
+	public List<ReturnDTO> getAllReturnOrder(Long userId) {
 
 		Optional<User> optionalUser = userRepository.findById(userId);
-		List<ReturnOrderDTO> returnOrderDTOs = null;
-		if (optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			if (user.getRole().getId() == 1 || user.getRole().getId() == 2) {
-				List<ReturnOrder> returnOrderEntities = returnOrderRepository.findAll();
-
-				returnOrderDTOs = returnOrderEntities.stream()
-
-						.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
-
-//				List<ReturnOrderDTO> returnOrderDTOList = returnOrder.stream()
-
-//			            .map(returnOrderMapper::returnOrderToReturnOrderDTO)
-
-//			            .collect(Collectors.toList());
-
-//				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
-//
-//					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
-//
-//					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
-//
-//						Date currentDate = new Date(); // Current date
-//
-//						List<Date> upcomingDates = returnOrderItems.stream()
-//
-//								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
-//																									// ReturnOrderItemDTO
-//
-//								.filter(date -> date != null && date.after(currentDate))
-//
-//								.collect(Collectors.toList());
-//
-//						upcomingDates.sort(Date::compareTo);
-//
-//						if (!upcomingDates.isEmpty()) {
-//
-//							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
-//
-//						}
-//
-//					}
-//
-//				}
-			} else {
-				List<ReturnOrder> returnOrder = returnOrderRepository.findByUserId(userId);
-				List<ReturnOrder> returnOrder1 = returnOrderRepository.findAll();
-				for (ReturnOrder ro : returnOrder1) {
-					if (ro.getUser() == null) {
-						returnOrder.add(ro);
-					}
-				}
-				returnOrderDTOs = returnOrder.stream()
-
-						.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
-
-//				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
-//
-//					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
-//
-//					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
-//
-//						Date currentDate = new Date(); // Current date
-//
-//						List<Date> upcomingDates = returnOrderItems.stream()
-//
-//								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
-//																									// ReturnOrderItemDTO
-//
-//								.filter(date -> date != null && date.after(currentDate))
-//
-//								.collect(Collectors.toList());
-//
-//						upcomingDates.sort(Date::compareTo);
-//
-//						if (!upcomingDates.isEmpty()) {
-//
-//							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
-//
-//						}
-//
-//					}
-//
-//				}
-			}
-
-		}
-		return returnOrderDTOs;
-
+//		List<ReturnOrderDTO> returnOrderDTOs = null;
+		List<ReturnOrderRepository.ReturnDTO> returnOrderDTOs = returnOrderRepository.findProjectedBy();
+		return returnOrderDTOs.stream()
+                .map(this::convertToReturnOrderDTO)
+                .collect(Collectors.toList());
 	}
+	private ReturnDTO convertToReturnOrderDTO(ReturnOrderRepository.ReturnDTO dto) {
+        ReturnDTO returnOrderDTO = new ReturnDTO();
+        // Set the fields in your custom DTO
+        returnOrderDTO.setRmaOrderNo(dto.getRmaOrderNo());
+        returnOrderDTO.setCreatedDate(dto.getCreatedDate());
+        returnOrderDTO.setCustomer(dto.getCustomer());
+        returnOrderDTO.setUser(dto.getUser());
+        returnOrderDTO.setReturnType(dto.getReturnType());
+        returnOrderDTO.setNextActivityDate(dto.getNextActivityDate());
+        returnOrderDTO.setStatus(dto.getStatus());
+        return returnOrderDTO;
+    }
 
 	@Override
 	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(String rmaOrderNo) {
