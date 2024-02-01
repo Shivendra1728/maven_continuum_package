@@ -96,23 +96,17 @@ jobs:
 
     steps:
       - name: Manual Approval
-        if: matrix.deploy
-        uses: wei/cancel-workflow-action@v2
-        with:
-          workflow_file: '.github/workflows/backend_deployment.yml'
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create destination directory
-        run: mkdir -p '$GITHUB_WORKSPACE/continuum-portal/target'
-
-      - name: Download artifact from Azure Blob Storage
+        if: matrix.deploy && github.event_name != 'workflow_dispatch'
         run: |
-          az storage blob download-batch --account-name continuumbaseblob --account-key sf0G9YVBrKsk87z9rrdBFe9Kx4udwPQWlx5lvQoK60sDTJAHdUXOyYNccZkn5MUqTXL8mYPEKuMz+AStv3UCWA== --destination '$GITHUB_WORKSPACE/continuum-portal/target' --source continuum-base-backend
+          echo "Deployments require manual approval."
+          echo "Please comment '/approve' on the pull request to approve deployment."
 
-      - name: List contents of the target directory
-        run: ls -R '$GITHUB_WORKSPACE/continuum-portal/target'
+      - name: Check Approval
+        if: matrix.deploy && github.event_name != 'workflow_dispatch' && contains(github.event.comment.body, '/approve')
+        run: echo "Deployment approved. Proceeding with deployment."
 
       - name: Deploy to Azure Web App
+        if: matrix.deploy && github.event_name != 'workflow_dispatch' && contains(github.event.comment.body, '/approve')
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
