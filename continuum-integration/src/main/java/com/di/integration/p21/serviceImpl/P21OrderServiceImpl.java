@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -122,38 +123,38 @@ public class P21OrderServiceImpl implements P21OrderService {
 	public List<OrderDTO> getOrdersBySearchCriteria(OrderSearchParameters orderSearchParameters) throws Exception {
 		List<OrderDTO> orderDTOList = new ArrayList<>();
 		List<OrderItemDTO> orderItemDTOList = new ArrayList<>();
+
 		if (!isNotNullAndNotEmpty(orderSearchParameters.getOrderNo())
 				&& isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
 			int totalItem = 1;
 			List<OrderItemDTO> invoiceItemDTOList = p21InvoiceMapper.mapP21InvoiceResponseToData(
 					p21InvoiceServiceImpl.getInvoiceLineData(orderSearchParameters, totalItem)); // Invoice header
-			// int totalItem = 1; // fetching one item to get invoice no from item
-			// orderItemDTOList = p21OrderLineServiceImpl
-			// .getordersLineBySearchcriteria(orderSearchParameters,
-			// totalItem,orderSearchParameters.getInvoiceNo());
 			if (invoiceItemDTOList.size() > 0) {
 				orderSearchParameters.setOrderNo(invoiceItemDTOList.get(0).getOrderNo());
 				orderDTOList = getAllOrdersBySearch(orderSearchParameters, orderItemDTOList);
 			}
-
 		} else {
 			orderDTOList = getAllOrdersBySearch(orderSearchParameters, orderItemDTOList);
 		}
-		if (!orderDTOList.isEmpty()) {
 
-			// First we parse carrier id
-			String orderNumber = orderDTOList.get(0).getOrderNo();
-			String CarrierIdData = getCarrierData(orderNumber);
-			String carrierId = parseCarrierId(CarrierIdData);
+		if (orderDTOList.get(0).getOrderItems().isEmpty()) {
+			OrderDTO specialOrderDTO = new OrderDTO();
+			specialOrderDTO.setMessage("No items in this order are invoiced");
+			return Collections.singletonList(specialOrderDTO);
+		} else {
+			if (!orderDTOList.isEmpty()) {
+				// First we parse carrier id
+				String orderNumber = orderDTOList.get(0).getOrderNo();
+				String CarrierIdData = getCarrierData(orderNumber);
+				String carrierId = parseCarrierId(CarrierIdData);
 
-			// Secondly we fetch name from carrier now
-			String CarrierNameData = getCarrierNameData(carrierId);
-			String CarrierName = parseCarrierName(CarrierNameData);
-			orderDTOList.get(0).setCarrierName(CarrierName);
-
+				// Secondly we fetch name from carrier now
+				String CarrierNameData = getCarrierNameData(carrierId);
+				String CarrierName = parseCarrierName(CarrierNameData);
+				orderDTOList.get(0).setCarrierName(CarrierName);
+			}
+			return orderDTOList;
 		}
-
-		return orderDTOList;
 	}
 
 	private List<OrderDTO> getAllOrdersBySearch(OrderSearchParameters orderSearchParameters,
@@ -169,9 +170,18 @@ public class P21OrderServiceImpl implements P21OrderService {
 			int totalItem = -1; // fetch all items in case of -1
 			OrderSearchParameters orderSearchParams = new OrderSearchParameters();
 			orderSearchParams.setOrderNo(orderDTO.getOrderNo());
-			if (orderItemDTOList.size() == 0) {
-				orderItemDTOList = p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParams, totalItem,
-						orderSearchParameters.getInvoiceNo());
+			// code here
+
+			if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
+				if (orderItemDTOList.size() == 0) {
+				orderItemDTOList = p21OrderLineServiceImpl.getordersLineByInvoice(orderSearchParameters.getInvoiceNo(),totalItem);
+				}
+			} else {
+				// If invoice number is not present, fetch items using the existing API
+				if (orderItemDTOList.size() == 0) {
+					orderItemDTOList = p21OrderLineServiceImpl.getordersLineBySearchcriteria(orderSearchParams, null,
+							totalItem, orderSearchParams.getInvoiceNo());
+				}
 			}
 
 			if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
@@ -179,7 +189,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 						.collect(Collectors.toList());
 			}
 			orderDTO.setOrderItems(orderItemDTOList);
-			
+
 			orderDTO.setContactDTO(
 					p21ContactMapper.convertP21ContactObjectToContactDTO(getContactData(orderDTO.getContactEmailId())));
 
@@ -442,7 +452,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 			String query = "$format=" + ORDER_FORMAT + "&$select=" + "&$filter=" + encodedFilter;
 
 //			String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
-			
+
 			String tenentId = httpServletRequest.getHeader("tenant");
 
 			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);

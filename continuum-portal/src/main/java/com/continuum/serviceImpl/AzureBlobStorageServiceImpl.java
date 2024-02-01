@@ -181,8 +181,8 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 	}
 
 	private boolean isValidFileType(String fileExtension) {
-		return fileExtension.equals("pdf") || fileExtension.equals("doc") || fileExtension.equals("jpg")
-				|| fileExtension.equals("jpeg") || fileExtension.equals("png");
+		return fileExtension.equals("pdf") || fileExtension.equals("doc") || fileExtension.equals("jpg") || fileExtension.equals("docx")
+				|| fileExtension.equals("jpeg") || fileExtension.equals("png") || fileExtension.equals("gif") || fileExtension.equals("svg");
 	}
 
 	private boolean isValidFileCSVType(String fileExtension) {

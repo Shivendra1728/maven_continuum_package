@@ -133,7 +133,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO, P21RMAResponse p21RMARespo)
 			throws MessagingException {
 		returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
-		returnOrderDTO.setStatus(PortalConstants.RETURN_REQUESTED);
+		returnOrderDTO.setStatus(returnOrderDTO.getStatus());
 		returnOrderDTO.setOrderDate(new Date());
 		returnOrderDTO.setCreatedDate(new Date());
 		returnOrderDTO.setRequestedDate(new Date());
@@ -141,8 +141,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 		String Status = p21RMARespo.getStatus();
 		if (Status.equals(PortalConstants.SUCCESS)) {
-			returnOrderDTO.setStatus(PortalConstants.RETURN_REQUESTED);
-			logger.info("Setting status to:: '{}'", PortalConstants.RETURN_REQUESTED);
+			returnOrderDTO.setStatus(returnOrderDTO.getStatus());
+			logger.info("Setting status to:: '{}'", returnOrderDTO.getStatus());
 
 		} else {
 			returnOrderDTO.setStatus(PortalConstants.FAILED);
@@ -173,6 +173,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		for (ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {
 			returnOrderItem.setShipTo(null);
 			returnOrderItem.setIsActive(true);
+			returnOrderItem.setInvoiceNo(returnOrderItem.getInvoiceNo());
 			if (returnOrderItem.getReturnAmount() == null && returnOrderItem.getReStockingAmount() == null) {
 
 				returnOrderItem.setReStockingAmount(new BigDecimal(0));
@@ -230,7 +231,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 //		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
 		HashMap<String, String> map = new HashMap<>();
-		if (returnOrderDTO.getStatus().equalsIgnoreCase(PortalConstants.RETURN_REQUESTED)) {
+		if (returnOrderDTO.getStatus().equalsIgnoreCase(returnOrderDTO.getStatus())) {
 			map.put("RMA_QUALIFIER", getRmaaQualifier());
 			map.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
 			map.put("CUST_NAME", returnOrderDTO.getCustomer().getDisplayName());
@@ -326,34 +327,34 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 //			            .collect(Collectors.toList());
 
-				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
-
-					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
-
-					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
-
-						Date currentDate = new Date(); // Current date
-
-						List<Date> upcomingDates = returnOrderItems.stream()
-
-								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
-																									// ReturnOrderItemDTO
-
-								.filter(date -> date != null && date.after(currentDate))
-
-								.collect(Collectors.toList());
-
-						upcomingDates.sort(Date::compareTo);
-
-						if (!upcomingDates.isEmpty()) {
-
-							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
-
-						}
-
-					}
-
-				}
+//				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
+//
+//					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
+//
+//					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
+//
+//						Date currentDate = new Date(); // Current date
+//
+//						List<Date> upcomingDates = returnOrderItems.stream()
+//
+//								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
+//																									// ReturnOrderItemDTO
+//
+//								.filter(date -> date != null && date.after(currentDate))
+//
+//								.collect(Collectors.toList());
+//
+//						upcomingDates.sort(Date::compareTo);
+//
+//						if (!upcomingDates.isEmpty()) {
+//
+//							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
+//
+//						}
+//
+//					}
+//
+//				}
 			} else {
 				List<ReturnOrder> returnOrder = returnOrderRepository.findByUserId(userId);
 				List<ReturnOrder> returnOrder1 = returnOrderRepository.findAll();
@@ -366,35 +367,34 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 						.map(returnOrderMapper::returnOrderToReturnOrderDTO).collect(Collectors.toList());
 
-				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
-
-					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
-
-					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
-
-						Date currentDate = new Date(); // Current date
-
-						List<Date> upcomingDates = returnOrderItems.stream()
-
-								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
-																									// ReturnOrderItemDTO
-
-								.filter(date -> date != null && date.after(currentDate))
-
-								.collect(Collectors.toList());
-
-						upcomingDates.sort(Date::compareTo);
-
-						if (!upcomingDates.isEmpty()) {
-
-							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
-
-						}
-
-					}
-
-				}
-
+//				for (ReturnOrderDTO returnOrderDTO : returnOrderDTOs) {
+//
+//					List<ReturnOrderItemDTO> returnOrderItems = returnOrderDTO.getReturnOrderItem();
+//
+//					if (returnOrderItems != null && !returnOrderItems.isEmpty()) {
+//
+//						Date currentDate = new Date(); // Current date
+//
+//						List<Date> upcomingDates = returnOrderItems.stream()
+//
+//								.map(returnOrderItemDTO -> returnOrderItemDTO.getFollowUpDate()) // Use
+//																									// ReturnOrderItemDTO
+//
+//								.filter(date -> date != null && date.after(currentDate))
+//
+//								.collect(Collectors.toList());
+//
+//						upcomingDates.sort(Date::compareTo);
+//
+//						if (!upcomingDates.isEmpty()) {
+//
+//							returnOrderDTO.setNextActivityDate(upcomingDates.get(0));
+//
+//						}
+//
+//					}
+//
+//				}
 			}
 
 		}
@@ -674,7 +674,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			List<String> updates = new ArrayList<>();
 			if (!previousNote.equalsIgnoreCase(note.getNote())) {
 				updates.add("Note '" + note.getNote() + "'" + " added, while assigning RMA " + getRmaaQualifier() + " "
-						+ rmaNo + ".");
+						+ rmaNo);
 				highlight = note.getNote();
 
 			}

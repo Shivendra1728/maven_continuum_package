@@ -80,6 +80,7 @@ public class ReturnOrderItemDTO extends BaseEntity {
 	private String returnLocationId;
 	private Boolean isSerialized;
 	private String serialNo;
+	private Integer invoiceNo;
 	
 	@OneToMany
 	@JoinColumn(name = "returnOrderItemId")

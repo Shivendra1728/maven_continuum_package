@@ -29,5 +29,6 @@ public class OrderAddress extends BaseEntity {
 	private String lastName;
 	private String emailAddress;
 	private String returnLocNote;
+	private String attentionNote;
 
 }
