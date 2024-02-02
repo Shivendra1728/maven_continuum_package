@@ -12,6 +12,8 @@ public final class PortalConstants {
 	public static final String UNDER_REVIEW = "Under Review";
 	public static final String AUTHORIZED = "Authorized";
 	public static final String RECIEVED = "Recieved";
+	public static final String CREDITED = "Credited";
+	public static final String APPROVED = "Approved";
 
 	public static final String RETURN_REQUESTED = "Return Requested";
 	public static final String AWAITING_VENDOR_APPROVAL = "Awaiting Vendor Approval";
