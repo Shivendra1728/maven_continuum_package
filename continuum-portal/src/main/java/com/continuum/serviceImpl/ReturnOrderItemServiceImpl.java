@@ -372,7 +372,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_CANCLED)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_LINE_DENIED)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)
-						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RECIEVED)) {
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RECIEVED)
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.CREDITED)
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.APPROVED)) {
 					List<StatusConfig> statusConfigList = statusConfigRepository
 							.findBystatuslabl(updatedItem.getStatus());
 					StatusConfig statusConfig = statusConfigList.get(0);
@@ -447,7 +449,33 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 								returnOrderEntity.getStatus());
 					}
 
-				} else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
+				}if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.CREDITED)) {
+					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
+						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
+								+ " to " + "'" + returnOrderEntity.getStatus() + "' by " + updateBy + ".";
+						String title = "Return Order";
+						String status = "RMA Header";
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy,
+								returnOrderEntity.getStatus());
+					}
+
+				}
+				
+				if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.APPROVED)) {
+					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
+						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
+								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
+								+ " to " + "'" + returnOrderEntity.getStatus() + "' by " + updateBy + ".";
+						String title = "Return Order";
+						String status = "RMA Header";
+						auditLogService.setAuditLog(description, title, status, rmaNo, updateBy,
+								returnOrderEntity.getStatus());
+					}
+
+				}				
+				
+				else if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.AUTHORIZED)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
 
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
