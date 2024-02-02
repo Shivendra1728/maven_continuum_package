@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.mail.MessagingException;
 
+import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.di.commons.dto.ReturnDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 import com.di.commons.helper.OrderSearchParameters;
 import com.di.integration.p21.transaction.P21RMAResponse;
@@ -17,7 +19,7 @@ public interface ReturnOrderService {
 	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO, P21RMAResponse p21RMARespo)
 			throws MessagingException;
 
-	public List<ReturnOrderDTO> getAllReturnOrder(Long userId);
+	public List<ReturnDTO> getAllReturnOrder(Long userId);
 
 	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(String rmaOrderNo);
 

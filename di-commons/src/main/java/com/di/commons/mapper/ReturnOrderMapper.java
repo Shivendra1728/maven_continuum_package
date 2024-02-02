@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.continuum.tenant.repos.entity.ReturnOrder;
+import com.di.commons.dto.ReturnDTO;
 import com.di.commons.dto.ReturnOrderDTO;
 
 @Component
@@ -19,6 +20,14 @@ public class ReturnOrderMapper {
 	public ReturnOrderDTO returnOrderToReturnOrderDTO(ReturnOrder returnOrder) {
 
 		ReturnOrderDTO poDTO = modelMapper.map(returnOrder, ReturnOrderDTO.class);
+		returnOrder.getId();
+
+		return poDTO;
+	}
+	
+	public ReturnDTO returnOrderToReturnDTO(ReturnOrder returnOrder) {
+
+		ReturnDTO poDTO = modelMapper.map(returnOrder, ReturnDTO.class);
 		returnOrder.getId();
 
 		return poDTO;
