@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -48,6 +49,7 @@ import com.continuum.service.ReturnOrderItemService;
 import com.continuum.tenant.repos.entity.AuditLog;
 import com.continuum.tenant.repos.entity.Customer;
 import com.continuum.tenant.repos.entity.OrderAddress;
+import com.continuum.tenant.repos.entity.OrderItemDocuments;
 import com.continuum.tenant.repos.entity.QuestionConfig;
 import com.continuum.tenant.repos.entity.RMAReceiptInfo;
 import com.continuum.tenant.repos.entity.ReturnOrder;
@@ -58,6 +60,7 @@ import com.continuum.tenant.repos.entity.User;
 import com.continuum.tenant.repos.repositories.AuditLogRepository;
 import com.continuum.tenant.repos.repositories.CustomerRepository;
 import com.continuum.tenant.repos.repositories.EditableConfigRepository;
+import com.continuum.tenant.repos.repositories.OrderItemDocumentRepository;
 import com.continuum.tenant.repos.repositories.QuestionConfigRepository;
 import com.continuum.tenant.repos.repositories.RMAReceiptInfoRepository;
 import com.continuum.tenant.repos.repositories.ReturnOrderItemRepository;
@@ -168,6 +171,9 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 	@Autowired
 	RMAReceiptInfoRepository rmaReceiptInfoRepository;
+
+	@Autowired
+	OrderItemDocumentRepository orderItemDocumentRepository;
 
 	@Override
 	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
@@ -1632,4 +1638,20 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 		}
 		return updateItemReturnLocation;
 	}
+
+	@Override
+	public String deleteAttachment(Long id) {
+	    try {	
+	    	Optional<OrderItemDocuments> optionalOrderItemDocuments = orderItemDocumentRepository.findById(id);
+	    	OrderItemDocuments orderItemDocuments = optionalOrderItemDocuments.get(); 
+	    	orderItemDocuments.setReturnOrderItem(null);
+	    	orderItemDocumentRepository.save(orderItemDocuments);
+	    	orderItemDocumentRepository.delete(orderItemDocuments);
+	    	return "Attachment deleted";
+	    } catch (EmptyResultDataAccessException e) {
+	        return "Attachment with ID " + id + " does not exist";
+	    }
+	}
+
+
 }
