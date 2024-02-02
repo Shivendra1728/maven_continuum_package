@@ -138,4 +138,12 @@ public class ReturnOrderItemController {
 		return p21UpdateRMAService.updateItemReturnLocation(rmaNo, itemId, locationId);
 	}
 
+	
+	
+	@DeleteMapping("/deleteAttachment")
+	public String deleteAttachment(@RequestParam Long id) throws Exception {
+		return returnOrderItemService.deleteAttachment(id);
+	}
+	
+	
 }

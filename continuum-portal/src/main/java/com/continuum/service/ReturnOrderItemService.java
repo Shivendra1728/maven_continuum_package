@@ -26,6 +26,8 @@ public interface ReturnOrderItemService {
 	
 	Map<String, Object> deleteItem(ReturnOrderItem returnOrderItem , String updateBy , String rmaNo) throws Exception;
 	Map<String, Object> addItem(List<ReturnOrderItemDTO> returnOrderItemList , String updateBy , String rmaNo) throws Exception;
+	
+	String deleteAttachment(Long deleteAttachment);
 
 	
 }

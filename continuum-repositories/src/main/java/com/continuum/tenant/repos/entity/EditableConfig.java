@@ -29,5 +29,6 @@ public class EditableConfig extends BaseEntity {
 	private boolean recievedStatus;
 	private boolean isSerialized;
 	private boolean isSellable;
+	private boolean addSku;
 
 }
