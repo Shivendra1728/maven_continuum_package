@@ -45,6 +45,8 @@ public class P21ReturnOrderMarshller {
 		xml = xml.replaceAll("wstxns4:", "");
 		xml = xml.replaceAll("xmlns:wstxns4", "xmlns:a");
 		
+		xml = xml.replaceAll("key", "a:string");
+		
 		logger.info(xml);
 		return xml;
 	}
@@ -182,7 +184,16 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 		dataElement2.setName(IntegrationConstants.DATA_ELEMENT_NAME_ORDER_ITEMS);
 		dataElement2.setType(IntegrationConstants.DATA_ELEMENT_TYPE_LIST);
 		List<Row> rows= new ArrayList<>();
+	
+		
+		Integer count = 1 ;
 		for (P21OrderItemHelper p21OrderItemHelper : p21ReturnOrderDataHelper.getP21OrderItemList()) {
+			
+//			List<String> values = Arrays.asList(IntegrationConstants.OE_ORDER_ITEM_ID,IntegrationConstants.MAX_LINE_NO);
+	        Keys keys = new Keys();
+	        keys.setKey(Arrays.asList(IntegrationConstants.OE_ORDER_ITEM_ID,IntegrationConstants.MAX_LINE_NO));
+		    dataElement2.setKeys(keys);
+		    
 			Row itemRow = new Row();
 
 			// Create the Edit objects
@@ -193,8 +204,13 @@ public P21RMAResponse umMarshall(String jsonString) throws JsonMappingException,
 			Edit itemEdit2 = new Edit();
 			itemEdit2.setName(IntegrationConstants.UNIT_QUANTITY);
 			itemEdit2.setValue(p21OrderItemHelper.getUnit_quantity());
+			
+			Edit itemEdit3 = new Edit();
+			itemEdit3.setName(IntegrationConstants.MAX_LINE_NO);
+			itemEdit3.setValue(count.toString()); 
+		    count++;
 
-			itemRow.setEdits(Arrays.asList(itemEdit1, itemEdit2));
+			itemRow.setEdits(Arrays.asList(itemEdit1, itemEdit2, itemEdit3));
 			rows.add(itemRow);
 			
 		}

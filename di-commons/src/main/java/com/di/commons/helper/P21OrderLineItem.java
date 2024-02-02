@@ -19,5 +19,6 @@ public class P21OrderLineItem {
 	private String order_no;
 	private String original_invoice_date;
 	private String line_number;
+	private String parent_oe_line_uid;
 
 }

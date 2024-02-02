@@ -9,7 +9,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -152,7 +154,37 @@ public class P21OrderServiceImpl implements P21OrderService {
 				String CarrierNameData = getCarrierNameData(carrierId);
 				String CarrierName = parseCarrierName(CarrierNameData);
 				orderDTOList.get(0).setCarrierName(CarrierName);
+				// Add parent and child items to each OrderDTO
+				for (OrderDTO orderDTO : orderDTOList) {
+					List<OrderItemDTO> items = orderDTO.getOrderItems();
+					Map<Long, List<OrderItemDTO>> parentChildMap = new HashMap<>();
+
+					for (OrderItemDTO item : items) {
+						Long parentLineId = item.getParentLineId();
+						
+						if (parentLineId != 0) {
+							parentChildMap.computeIfAbsent(parentLineId, k -> new ArrayList<>()).add(item);
+						}
+					}
+
+					for (OrderItemDTO item : items) {
+						long itemId = item.getOrderLineId();
+						List<OrderItemDTO> childItems = parentChildMap.getOrDefault(itemId, Collections.emptyList());
+						item.setInnerItems(childItems);
+
+					}
+				}
 			}
+			if (!orderDTOList.isEmpty() && !orderDTOList.get(0).getOrderItems().isEmpty()) {
+				List<OrderItemDTO> orderItems = orderDTOList.get(0).getOrderItems();
+
+				for (int i = orderItems.size() - 1; i >= 0; i--) {
+					if (orderItems.get(i).getParentLineId() > 0) {
+						orderItems.remove(i);
+					}
+				}
+			}
+
 			return orderDTOList;
 		}
 	}
@@ -174,7 +206,8 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 			if (isNotNullAndNotEmpty(orderSearchParameters.getInvoiceNo())) {
 				if (orderItemDTOList.size() == 0) {
-				orderItemDTOList = p21OrderLineServiceImpl.getordersLineByInvoice(orderSearchParameters.getInvoiceNo(),totalItem);
+					orderItemDTOList = p21OrderLineServiceImpl
+							.getordersLineByInvoice(orderSearchParameters.getInvoiceNo(), totalItem);
 				}
 			} else {
 				// If invoice number is not present, fetch items using the existing API

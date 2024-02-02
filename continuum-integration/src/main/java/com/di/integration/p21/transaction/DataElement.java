@@ -33,5 +33,6 @@ public class DataElement {
 
 	@JacksonXmlProperty(localName = "Type")
 	private String type;
+	
 
 }
