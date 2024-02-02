@@ -29,6 +29,7 @@ public final class IntegrationConstants {
     public static final String TAKER = "taker";
     public static final String OE_ORDER_ITEM_ID = "oe_order_item_id";
     public static final String UNIT_QUANTITY = "unit_quantity";
+    public static final String MAX_LINE_NO = "max_line_no";
 
     
     public static final String HDR_NOTE = "HDR_NOTE.hdr_note";
@@ -102,6 +103,7 @@ public final class IntegrationConstants {
     public static final String BILL_TO_POSTAL_CODE = "bill2_postal_code";
 	public static final String APPROVED ="approved";
 	public static final String ERP_RMA_WINDOW_ENDPOINT ="${erp.window_end_point}";
+	
 	
     
 

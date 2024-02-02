@@ -42,8 +42,9 @@ public class P21OrderLineItemMapper {
 			orderitemDTO.setDescription(p21OrderLineItem.getItem_desc());
 			orderitemDTO.setPartNo(p21OrderLineItem.getItem_id());
 			orderitemDTO.setAmount(new BigDecimal(p21OrderLineItem.getUnit_price()));
+			orderitemDTO.setParentLineId(Long.parseLong(p21OrderLineItem.getParent_oe_line_uid()));
 			orderitemDTO.setItemName(p21OrderLineItem.getItem_id());
-			orderitemDTO.setId(Long.parseLong(p21OrderLineItem.getOe_line_uid()));
+			orderitemDTO.setOrderLineId(Long.parseLong(p21OrderLineItem.getOe_line_uid()));
 			orderitemDTO.setLineNo(p21OrderLineItem.getLine_number());
 			orderitemDTO.setInvoiceNo(invoiceNo);
 			orderitemDTO.setQuantity(Math.abs((int) Double.parseDouble(p21OrderLineItem.getOrdered_qty())));
@@ -109,6 +110,7 @@ public class P21OrderLineItemMapper {
 			orderItemDTO.setAmount(new BigDecimal(itemNode.get("unit_price").asText()));
 			orderItemDTO.setItemName(itemNode.get("item_id").asText());
 			orderItemDTO.setId(Long.parseLong(itemNode.get("invoice_line_uid").asText()));
+			orderItemDTO.setParentLineId(Long.parseLong(itemNode.get("parent_oe_line_uid").asText()));
 			orderItemDTO.setLineNo(itemNode.get("line_no").asText());
 			orderItemDTO.setInvoiceNo(invoiceNo);
 			orderItemDTO.setQuantity(Math.abs((int) Double.parseDouble(itemNode.get("qty_shipped").asText())));
