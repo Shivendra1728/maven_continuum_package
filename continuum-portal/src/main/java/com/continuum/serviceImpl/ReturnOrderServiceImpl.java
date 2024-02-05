@@ -272,6 +272,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			// Format the incremented value back into the string format
 			String newRmaOrderNo = String.format("FAIL%04d", incrementedValue);
 			return newRmaOrderNo;
+			
 		}
 	}
 
