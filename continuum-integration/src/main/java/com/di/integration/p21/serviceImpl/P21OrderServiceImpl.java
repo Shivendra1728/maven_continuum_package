@@ -168,10 +168,16 @@ public class P21OrderServiceImpl implements P21OrderService {
 					}
 
 					for (OrderItemDTO item : items) {
-						long itemId = item.getOrderLineId();
-						List<OrderItemDTO> childItems = parentChildMap.getOrDefault(itemId, Collections.emptyList());
-						item.setInnerItems(childItems);
+					    Long orderId = item.getOrderLineId(); // Assuming getOrderLineId() returns Long or null
 
+					    // Check if orderId is not null before using it
+					    if (orderId != null) {
+					        long itemId = orderId.longValue();
+					        List<OrderItemDTO> childItems = parentChildMap.getOrDefault(itemId, Collections.emptyList());
+					        item.setInnerItems(childItems);
+					    } else {
+					        // Handle the case where orderId is null, for example, log a warning or handle it appropriately.
+					    }
 					}
 				}
 			}
