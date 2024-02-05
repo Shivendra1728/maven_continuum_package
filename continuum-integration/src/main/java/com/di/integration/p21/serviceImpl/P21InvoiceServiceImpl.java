@@ -230,6 +230,8 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 			if(indexOfInvNo == null) {
 				break;
 			}
+			
+			Integer quantity = item.getQuanity();
 
 			URI sessionEnd = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 			URI sessionEndFullURI = sessionEnd.resolve(sessionEnd.getRawPath());
@@ -574,6 +576,56 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 			} catch (Exception e) {
 				logger.error("Error Run Tool on Window::" + e.getMessage());
 			}
+			
+			try {
+				logger.info("Update line item in RMA");
+ 
+				CloseableHttpClient httpClient12 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+ 
+				String quantityUpdateURI = String.format(
+						"" + masterTenant.getSubdomain()
+						+ "/uiserver0/ui/full/v2/data/data?dw=items&fn=unit_quantity&r=1&tn=TP_ITEMS&wn=w_rma_entry_sheet&wid=%s",
+						masterTenant.getSubdomain(), windowId);
+				
+				logger.info(quantityUpdateURI);
+				
+ 
+				URI quantityUpdateURL = new URIBuilder(quantityUpdateURI).build();
+ 
+				HttpPut runToolOnWindowRequest = new HttpPut(quantityUpdateURL);
+				runToolOnWindowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				runToolOnWindowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				runToolOnWindowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				
+				
+				JSONObject requestBody1 = new JSONObject();
+			    requestBody1.put("DatawindowName", "items");
+			    requestBody1.put("FieldName", "unit_quantity");
+			    requestBody1.put("Value", quantity);
+			    requestBody1.put("WindowId", windowId);
+			    requestBody1.put("Row", 1);
+ 
+			    // Set the request body
+			    StringEntity requestEntity = new StringEntity(requestBody1.toString());
+			    logger.info("This is request body for update item: "+requestEntity);
+			    runToolOnWindowRequest.setEntity(requestEntity);
+ 
+				
+				
+ 
+				CloseableHttpResponse runToolOnWindowResponse = httpClient12.execute(runToolOnWindowRequest);
+				HttpEntity entity11 = runToolOnWindowResponse.getEntity();
+				String runToolOnWindowResponseBody = EntityUtils.toString(entity11);
+				logger.info("Update line item in quantity : " + runToolOnWindowResponseBody);
+ 
+			} catch (Exception e) {
+				logger.error("Error Run Tool on Window::" + e.getMessage());
+			}
+			
+			
+			
 
 			try {
 				logger.info("saveWindow");
