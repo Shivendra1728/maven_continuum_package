@@ -146,6 +146,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			logger.info("Setting status to:: '{}'", returnOrderDTO.getStatus());
 
 		} else {
+			returnOrderDTO.setRmaOrderNo(generateRmaNumber());
 			returnOrderDTO.setStatus(PortalConstants.FAILED);
 			returnOrderDTO.setIsAuthorized(false);
 			returnOrderDTO.setIsEditable(false);
@@ -248,6 +249,30 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String template = emailTemplateRenderer.getTemplateContent();
 		emailSender.sendEmail(recipient, template, subject, map);
 
+	}
+	
+	public String generateRmaNumber() {
+		String searchPrefix = "FAIL";
+		
+
+		ReturnOrder lastRecord = returnOrderRepository
+				.findFirstByRmaOrderNoStartingWithOrderByRmaOrderNoDesc(searchPrefix);
+
+		if (lastRecord == null) {
+			return "FAIL0001";
+		} else {
+			String rmaOrderNo = lastRecord.getRmaOrderNo();
+
+			// Extract the numeric part
+			String numericPart = rmaOrderNo.replaceAll("\\D+", "");
+
+			// Convert the numeric part to an integer and increment by one
+			int incrementedValue = Integer.parseInt(numericPart) + 1;
+
+			// Format the incremented value back into the string format
+			String newRmaOrderNo = String.format("FAIL%04d", incrementedValue);
+			return newRmaOrderNo;
+		}
 	}
 
 	@Override
