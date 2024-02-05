@@ -16,7 +16,7 @@ public class Client extends BaseEntity {
 
 	private String clientName;
 	private String ClientAddress;
-	private Long contactNo;
+	private String contactNo;
 	private String city;
 	private String state;
 	private String country;
