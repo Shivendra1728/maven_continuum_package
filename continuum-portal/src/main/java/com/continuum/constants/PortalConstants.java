@@ -29,7 +29,7 @@ public final class PortalConstants {
 
 	public static final String RMA = "RMA";
 //	public static final String EMAIL_RECIPIENT = "rmagocontinuum@gmail.com";
-	public static final String EMAIL_RECIPIENT = "rmagocontinuum@gmail.com";
+	public static final String EMAIL_RECIPIENT = "Returns@labdepotinc.com";
 
 //	public static final String EMAIL_RECIPIENT = "priyanshi.porwal@bytesfarms.com";
 	public static final String EMAIL_SUBJECT_PREFIX = "Continuum - Your RMA Return Order";
