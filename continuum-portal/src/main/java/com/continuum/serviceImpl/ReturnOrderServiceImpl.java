@@ -236,7 +236,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		if (returnOrderDTO.getStatus().equalsIgnoreCase(returnOrderDTO.getStatus())) {
 			map.put("RMA_QUALIFIER", getRmaaQualifier());
 			map.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
-			map.put("CUST_NAME", returnOrderDTO.getCustomer().getDisplayName());
+			map.put("CUST_NAME", returnOrderDTO.getContact().getContactName());
 			map.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
 			map.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
 		} else {
