@@ -164,7 +164,8 @@ public class CustomerServiceImpl implements CustomerService {
 			user.setFullName("None");
 			userRepository.save(user);
 
-			String recipient = PortalConstants.EMAIL_RECIPIENT;
+//			String recipient = PortalConstants.EMAIL_RECIPIENT;
+			String recipient = customerDTO.getEmail();
 			String subject = "Activate Your Account";
 
 //			emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
