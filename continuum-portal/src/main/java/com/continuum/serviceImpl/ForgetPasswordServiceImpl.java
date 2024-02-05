@@ -43,7 +43,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 
 	@Autowired
 	ReturnOrderServiceImpl returnOrderServiceImpl;
-	
+
 	@Autowired
 	EmailTemplateRenderer emailTemplateRenderer;
 
@@ -73,7 +73,15 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 				URL url = new URL(fullUrl);
 				String host = url.getHost();
 				String scheme = request.getScheme();
-				String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
+				String link = "";
+				if (host.contains("uat")) {
+					link = scheme + "://" + request.getHeader("tenant") + ".uat.gocontinuum.ai"
+							+ "/updatepassword?token=" + uuid;
+
+				} else {
+					link = scheme + "://" + request.getHeader("tenant") + ".gocontinuum.ai" + "/updatepassword?token="
+							+ uuid;
+				}
 //			String link="http://pace.localhost:3000/updatepassword?token="+uuid;
 				map.put("RESET_LINK", link);
 				map.put("user_name", existingUser.getFirstName());

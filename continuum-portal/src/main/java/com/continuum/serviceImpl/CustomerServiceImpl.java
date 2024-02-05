@@ -97,15 +97,15 @@ public class CustomerServiceImpl implements CustomerService {
 	ReturnOrderServiceImpl returnOrderServiceImpl;
 
 	LocalDate localDate;
-	
-	 private final EmailTemplateRenderer emailTemplateRenderer;
 
-	    @Autowired
-	    public CustomerServiceImpl(EmailTemplateRenderer emailTemplateRenderer) {
-	        this.emailTemplateRenderer = emailTemplateRenderer;
-	    }
+	private final EmailTemplateRenderer emailTemplateRenderer;
 
-	//EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
+	@Autowired
+	public CustomerServiceImpl(EmailTemplateRenderer emailTemplateRenderer) {
+		this.emailTemplateRenderer = emailTemplateRenderer;
+	}
+
+	// EmailTemplateRenderer emailTemplateRenderer = new EmailTemplateRenderer();
 
 	public CustomerDTO findbyCustomerId(String customerId) {
 		Customer customer = customerRepository.findByCustomerId(customerId);
@@ -175,8 +175,15 @@ public class CustomerServiceImpl implements CustomerService {
 				String host = url.getHost();
 				String scheme = request.getScheme();
 //				String link = scheme + "://" + host + "/userlogin?token=" + uuid;
-				String link = scheme + "://" + request.getHeader("tenant") +".gocontinuum.ai" + "/userlogin?token=" + uuid;
-				System.err.println("Link : "+ link);
+				String link = "";
+				if (host.contains("uat")) {
+					link = scheme + "://" + request.getHeader("tenant") + ".uat.gocontinuum.ai" + "/userlogin?token="
+							+ uuid;
+				} else {
+					link = scheme + "://" + request.getHeader("tenant") + ".gocontinuum.ai" + "/userlogin?token="
+							+ uuid;
+				}
+				System.err.println("Link : " + link);
 
 				map.put("cust_name", orderDTO.getCustomer().getDisplayName());
 				map.put("cust_email", customerDTO.getEmail());
