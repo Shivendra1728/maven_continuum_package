@@ -711,7 +711,6 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 						}
 					}
 				}
-				
 				i++;
 			}
 		}

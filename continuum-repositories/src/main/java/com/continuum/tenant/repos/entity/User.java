@@ -123,7 +123,6 @@ public class User extends BaseEntity implements Serializable {
 	@JoinColumn(name = "customerId")
 	private Customer customer;
 	
-
 	public boolean getStatus() {
 
 		return status;

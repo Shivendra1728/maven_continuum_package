@@ -256,7 +256,6 @@ public class CustomerServiceImpl implements CustomerService {
 			logger.error("An error occurred while preparing the order URI: {}", e.getMessage());
 
 		}
-		
 		return null;
 	}
 
