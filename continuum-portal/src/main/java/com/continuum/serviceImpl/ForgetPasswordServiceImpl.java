@@ -86,7 +86,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 				map.put("RESET_LINK", link);
 				map.put("user_name", existingUser.getFirstName());
 				map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
-				Long contactNo = returnOrderServiceImpl.getClientConfig().getClient().getContactNo();
+				String contactNo = returnOrderServiceImpl.getClientConfig().getClient().getContactNo();
 				String decimalFormat = contactNo.toString();
 				String num = decimalFormat.substring(0, 3) + "-" + decimalFormat.substring(3, 6) + "-"
 						+ decimalFormat.substring(6);
