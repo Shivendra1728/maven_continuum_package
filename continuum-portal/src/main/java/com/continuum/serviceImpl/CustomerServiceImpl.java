@@ -174,8 +174,9 @@ public class CustomerServiceImpl implements CustomerService {
 				URL url = new URL(fullUrl);
 				String host = url.getHost();
 				String scheme = request.getScheme();
-				String link = scheme + "://" + host + "/userlogin?token=" + uuid;
-//			String link="http://tld.localhost:3000/userlogin?token="+uuid;
+//				String link = scheme + "://" + host + "/userlogin?token=" + uuid;
+				String link = scheme + "://" + request.getHeader("tenant") +".gocontinuum.ai" + "/userlogin?token=" + uuid;
+				System.err.println("Link : "+ link);
 
 				map.put("cust_name", orderDTO.getCustomer().getDisplayName());
 				map.put("cust_email", customerDTO.getEmail());
