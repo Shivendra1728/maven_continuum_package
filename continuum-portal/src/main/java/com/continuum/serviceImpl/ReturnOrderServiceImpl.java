@@ -248,7 +248,43 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		map.put("order_no", returnOrderDTO.getOrderNo());
 		String template = emailTemplateRenderer.getTemplateContent();
 		emailSender.sendEmail(recipient, template, subject, map);
+		
+		
+		
+		String recipient1 = "";
+		
+		if (masterTenant.getIsProd()) {
+			recipient1 = returnOrderDTO.getContact().getContactEmailId();
+		} else {
+			recipient1 = PortalConstants.EMAIL_RECIPIENT;
 
+		}
+
+//		String email = returnOrderDTO.getContact().getContactEmailId();
+//		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
+//			recipient="alex@gocontinuum.ai";
+//		}
+		String subject1 = "A Return has been requested by "+returnOrderDTO.getContact().getContactName()+" : "+getRmaaQualifier()+returnOrderDTO.getRmaOrderNo();
+
+//		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
+		HashMap<String, String> map1 = new HashMap<>();
+		if (returnOrderDTO.getStatus().equalsIgnoreCase(returnOrderDTO.getStatus())) {
+			map1.put("RMA_QUALIFIER", getRmaaQualifier());
+			map1.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
+			map1.put("USER_NAME", returnOrderDTO.getContact().getContactName());
+			map1.put("COMPANY_NAME", returnOrderDTO.getCustomer().getDisplayName());
+			map1.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
+			map1.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
+		} else {
+			map1.put("status", returnOrderDTO.getStatus());
+			map1.put("rma_order_no", null);
+		}
+
+		map.put("order_contact_name", customerDTO.getDisplayName());
+		map.put("order_no", returnOrderDTO.getOrderNo());
+		String template1 = emailTemplateRenderer.getRETURN_PROCESSOR_CREATE();
+		emailSender.sendEmail(recipient1, template1, subject1, map1);
+		
 	}
 
 	public String generateRmaNumber() {

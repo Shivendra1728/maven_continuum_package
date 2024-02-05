@@ -84,6 +84,11 @@ public class EmailTemplateRenderer {
 		Templates template = templatesRepository.findById(13L).orElse(null);
 		return (template != null) ? template.getTemplateContent() : null;
 	}
+	
+	public String getRETURN_PROCESSOR_CREATE() {
+		Templates template = templatesRepository.findById(14L).orElse(null);
+		return (template != null) ? template.getTemplateContent() : null;
+	}
 
 	// Can be removed I guess.
 	private static final String EMAIL_RMA_STATUS = "";
