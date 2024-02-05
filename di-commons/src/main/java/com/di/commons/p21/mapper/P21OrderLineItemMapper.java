@@ -110,7 +110,7 @@ public class P21OrderLineItemMapper {
 			orderItemDTO.setAmount(new BigDecimal(itemNode.get("unit_price").asText()));
 			orderItemDTO.setItemName(itemNode.get("item_id").asText());
 			orderItemDTO.setId(Long.parseLong(itemNode.get("invoice_line_uid").asText()));
-			orderItemDTO.setParentLineId(Long.parseLong(itemNode.get("parent_oe_line_uid").asText()));
+			orderItemDTO.setParentLineId(Long.parseLong(itemNode.get("invoice_line_uid_parent").asText()));
 			orderItemDTO.setLineNo(itemNode.get("line_no").asText());
 			orderItemDTO.setInvoiceNo(invoiceNo);
 			orderItemDTO.setQuantity(Math.abs((int) Double.parseDouble(itemNode.get("qty_shipped").asText())));
