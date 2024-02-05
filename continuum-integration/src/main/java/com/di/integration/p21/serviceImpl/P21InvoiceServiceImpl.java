@@ -227,6 +227,9 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 		for (ReturnOrderItem item : items) {
 			Integer indexOfInvNo = getIndexOfItem(rmaNo, masterTenantObject, item);
+			if(indexOfInvNo == null) {
+				break;
+			}
 
 			URI sessionEnd = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 			URI sessionEndFullURI = sessionEnd.resolve(sessionEnd.getRawPath());
@@ -661,6 +664,9 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 		String itemId = item.getItemName();
 		Integer foundInvoiceNumber = item.getInvoiceNo();
+		if(foundInvoiceNumber==null) {
+			return 0;
+		}
 		String foundInvoiceNumberString = foundInvoiceNumber.toString();
 		Set<SerialData> serialNo = item.getSerialData();
 
