@@ -121,7 +121,7 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 				userRepository.save(user);
 				return user.getRole();
 			} else {
-				// Token has expired, show an error message
+				
 				return null;
 			}
 		} else {

@@ -268,7 +268,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public CustomerDTO createCustomer(CustomerDTO custDTO) throws Exception {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
