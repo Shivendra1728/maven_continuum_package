@@ -103,9 +103,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	ReturnTypeRepository returnTypeRepository;
-	
+
 	@Autowired
-	EmailTemplateRenderer emailTemplateRenderer ;
+	EmailTemplateRenderer emailTemplateRenderer;
 
 	ReturnOrder returnOrder;
 
@@ -213,17 +213,17 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		// String recipient = returnOrder.getCustomer().getEmail();
 
 //		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
-		String tenentId= httpServletRequest.getHeader("tenant");
+		String tenentId = httpServletRequest.getHeader("tenant");
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 		String recipient = "";
 
 		if (masterTenant.getIsProd()) {
 			recipient = returnOrderDTO.getContact().getContactEmailId();
 		} else {
-			recipient = PortalConstants.EMAIL_RECIPIENT;
+//			recipient = PortalConstants.EMAIL_RECIPIENT;
+			recipient = masterTenant.getDefaultEmail();
 
 		}
-
 //		String email = returnOrderDTO.getContact().getContactEmailId();
 //		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
 //			recipient="alex@gocontinuum.ai";
@@ -236,7 +236,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		if (returnOrderDTO.getStatus().equalsIgnoreCase(returnOrderDTO.getStatus())) {
 			map.put("RMA_QUALIFIER", getRmaaQualifier());
 			map.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
-			map.put("CUST_NAME", returnOrderDTO.getCustomer().getDisplayName());
+			map.put("CUST_NAME", returnOrderDTO.getContact().getContactName());
 			map.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
 			map.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
 		} else {
@@ -250,10 +250,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		emailSender.sendEmail(recipient, template, subject, map);
 
 	}
-	
+
 	public String generateRmaNumber() {
 		String searchPrefix = "FAIL";
-		
 
 		ReturnOrder lastRecord = returnOrderRepository
 				.findFirstByRmaOrderNoStartingWithOrderByRmaOrderNoDesc(searchPrefix);
@@ -340,22 +339,21 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		Optional<User> optionalUser = userRepository.findById(userId);
 //		List<ReturnOrderDTO> returnOrderDTOs = null;
 		List<ReturnOrderRepository.ReturnDTO> returnOrderDTOs = returnOrderRepository.findProjectedBy();
-		return returnOrderDTOs.stream()
-                .map(this::convertToReturnOrderDTO)
-                .collect(Collectors.toList());
+		return returnOrderDTOs.stream().map(this::convertToReturnOrderDTO).collect(Collectors.toList());
 	}
+
 	private ReturnDTO convertToReturnOrderDTO(ReturnOrderRepository.ReturnDTO dto) {
-        ReturnDTO returnOrderDTO = new ReturnDTO();
-        // Set the fields in your custom DTO
-        returnOrderDTO.setRmaOrderNo(dto.getRmaOrderNo());
-        returnOrderDTO.setCreatedDate(dto.getCreatedDate());
-        returnOrderDTO.setCustomer(dto.getCustomer());
-        returnOrderDTO.setUser(dto.getUser());
-        returnOrderDTO.setReturnType(dto.getReturnType());
-        returnOrderDTO.setNextActivityDate(dto.getNextActivityDate());
-        returnOrderDTO.setStatus(dto.getStatus());
-        return returnOrderDTO;
-    }
+		ReturnDTO returnOrderDTO = new ReturnDTO();
+		// Set the fields in your custom DTO
+		returnOrderDTO.setRmaOrderNo(dto.getRmaOrderNo());
+		returnOrderDTO.setCreatedDate(dto.getCreatedDate());
+		returnOrderDTO.setCustomer(dto.getCustomer());
+		returnOrderDTO.setUser(dto.getUser());
+		returnOrderDTO.setReturnType(dto.getReturnType());
+		returnOrderDTO.setNextActivityDate(dto.getNextActivityDate());
+		returnOrderDTO.setStatus(dto.getStatus());
+		return returnOrderDTO;
+	}
 
 	@Override
 	public List<ReturnOrderDTO> getAllReturnOrderByRmaNo(String rmaOrderNo) {
@@ -589,7 +587,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			if (masterTenant.getIsProd()) {
 				recipient = note.getContact().getContactEmailId();
 			} else {
-				recipient = PortalConstants.EMAIL_RECIPIENT;
+//				recipient = PortalConstants.EMAIL_RECIPIENT;
+				recipient = masterTenant.getDefaultEmail();
 
 			}
 			String subject = PortalConstants.ASSIGN_RMA + getRmaaQualifier() + " " + returnOrder.getRmaOrderNo();
@@ -606,7 +605,14 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				e.printStackTrace();
 			}
 
-			String recipient1 = PortalConstants.EMAIL_RECIPIENT;
+			String recipient1 = "";
+			if (masterTenant.getIsProd()) {
+				recipient = user.getEmail();
+			} else {
+//				recipient = PortalConstants.EMAIL_RECIPIENT;
+				recipient = masterTenant.getDefaultEmail();
+
+			}
 			String subject1 = "Your Return " + getRmaaQualifier() + " " + rmaNo + " is Under Review";
 			HashMap<String, String> map1 = new HashMap<>();
 			map1.put("RMA_QUALIFIER", getRmaaQualifier());
