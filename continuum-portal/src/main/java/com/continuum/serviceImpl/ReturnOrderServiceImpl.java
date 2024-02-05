@@ -254,9 +254,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		String recipient1 = "";
 		
 		if (masterTenant.getIsProd()) {
-			recipient1 = returnOrderDTO.getContact().getContactEmailId();
+			recipient1 = masterTenant.getDefaultEmail();
 		} else {
-			recipient1 = PortalConstants.EMAIL_RECIPIENT;
+			recipient1 = masterTenant.getDefaultEmail();
 
 		}
 
