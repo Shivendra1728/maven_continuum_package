@@ -434,7 +434,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				if (masterTenant.getIsProd()) {
 					recipient = returnOrder.getContact().getContactEmailId();
 				} else {
-					recipient = PortalConstants.EMAIL_RECIPIENT;
+					recipient = masterTenant.getDefaultEmail();
 
 				}
 
@@ -879,8 +879,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				if (masterTenant.getIsProd()) {
 					recipient = contactEmail;
 				} else {
-					recipient = PortalConstants.EMAIL_RECIPIENT;
-
+//					recipient = PortalConstants.EMAIL_RECIPIENT;
+					recipient= masterTenant.getDefaultEmail();
 				}
 				String subject = PortalConstants.NOTE_STATUS_CUSTOMER + returnOrderServiceImpl.getRmaaQualifier() + " "
 						+ rmaNo;
@@ -927,9 +927,10 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 				String recipient = "";
 				if (masterTenant.getIsProd()) {
-					recipient = contactEmail;
+					recipient = user.getEmail();
 				} else {
-					recipient = PortalConstants.EMAIL_RECIPIENT;
+//					recipient = PortalConstants.EMAIL_RECIPIENT;
+					recipient= masterTenant.getDefaultEmail();
 
 				}
 				String subject = PortalConstants.NOTE_STATUS + returnOrderServiceImpl.getRmaaQualifier() + " " + rmaNo;
