@@ -170,13 +170,13 @@ public class CustomerServiceImpl implements CustomerService {
 			String recipient = "";
 
 			if (masterTenant.getIsProd()) {
-				recipient =customerDTO.getEmail();
+				recipient = customerDTO.getEmail();
 			} else {
 //				recipient = PortalConstants.EMAIL_RECIPIENT;
 				recipient = masterTenant.getDefaultEmail();
 
-			}			
-			
+			}
+
 			String subject = "Activate Your Account";
 
 //			emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
@@ -191,6 +191,10 @@ public class CustomerServiceImpl implements CustomerService {
 				if (host.contains("uat")) {
 					link = scheme + "://" + request.getHeader("tenant") + ".uat.gocontinuum.ai" + "/userlogin?token="
 							+ uuid;
+				} else if (host.contains("dev")) {
+					link = scheme + "://" + request.getHeader("tenant") + ".dev.gocontinuum.ai" + "/userlogin?token="
+							+ uuid;
+
 				} else {
 					link = scheme + "://" + request.getHeader("tenant") + ".gocontinuum.ai" + "/userlogin?token="
 							+ uuid;
