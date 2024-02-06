@@ -675,7 +675,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						String template = emailTemplateRenderer.getREQ_MORE_CUST_INFO();
 						HashMap<String, String> map = new HashMap<>();
 						map.put("RMA_NO", returnOrderEntity.getRmaOrderNo());
-						map.put("cust_name", returnOrderEntity.getCustomer().getDisplayName());
+						map.put("cust_name", returnOrderEntity.getContact().getContactName());
 						map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
 						map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
 						map.put("CLIENT_PHONE",
@@ -718,7 +718,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					HashMap<String, String> map = new HashMap<>();
 					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
 					map.put("RMA_NO", returnOrderEntity.getRmaOrderNo());
-					map.put("CUST_NAME", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("CUST_NAME", returnOrderEntity.getContact().getContactName());
 					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
 					map.put("CLIENT_PHONE",
 							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
@@ -793,7 +793,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					HashMap<String, String> map = new HashMap<>();
 					map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
 					map.put("RMA_NO", returnOrderEntity.getRmaOrderNo());
-					map.put("CUST_NAME", returnOrderEntity.getCustomer().getDisplayName());
+					map.put("CUST_NAME", returnOrderEntity.getContact().getContactName());
 					map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
 					map.put("CLIENT_PHONE",
 							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));

@@ -38,8 +38,8 @@ public final class PortalConstants {
 	public static final String ReturnOrderLineItemStatus = "Update Your Tracking Code.";
 	public static final String RMAStatus = "Continuum - RMA Status Changed ";
 	public static final String ASSIGN_RMA = "Continuum - RMA Assigned";
-	public static final String NOTE_STATUS = "Continuum - Note Added";
-	public static final String NOTE_STATUS_CUSTOMER = "Continuum - Note Added And Message To Customer";
+	public static final String NOTE_STATUS = "Continuum - Note Added : ";
+	public static final String NOTE_STATUS_CUSTOMER = "RMA Note: ";
 
 	public static final String RMA_CANCLED = "Cancelled";
 

@@ -626,7 +626,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				recipient = masterTenant.getDefaultEmail();
 
 			}
-			String subject = PortalConstants.ASSIGN_RMA + getRmaaQualifier() + " " + returnOrder.getRmaOrderNo();
+			String subject = "You have been Assigned RMA: "+ getRmaaQualifier() + " " + returnOrder.getRmaOrderNo();
 			HashMap<String, String> map = new HashMap<>();
 			map.put("RMA_QUALIFIER", getRmaaQualifier());
 			map.put("RMA_NO", rmaNo);
@@ -653,7 +653,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			map1.put("RMA_QUALIFIER", getRmaaQualifier());
 			map1.put("RMA_NO", rmaNo);
 			map1.put("CUST_NAME", returnOrder.getCustomer().getDisplayName());
-			map1.put("RP_NAME", returnOrder.getUser().getFullName());
+			map1.put("RP_NAME", returnOrder.getUser().getFirstName()+" "+returnOrder.getUser().getLastName());
 			map1.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
 			map1.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
 			String template1 = emailTemplateRenderer.getCUSTMER_UNDER_REVIEW_TEMPLATE();
