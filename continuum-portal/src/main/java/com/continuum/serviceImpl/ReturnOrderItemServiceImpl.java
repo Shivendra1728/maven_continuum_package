@@ -807,11 +807,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderRepository.save(returnOrderEntity);
 
 				// update customer to put tracking code.
-				String subject = "Return: " + existingItem.getItemName() + " is Ready and Awaiting Transit";
-				HashMap<String, String> map1 = new HashMap<>();
+				String subject = "Return: " + returnOrderServiceImpl.getRmaaQualifier()+ " " + rmaNo +" ("+ existingItem.getItemName()+") " + " is Ready and Awaiting Transit";
+				HashMap<String, String> map1 = new HashMap<>(); 
 				map1.put("RMA_NO", rmaNo);
 				map1.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
-
+				map1.put("CUST_NAME", returnOrderEntity.getContact().getContactName());
 				map1.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
 				map1.put("CLIENT_PHONE",
 						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));

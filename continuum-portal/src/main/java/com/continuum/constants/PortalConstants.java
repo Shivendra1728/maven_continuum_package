@@ -32,7 +32,7 @@ public final class PortalConstants {
 //	public static final String EMAIL_RECIPIENT = "Returns@labdepotinc.com";
 
 //	public static final String EMAIL_RECIPIENT = "priyanshi.porwal@bytesfarms.com";
-	public static final String EMAIL_SUBJECT_PREFIX = "Continuum - Your RMA Return Order";
+	public static final String EMAIL_SUBJECT_PREFIX = "Continuum - Your Return Order";
 	public static final String EMAIL_BODY_PREFIX = "Continuum - RMA Status Changed";
 	public static final String FPasswordLink = "Continuum - Change Your Password.";
 	public static final String ReturnOrderLineItemStatus = "Update Your Tracking Code.";

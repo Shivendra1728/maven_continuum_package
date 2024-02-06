@@ -652,7 +652,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			HashMap<String, String> map1 = new HashMap<>();
 			map1.put("RMA_QUALIFIER", getRmaaQualifier());
 			map1.put("RMA_NO", rmaNo);
-			map1.put("CUST_NAME", returnOrder.getCustomer().getDisplayName());
+			map1.put("CUST_NAME", returnOrder.getContact().getContactName());
 			map1.put("RP_NAME", returnOrder.getUser().getFirstName()+" "+returnOrder.getUser().getLastName());
 			map1.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
 			map1.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
