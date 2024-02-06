@@ -940,7 +940,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				map.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
 				map.put("RMA_NO", rmaNo);
 				map.put("ITEM_NAME", existingItem.getItemName());
-				map.put("ASSIGNED_TO", user.getFullName());
+				map.put("ASSIGNED_TO", user.getFirstName()+" "+user.getLastName());
 				map.put("CURRENT_STATUS", updateNote.getStatus());
 				map.put("ASSIGNED_BY", updateBy);
 				map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());

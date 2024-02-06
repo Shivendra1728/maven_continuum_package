@@ -642,10 +642,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 			String recipient1 = "";
 			if (masterTenant.getIsProd()) {
-				recipient = user.getEmail();
+				recipient1 = user.getEmail();
 			} else {
 //				recipient = PortalConstants.EMAIL_RECIPIENT;
-				recipient = masterTenant.getDefaultEmail();
+				recipient1 = masterTenant.getDefaultEmail();
 
 			}
 			String subject1 = "Your Return " + getRmaaQualifier() + " " + rmaNo + " is Under Review";
