@@ -165,7 +165,18 @@ public class CustomerServiceImpl implements CustomerService {
 			userRepository.save(user);
 
 //			String recipient = PortalConstants.EMAIL_RECIPIENT;
-			String recipient = customerDTO.getEmail();
+			String tenentId = httpServletRequest.getHeader("tenant");
+			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+			String recipient = "";
+
+			if (masterTenant.getIsProd()) {
+				recipient =customerDTO.getEmail();
+			} else {
+//				recipient = PortalConstants.EMAIL_RECIPIENT;
+				recipient = masterTenant.getDefaultEmail();
+
+			}			
+			
 			String subject = "Activate Your Account";
 
 //			emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
