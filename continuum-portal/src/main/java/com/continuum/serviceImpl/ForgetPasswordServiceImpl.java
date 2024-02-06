@@ -78,11 +78,13 @@ public class ForgetPasswordServiceImpl implements ForgetPasswordService {
 					link = scheme + "://" + request.getHeader("tenant") + ".uat.gocontinuum.ai"
 							+ "/updatepassword?token=" + uuid;
 
+				} else if (host.contains("dev")) {
+					link = scheme + "://" + request.getHeader("tenant") + ".dev.gocontinuum.ai"
+							+ "/updatepassword?token=" + uuid;
 				} else {
 					link = scheme + "://" + request.getHeader("tenant") + ".gocontinuum.ai" + "/updatepassword?token="
 							+ uuid;
 				}
-//			String link="http://pace.localhost:3000/updatepassword?token="+uuid;
 				map.put("RESET_LINK", link);
 				map.put("user_name", existingUser.getFirstName());
 				map.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
