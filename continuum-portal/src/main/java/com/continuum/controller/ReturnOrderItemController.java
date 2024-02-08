@@ -1,5 +1,6 @@
 package com.continuum.controller;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +57,7 @@ public class ReturnOrderItemController {
 
 	@PutMapping("/updatestatus")
 	public String updateReturnOrderItem(@RequestParam Long id, @RequestParam String rmaNo,
-			@RequestParam String updateBy, @RequestBody ReturnOrderItemDTO updatedItem) {
+			@RequestParam String updateBy, @RequestBody ReturnOrderItemDTO updatedItem) throws IOException {
 		return returnOrderItemService.updateReturnOrderItem(id, rmaNo, updateBy, updatedItem);
 	}
 

@@ -176,7 +176,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 	OrderItemDocumentRepository orderItemDocumentRepository;
 
 	@Override
-	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) {
+	public String updateReturnOrderItem(Long id, String rmaNo, String updateBy, ReturnOrderItemDTO updatedItem) throws IOException {
 
 		final Logger logger = LoggerFactory.getLogger(ReturnOrderItemServiceImpl.class);
 
@@ -808,6 +808,13 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				// update customer to put tracking code.
 				String subject = "Return: " + returnOrderServiceImpl.getRmaaQualifier()+ " " + rmaNo +" ("+ existingItem.getItemName()+") " + " is Ready and Awaiting Transit";
+				List<OrderItemDocuments> orderItemDocuments = existingItem.getOrderItemDocuments();
+				Map<String, String> attachmentPaths = new HashMap<String, String>();
+				for(OrderItemDocuments orderItemDocument : orderItemDocuments) {
+					if(orderItemDocument.getURL() != null && orderItemDocument.getType().equals("note")) {
+						attachmentPaths.put(orderItemDocument.getOriginalFileName(), orderItemDocument.getURL());
+					}
+				}
 				HashMap<String, String> map1 = new HashMap<>(); 
 				map1.put("RMA_NO", rmaNo);
 				map1.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
@@ -815,14 +822,30 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				map1.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
 				map1.put("CLIENT_PHONE",
 						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
-
+				map1.put("ADDRESS_NAME", existingItem.getShipTo().getAddressType());
+				if(existingItem.getShipTo().getAttentionNote() != null && !existingItem.getShipTo().getAttentionNote().isEmpty()) {
+					map1.put("ATTENTION_NOTE", existingItem.getShipTo().getAttentionNote());
+				}else {
+					map1.put("ATTENTION_NOTE", "--");
+				}
+				String address = existingItem.getShipTo().getStreet1();
+				if(existingItem.getShipTo().getStreet2() != null) {
+					address += ", " + existingItem.getShipTo().getStreet2();
+				}
+				address += ", " + existingItem.getShipTo().getCity() + ", " + existingItem.getShipTo().getProvince() + ", " + existingItem.getShipTo().getZipcode() + ", "+ existingItem.getShipTo().getCountry();
+				map1.put("ADDRESS", address);
+				if(existingItem.getShipTo().getReturnLocNote() != null && !existingItem.getShipTo().getReturnLocNote().isEmpty()) {
+					map1.put("SHIP_TOMESSAGE", existingItem.getShipTo().getReturnLocNote());
+				}else {
+					map1.put("SHIP_TOMESSAGE", "--");
+				}
 				String template1 = emailTemplateRenderer.getEMAIL_LINE_ITEM_STATUS_IN_TRANSIT();
 
 				if ("Authorized Awaiting Transit".equals(updatedItem.getStatus())) {
 					try {
 //					sendEmail1(recipient, updatedItem.getStatus());
 //					emailSender.sendEmailToVender(recipient, updatedItem.getStatus());
-						emailSender.sendEmail(recipient, template1, subject, map1);
+						emailSender.sendEmailWithAttachment(recipient, template1, subject, map1, attachmentPaths);
 
 					} catch (MessagingException e) {
 						e.printStackTrace();
