@@ -141,7 +141,7 @@ public class P21OrderServiceImpl implements P21OrderService {
 
 		if (orderDTOList.get(0).getOrderItems().isEmpty()) {
 			OrderDTO specialOrderDTO = new OrderDTO();
-			specialOrderDTO.setMessage("No items in this order are invoiced");
+			specialOrderDTO.setMessage("No items in this order are invoiced or drop shipped.");
 			return Collections.singletonList(specialOrderDTO);
 		} else {
 			if (!orderDTOList.isEmpty()) {
