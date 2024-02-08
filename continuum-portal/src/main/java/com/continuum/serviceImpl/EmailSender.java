@@ -1,17 +1,12 @@
 package com.continuum.serviceImpl;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
-import javax.activation.FileDataSource;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -23,6 +18,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -40,9 +36,8 @@ import com.continuum.constants.PortalConstants;
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
 import com.continuum.tenant.repos.repositories.UserRepository;
-import com.di.integration.p21.serviceImpl.RmaReceiptServiceImpl;
-
-import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.util.EntityUtils;
 
 @Component
 public class EmailSender {
@@ -145,18 +140,12 @@ public class EmailSender {
 		// Create a multipart message to combine text and attachments
 		Multipart multipart = new MimeMultipart();
 		multipart.addBodyPart(messageBodyPart);
-		List<File> downloadedFiles = new ArrayList<File>();
 		// Add multiple attachments if provided
 		if (attachmentPaths != null && !attachmentPaths.isEmpty()) {
 			for (String fileName : attachmentPaths.keySet()) {
-				File downloadedFile = downloadFile(attachmentPaths.get(fileName), fileName);
-				downloadedFiles.add(downloadedFile);
-				String filePath = downloadedFile.getAbsolutePath();
+				byte[] downloadFile = downloadFile(attachmentPaths.get(fileName));
 		        BodyPart attachmentBodyPart = new MimeBodyPart();
-		        filePath = filePath.replace("\\", "/");
-		        DataSource source = new FileDataSource(filePath); // Replace with your file path
-		        
-		        
+		        DataSource source = new ByteArrayDataSource(downloadFile, "application/octet-stream"); // Replace with your file path   
 		        // Create a DataHandler for the attachment
 		        attachmentBodyPart.setDataHandler(new DataHandler(source));
 
@@ -173,35 +162,35 @@ public class EmailSender {
 
 		// Send the message
 		Transport.send(message);
-		if(downloadedFiles != null) {
-			for(File file : downloadedFiles) {
-				deleteFile(file);
-			}
-		}
 	}
 	
-	private void deleteFile(File file) throws IOException {
-		if (file.exists() && !file.isDirectory()) {	
-			logger.info("Deleting attachment: "+file.getAbsolutePath());
-            Files.deleteIfExists(file.toPath());
-        }	
-	}
-
-	public static File downloadFile(String url, String localFileName) throws IOException {
+	private byte[] downloadFile(String fileUrl) {
         CloseableHttpClient httpClient = HttpClients.createDefault();
-        HttpGet request = new HttpGet(url);
-        File file = new File(localFileName);
+        try {
+            HttpGet httpGet = new HttpGet(fileUrl);
 
-        try (CloseableHttpResponse response = httpClient.execute(request)) {
-            if (response.getStatusLine().getStatusCode() != 200) {
-                throw new RuntimeException("Failed to download file: " + response.getStatusLine());
+            try (CloseableHttpResponse httpResponse = httpClient.execute(httpGet)) {
+                int statusCode = httpResponse.getStatusLine().getStatusCode();
+
+                if (statusCode == 200) {
+                    HttpEntity httpEntity = httpResponse.getEntity();
+                    if (httpEntity != null) {
+                        return EntityUtils.toByteArray(httpEntity);
+                    } else {
+                        throw new IOException("Empty response entity");
+                    }
+                } else {
+                    throw new RuntimeException("Failed to download file. Status code: " + statusCode);
+                }
             }
-            logger.info("Downloading Email Attachment" + url);
-            // Save the file content to a local file
-            FileUtils.copyInputStreamToFile(response.getEntity().getContent(), file);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to download file. Exception: " + e.getMessage(), e);
+        } finally {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+            }
         }
-
-        return file;
     }
 
 }
