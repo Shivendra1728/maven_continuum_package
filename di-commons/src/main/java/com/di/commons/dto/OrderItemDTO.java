@@ -37,6 +37,7 @@ public class OrderItemDTO {
 	private String lineNo;
 	private Long parentLineId;
 	private Long orderLineId;
+	private boolean isDropShip;
 	private List<OrderItemDTO> innerItems;
 
 	// Copy constructor
@@ -60,8 +61,7 @@ public class OrderItemDTO {
 		this.lineNo = orderItemDTO.getLineNo();
 		this.parentLineId = orderItemDTO.getParentLineId();
 		this.orderLineId = orderItemDTO.getOrderLineId();
-
-		
+		this.isDropShip = orderItemDTO.isDropShip();
 	}
 
 	

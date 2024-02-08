@@ -151,9 +151,51 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 			String responseBody = EntityUtils.toString(response.getEntity());
 
 			JsonNode responseNode = objectMapper.readTree(responseBody);
-
+			logger.info("responseNode : " + responseNode);
 			// Process response data
 			JsonNode valueNode = responseNode.get("value");
+
+			if (valueNode == null || valueNode.isEmpty()) {
+				String dispositionDetailsURL = null;
+				logger.info("Disposition code");
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+				try {
+					URIBuilder uriBuilder = new URIBuilder(
+							masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_API_ORDER_LINE);
+					uriBuilder.addParameter("$filter", "order_no eq '" + orderNo + "' and item_id eq '" + itemId + "'");
+					dispositionDetailsURL = uriBuilder.build().toString();
+				} catch (Exception e) {
+
+					e.printStackTrace();
+				}
+
+				logger.info("URL to get Disposition against Item : " + dispositionDetailsURL);
+//				String accessToken1 = p21TokenServiceImpl.findToken(masterTenantObject);
+				HttpGet httpGet1 = new HttpGet(dispositionDetailsURL);
+				httpGet1.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+				httpGet1.setHeader(HttpHeaders.ACCEPT, "application/json");
+				httpGet1.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
+				CloseableHttpResponse getLineResponse = httpClient1.execute(httpGet1);
+				String getLineResponseBody = EntityUtils.toString(getLineResponse.getEntity());
+
+				logger.info("Disposition item response : " + getLineResponseBody);
+
+				int statusCode = getLineResponse.getStatusLine().getStatusCode();
+				if (statusCode == 200) {
+					logger.info(getLineResponseBody);
+					if (getLineResponseBody != null && getLineResponseBody.contains("\"disposition\":\"D\"")) {
+						OrderItemDTO updatedOrderItemDTO = new OrderItemDTO(orderItemDTO);
+						updatedOrderItemDTO.setDropShip(true);
+						updatedOrderItemDTOList.add(updatedOrderItemDTO);
+					}
+
+				}
+
+			}
 
 			for (JsonNode itemNode : valueNode) {
 				String invoiceNoFromResponse = itemNode.get("invoice_no").asText();
@@ -167,7 +209,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 					OrderItemDTO updatedOrderItemDTO = new OrderItemDTO(orderItemDTO);
 
 					updatedOrderItemDTO.setId(idCounter++);
-				
+
 					updatedOrderItemDTO.setInvoiceNo(invoiceNoFromResponse);
 
 					updatedOrderItemDTO.setQuantity((int) qtyShipped);
@@ -177,7 +219,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 			}
 
 		}
-
+		logger.info("Updated order item list : "+updatedOrderItemDTOList);
 		return updatedOrderItemDTOList;
 	}
 
@@ -263,10 +305,10 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 		CloseableHttpClient httpClient = HttpClients.custom()
 				.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-		
+
 		logger.info("RMA Reciept getSerialNumber Method called.....");
 
-		//String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+		// String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 		String tenentId = httpServletRequest.getHeader("tenant");
 		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
 
