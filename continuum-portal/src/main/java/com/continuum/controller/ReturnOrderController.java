@@ -26,10 +26,10 @@ public class ReturnOrderController {
 	ReturnOrderService returnOrderService;
 
 	@PostMapping("/create/v1")
-	public P21RMAResponse createReturnOrder(@RequestBody ReturnOrderDTO returnOrderDTO) throws Exception {
+	public P21RMAResponse createReturnOrder(@RequestBody ReturnOrderDTO returnOrderDTO , @RequestParam Long userId) throws Exception {
 
 		P21RMAResponse rmaResponse = returnOrderService.createReturnOrder(returnOrderDTO);
-		returnOrderService.crateReturnOrderInDB(returnOrderDTO, rmaResponse);
+		returnOrderService.crateReturnOrderInDB(returnOrderDTO, rmaResponse,userId);
 		return rmaResponse;
 
 	}

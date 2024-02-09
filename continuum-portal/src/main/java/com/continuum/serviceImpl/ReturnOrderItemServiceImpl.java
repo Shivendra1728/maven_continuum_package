@@ -893,7 +893,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
 						+ user.getLastName() + " of item - " + existingItem.getItemName()
 						+ ". Please review the details and take necessary action.;"
-						+ "Vendor Message added and Email has been sent to the " + contactEmail);
+						+ "Vendor Message added and Email has been sent to " + contactEmail);
 
 //				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 				String tenentId = httpServletRequest.getHeader("tenant");
@@ -943,7 +943,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemRepository.save(existingItem);
 				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
 						+ user.getLastName() + " of item - " + existingItem.getItemName()
-						+ ". Please review the details and take necessary action.");
+						+ ". Please review the details and take necessary action.;" + "Email has been sent to " + contactEmail);
 
 //				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 				String tenentId = httpServletRequest.getHeader("tenant");
