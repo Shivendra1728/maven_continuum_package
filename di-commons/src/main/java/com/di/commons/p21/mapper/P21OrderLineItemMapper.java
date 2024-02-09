@@ -48,6 +48,7 @@ public class P21OrderLineItemMapper {
 			orderitemDTO.setLineNo(p21OrderLineItem.getLine_number());
 			orderitemDTO.setInvoiceNo(invoiceNo);
 			orderitemDTO.setQuantity(Math.abs((int) Double.parseDouble(p21OrderLineItem.getOrdered_qty())));
+			orderitemDTO.setOldQuantity(Math.abs((int) Double.parseDouble(p21OrderLineItem.getOrdered_qty())));
 			orderitemDTO.setInvoiceDate(p21OrderLineItem.getOriginal_invoice_date());
 
 			// this below code for shipTo and BillTo mapping for particular lineitem.
