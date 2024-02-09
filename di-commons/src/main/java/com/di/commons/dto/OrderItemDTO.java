@@ -39,6 +39,7 @@ public class OrderItemDTO {
 	private Long orderLineId;
 	private boolean isDropShip;
 	private List<OrderItemDTO> innerItems;
+	private int oldQuantity;
 
 	// Copy constructor
 	public OrderItemDTO(OrderItemDTO orderItemDTO) {
@@ -46,6 +47,7 @@ public class OrderItemDTO {
 		this.shipTo = orderItemDTO.getShipTo();
 		this.billTo = orderItemDTO.getBillTo();
 		this.quantity = orderItemDTO.getQuantity();
+		this.oldQuantity = orderItemDTO.getOldQuantity();
 		this.purchaseDate = orderItemDTO.getPurchaseDate();
 		this.status = orderItemDTO.getStatus();
 		this.itemName = orderItemDTO.getItemName();
@@ -64,5 +66,6 @@ public class OrderItemDTO {
 		this.isDropShip = orderItemDTO.isDropShip();
 	}
 
+	
 	
 }
