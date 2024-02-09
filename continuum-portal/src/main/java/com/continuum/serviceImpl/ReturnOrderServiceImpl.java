@@ -61,7 +61,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 
 	@Autowired
 	ReturnOrderRepository returnOrderRepository;
-	
+
 	@Autowired
 	private ModelMapper modelMapper;
 
@@ -131,7 +131,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 	}
 
 	// @Async
-	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO, P21RMAResponse p21RMARespo)
+	public void crateReturnOrderInDB(ReturnOrderDTO returnOrderDTO, P21RMAResponse p21RMARespo, Long userId)
 			throws MessagingException {
 		returnOrderDTO.setRmaOrderNo(p21RMARespo.getRmaOrderNo());
 		returnOrderDTO.setStatus(returnOrderDTO.getStatus());
@@ -139,6 +139,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		returnOrderDTO.setCreatedDate(new Date());
 		returnOrderDTO.setRequestedDate(new Date());
 		// returnOrderDTO.setStatus(p21RMARespo.getStatus());
+
+		Optional<User> optionalUser = userRepository.findById(userId);
+		User user = optionalUser.get();
 
 		String Status = p21RMARespo.getStatus();
 		if (Status.equals(PortalConstants.SUCCESS)) {
@@ -195,13 +198,13 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		rmaInvoiceInfoRepository.save(rmaInvoiceInfo);
 
 		// audit log
-
 		AuditLog auditlog = new AuditLog();
 
 		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-		String described = getRmaaQualifier() + " " + returnOrder.getRmaOrderNo()
-				+ " has been updated to 'Return Requested'." + ";" + "Email has been sent to the "
-				+ returnOrderDTO.getContact().getContactEmailId();
+		String described = getRmaaQualifier() + " " + returnOrder.getRmaOrderNo() + " has been created by "
+				+ user.getFirstName() + " " + user.getLastName() + ".;" + getRmaaQualifier() + " "
+				+ returnOrder.getRmaOrderNo() + " has been updated to 'Return Requested'." + ";"
+				+ "Email has been sent to " + returnOrderDTO.getContact().getContactEmailId();
 		auditlog.setDescription(described);
 		auditlog.setHighlight("Return Requested");
 		auditlog.setStatus("Inbox");
@@ -248,11 +251,9 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		map.put("order_no", returnOrderDTO.getOrderNo());
 		String template = emailTemplateRenderer.getTemplateContent();
 		emailSender.sendEmail(recipient, template, subject, map);
-		
-		
-		
+
 		String recipient1 = "";
-		
+
 		if (masterTenant.getIsProd()) {
 			recipient1 = masterTenant.getDefaultEmail();
 		} else {
@@ -264,7 +265,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 //		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
 //			recipient="alex@gocontinuum.ai";
 //		}
-		String subject1 = "A Return has been requested by "+returnOrderDTO.getContact().getContactName()+" : "+getRmaaQualifier()+returnOrderDTO.getRmaOrderNo();
+		String subject1 = "A Return has been requested by " + returnOrderDTO.getContact().getContactName() + " : "
+				+ getRmaaQualifier() + returnOrderDTO.getRmaOrderNo();
 
 //		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
 		HashMap<String, String> map1 = new HashMap<>();
@@ -284,7 +286,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 		map.put("order_no", returnOrderDTO.getOrderNo());
 		String template1 = emailTemplateRenderer.getRETURN_PROCESSOR_CREATE();
 		emailSender.sendEmail(recipient1, template1, subject1, map1);
-		
+
 	}
 
 	public String generateRmaNumber() {
@@ -307,7 +309,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			// Format the incremented value back into the string format
 			String newRmaOrderNo = String.format("FAIL%04d", incrementedValue);
 			return newRmaOrderNo;
-			
+
 		}
 	}
 
@@ -627,7 +629,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 				recipient = masterTenant.getDefaultEmail();
 
 			}
-			String subject = "You have been Assigned RMA: "+ getRmaaQualifier() + " " + returnOrder.getRmaOrderNo();
+			String subject = "You have been Assigned RMA: " + getRmaaQualifier() + " " + returnOrder.getRmaOrderNo();
 			HashMap<String, String> map = new HashMap<>();
 			map.put("RMA_QUALIFIER", getRmaaQualifier());
 			map.put("RMA_NO", rmaNo);
@@ -654,7 +656,7 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			map1.put("RMA_QUALIFIER", getRmaaQualifier());
 			map1.put("RMA_NO", rmaNo);
 			map1.put("CUST_NAME", returnOrder.getContact().getContactName());
-			map1.put("RP_NAME", returnOrder.getUser().getFirstName()+" "+returnOrder.getUser().getLastName());
+			map1.put("RP_NAME", returnOrder.getUser().getFirstName() + " " + returnOrder.getUser().getLastName());
 			map1.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
 			map1.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
 			String template1 = emailTemplateRenderer.getCUSTMER_UNDER_REVIEW_TEMPLATE();

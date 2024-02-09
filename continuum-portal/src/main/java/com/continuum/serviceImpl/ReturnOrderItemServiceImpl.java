@@ -805,52 +805,55 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				}
 
 				returnOrderRepository.save(returnOrderEntity);
-
-				// update customer to put tracking code.
-				String subject = "Return: " + returnOrderServiceImpl.getRmaaQualifier()+ " " + rmaNo +" ("+ existingItem.getItemName()+") " + " is Ready and Awaiting Transit";
-				List<OrderItemDocuments> orderItemDocuments = existingItem.getOrderItemDocuments();
-				Map<String, String> attachmentPaths = new HashMap<String, String>();
-				for(OrderItemDocuments orderItemDocument : orderItemDocuments) {
-					if(orderItemDocument.getURL() != null && orderItemDocument.getType().equals("note")) {
-						attachmentPaths.put(orderItemDocument.getOriginalFileName(), orderItemDocument.getURL());
-					}
-				}
-				HashMap<String, String> map1 = new HashMap<>(); 
-				map1.put("RMA_NO", rmaNo);
-				map1.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
-				map1.put("CUST_NAME", returnOrderEntity.getContact().getContactName());
-				map1.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
-				map1.put("CLIENT_PHONE",
-						String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
-				map1.put("ADDRESS_NAME", existingItem.getShipTo().getAddressType());
-				if(existingItem.getShipTo().getAttentionNote() != null && !existingItem.getShipTo().getAttentionNote().isEmpty()) {
-					map1.put("ATTENTION_NOTE", existingItem.getShipTo().getAttentionNote());
-				}else {
-					map1.put("ATTENTION_NOTE", "--");
-				}
-				String address = existingItem.getShipTo().getStreet1();
-				if(existingItem.getShipTo().getStreet2() != null) {
-					address += ", " + existingItem.getShipTo().getStreet2();
-				}
-				address += ", " + existingItem.getShipTo().getCity() + ", " + existingItem.getShipTo().getProvince() + ", " + existingItem.getShipTo().getZipcode() + ", "+ existingItem.getShipTo().getCountry();
-				map1.put("ADDRESS", address);
-				if(existingItem.getShipTo().getReturnLocNote() != null && !existingItem.getShipTo().getReturnLocNote().isEmpty()) {
-					map1.put("SHIP_TOMESSAGE", existingItem.getShipTo().getReturnLocNote());
-				}else {
-					map1.put("SHIP_TOMESSAGE", "--");
-				}
-				String template1 = emailTemplateRenderer.getEMAIL_LINE_ITEM_STATUS_IN_TRANSIT();
-
 				if ("Authorized Awaiting Transit".equals(updatedItem.getStatus())) {
+					String subject = "Return: " + returnOrderServiceImpl.getRmaaQualifier() + " " + rmaNo + " ("
+							+ existingItem.getItemName() + ") " + " is Ready and Awaiting Transit";
+					List<OrderItemDocuments> orderItemDocuments = existingItem.getOrderItemDocuments();
+					Map<String, String> attachmentPaths = new HashMap<String, String>();
+					for (OrderItemDocuments orderItemDocument : orderItemDocuments) {
+						if (orderItemDocument.getURL() != null && orderItemDocument.getType().equals("note")) {
+							attachmentPaths.put(orderItemDocument.getOriginalFileName(), orderItemDocument.getURL());
+						}
+					}
+					HashMap<String, String> map1 = new HashMap<>();
+					map1.put("RMA_NO", rmaNo);
+					map1.put("RMA_QUALIFIER", returnOrderServiceImpl.getRmaaQualifier());
+					map1.put("CUST_NAME", returnOrderEntity.getContact().getContactName());
+					map1.put("CLIENT_MAIL", returnOrderServiceImpl.getClientConfig().getEmailFrom());
+					map1.put("CLIENT_PHONE",
+							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
+					map1.put("ADDRESS_NAME", existingItem.getShipTo().getAddressType());
+					if (existingItem.getShipTo().getAttentionNote() != null
+							&& !existingItem.getShipTo().getAttentionNote().isEmpty()) {
+						map1.put("ATTENTION_NOTE", existingItem.getShipTo().getAttentionNote());
+					} else {
+						map1.put("ATTENTION_NOTE", "--");
+					}
+					map1.put("STREET_ADDRESS", existingItem.getShipTo().getStreet1());
+					if(existingItem.getShipTo().getStreet2() != null) {
+						map1.put("ADDRESS_2", existingItem.getShipTo().getStreet2());
+					}else {
+						map1.put("ADDRESS_2", "--");
+					}
+					map1.put("CITY_STATE_ZIP_COUNTRY", existingItem.getShipTo().getCity()+", "+existingItem.getShipTo().getProvince()+", "+ existingItem.getShipTo().getZipcode()+", "+existingItem.getShipTo().getCountry());
+					if (existingItem.getShipTo().getReturnLocNote() != null
+							&& !existingItem.getShipTo().getReturnLocNote().isEmpty()) {
+						map1.put("SHIP_TOMESSAGE", existingItem.getShipTo().getReturnLocNote());
+					} else {
+						map1.put("SHIP_TOMESSAGE", "--");
+					}
+					String template1 = emailTemplateRenderer.getEMAIL_LINE_ITEM_STATUS_IN_TRANSIT();
 					try {
-//					sendEmail1(recipient, updatedItem.getStatus());
-//					emailSender.sendEmailToVender(recipient, updatedItem.getStatus());
+//						sendEmail1(recipient, updatedItem.getStatus());
+//						emailSender.sendEmailToVender(recipient, updatedItem.getStatus());
 						emailSender.sendEmailWithAttachment(recipient, template1, subject, map1, attachmentPaths);
 
 					} catch (MessagingException e) {
 						e.printStackTrace();
 					}
 				}
+				
+				
 			}
 
 			return "List Item Details Updated Successfully.";
@@ -893,7 +896,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
 						+ user.getLastName() + " of item - " + existingItem.getItemName()
 						+ ". Please review the details and take necessary action.;"
-						+ "Vendor Message added and Email has been sent to the " + contactEmail);
+						+ "Vendor Message added and Email has been sent to " + contactEmail);
 
 //				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 				String tenentId = httpServletRequest.getHeader("tenant");
@@ -943,7 +946,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 				returnOrderItemRepository.save(existingItem);
 				auditLog.setDescription(updateBy + " has reassigned note to " + user.getFirstName() + " "
 						+ user.getLastName() + " of item - " + existingItem.getItemName()
-						+ ". Please review the details and take necessary action.");
+						+ ". Please review the details and take necessary action.;" + "Email has been sent to " + contactEmail);
 
 //				String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
 				String tenentId = httpServletRequest.getHeader("tenant");
