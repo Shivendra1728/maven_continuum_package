@@ -39,6 +39,8 @@ public class Role {
 	private String role;
 
 	private String page;
+	
+	private boolean isDisplay;
 
 	public Role(Long id, String role) {
 		this.id = id;
