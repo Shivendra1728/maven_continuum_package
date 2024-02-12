@@ -823,25 +823,11 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 					map1.put("CLIENT_PHONE",
 							String.valueOf(returnOrderServiceImpl.getClientConfig().getClient().getContactNo()));
 					map1.put("ADDRESS_NAME", existingItem.getShipTo().getAddressType());
-					if (existingItem.getShipTo().getAttentionNote() != null
-							&& !existingItem.getShipTo().getAttentionNote().isEmpty()) {
-						map1.put("ATTENTION_NOTE", existingItem.getShipTo().getAttentionNote());
-					} else {
-						map1.put("ATTENTION_NOTE", "--");
-					}
+					map1.put("ATTENTION_NOTE", existingItem.getShipTo().getAttentionNote());
 					map1.put("STREET_ADDRESS", existingItem.getShipTo().getStreet1());
-					if(existingItem.getShipTo().getStreet2() != null) {
-						map1.put("ADDRESS_2", existingItem.getShipTo().getStreet2());
-					}else {
-						map1.put("ADDRESS_2", "--");
-					}
+					map1.put("ADDRESS_2", existingItem.getShipTo().getStreet2());	
 					map1.put("CITY_STATE_ZIP_COUNTRY", existingItem.getShipTo().getCity()+", "+existingItem.getShipTo().getProvince()+", "+ existingItem.getShipTo().getZipcode()+", "+existingItem.getShipTo().getCountry());
-					if (existingItem.getShipTo().getReturnLocNote() != null
-							&& !existingItem.getShipTo().getReturnLocNote().isEmpty()) {
-						map1.put("SHIP_TOMESSAGE", existingItem.getShipTo().getReturnLocNote());
-					} else {
-						map1.put("SHIP_TOMESSAGE", "--");
-					}
+					map1.put("SHIP_TOMESSAGE", existingItem.getShipTo().getReturnLocNote());
 					String template1 = emailTemplateRenderer.getEMAIL_LINE_ITEM_STATUS_IN_TRANSIT();
 					try {
 //						sendEmail1(recipient, updatedItem.getStatus());
