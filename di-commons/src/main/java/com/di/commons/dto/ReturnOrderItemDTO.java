@@ -86,6 +86,5 @@ public class ReturnOrderItemDTO extends BaseEntity {
 	@JoinColumn(name = "returnOrderItemId")
 	private List<SerialData> serialData;
 	
-	private String lineNo;
 
 }
