@@ -379,8 +379,8 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_LINE_DENIED)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RMA_DENIED)
 						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.RECIEVED)
-						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.CREDITED)
-						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.APPROVED)) {
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.CREDITED_CLOSED)
+						|| updatedItem.getStatus().equalsIgnoreCase(PortalConstants.CREDITED_OPEN)) {
 					List<StatusConfig> statusConfigList = statusConfigRepository
 							.findBystatuslabl(updatedItem.getStatus());
 					StatusConfig statusConfig = statusConfigList.get(0);
@@ -455,7 +455,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 								returnOrderEntity.getStatus());
 					}
 
-				}if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.CREDITED)) {
+				}if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.CREDITED_CLOSED)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
 								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
@@ -468,7 +468,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 				}
 				
-				if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.APPROVED)) {
+				if (statusConfig.getStatusMap().equalsIgnoreCase(PortalConstants.CREDITED_OPEN)) {
 					if (!statusConfig.getStatusMap().equalsIgnoreCase(returnOrder.getStatus())) {
 						String description = returnOrderServiceImpl.getRmaaQualifier() + " "
 								+ returnOrderEntity.getRmaOrderNo() + " has been updated from " + existingHeaderStatus
