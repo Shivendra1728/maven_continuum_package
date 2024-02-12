@@ -1,12 +1,10 @@
 package com.di.integration.p21.serviceImpl;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -40,8 +38,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
-import com.continuum.tenant.repos.entity.EditsObject;
-import com.continuum.tenant.repos.entity.EditsObject.EditItem;
 import com.continuum.tenant.repos.entity.ReturnOrder;
 import com.continuum.tenant.repos.entity.ReturnOrderItem;
 import com.continuum.tenant.repos.entity.SerialData;
@@ -207,6 +203,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		boolean b = false;
 
 		MasterTenant masterTenant;
+		String windowId = "";
 
 		if (masterTenantObject == null) {
 //			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
@@ -225,12 +222,15 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 		logger.info("These are items in the RMA: " + items);
 		logger.info(orderNo);
 
-		for (ReturnOrderItem item : items) {
-			Integer indexOfInvNo = getIndexOfItem(rmaNo, masterTenantObject, item);
-			if(indexOfInvNo == null) {
+		for (int i = 0; i < items.size(); i++) {
+
+			ReturnOrderItem item = items.get(i);
+			Integer invoiceToLink = item.getInvoiceNo();
+			if (invoiceToLink == null) {
 				break;
 			}
-			
+			Integer indexOfInvNo = 0;
+			Integer totalRows = 0;
 			Integer quantity = item.getQuanity();
 
 			URI sessionEnd = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
@@ -242,17 +242,10 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 			URI openWindow = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/");
 			URI openWindowfullURI = openWindow.resolve(openWindow.getRawPath());
 
-			URI windowMetaData = new URI(
-					masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/transaction/metadata/RMA");
-			URI windowMetaDatafullURI = windowMetaData.resolve(windowMetaData.getRawPath());
-
-			URI windowList = new URI(
-					masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/transaction/services?type=Window");
-			URI windowListfullURI = windowList.resolve(windowList.getRawPath());
-
-			System.out.println(windowListfullURI.toString());
 			String token = p21TokenServiceImpl.findToken(masterTenant);
 			logger.info("#### TOKEN #### {}", token);
+
+			// ---------------- End session if exists ----------------------------------
 			try {
 
 				CloseableHttpClient httpClient = HttpClients.custom()
@@ -272,361 +265,317 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				logger.error("There is no session exists:" + e.getMessage());
 			}
 
-			CloseableHttpClient httpClient = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-			HttpPost request1 = new HttpPost(sessionCreatefullURI);
-
-			// Set request headers
-			request1.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			request1.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			request1.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			CloseableHttpResponse response = httpClient.execute(request1);
-			String responseBody = EntityUtils.toString(response.getEntity());
+			// ----------------- Create session ------------------------------
 			logger.info("Session Create URI:" + sessionCreatefullURI);
-			logger.info("Session Create Response:" + responseBody);
-
-			logger.info("Open Window URI:" + openWindowfullURI);
-
-			CloseableHttpClient httpClient1 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-			HttpPost openWindowRequest = new HttpPost(openWindowfullURI);
-
-			// Set request headers
-			openWindowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			openWindowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			openWindowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			StringEntity entity = new StringEntity("\"RMA\"", ContentType.APPLICATION_JSON);
-			openWindowRequest.setEntity(entity);
-			CloseableHttpResponse openWindowResponse = httpClient1.execute(openWindowRequest);
-			String openWindowResponseBody = EntityUtils.toString(openWindowResponse.getEntity());
-			logger.info("Open Window Response :" + openWindowResponseBody);
-
-			JSONObject jsonObject = new JSONObject(openWindowResponseBody);
-			String windowId = jsonObject.getString("Result");
-
-			logger.info("windowMetaDataResponse URI:" + windowMetaDatafullURI);
-//		ResponseEntity<Object> windowMetaDataResponse = restTemplate.exchange(windowMetaDatafullURI, HttpMethod.GET,
-//				new HttpEntity<Object>(headers), Object.class);
-
-			CloseableHttpClient httpClient2 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			HttpGet windowMetaDataRequest = new HttpGet(windowMetaDatafullURI);
-
-			// Set request headers
-			windowMetaDataRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			windowMetaDataRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			windowMetaDataRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-
-			// Execute the request
-			HttpResponse windowMetaDataResponse = httpClient2.execute(windowMetaDataRequest);
-			HttpEntity entity1 = windowMetaDataResponse.getEntity();
-			String windowMetaDataResponseBody = EntityUtils.toString(entity1);
-			logger.info("windowMetaData Response :" + windowMetaDataResponseBody);
-
-			logger.info("windowListfullURI:" + windowListfullURI);
-
-			CloseableHttpClient httpClient3 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			String windowListURI = "" + masterTenant.getSubdomain()
-					+ "/uiserver0/ui/full/v1/transaction/services?type=Window";
-//		URI windowListfullURi = new URIBuilder(windowListURI).addParameter("Window", "Window").build();
-			URIBuilder uriBuilder = new URIBuilder(windowListURI);
-
-			HttpGet windowListRequest = new HttpGet(uriBuilder.build());
-
-			// Set request headers
-			windowListRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			windowListRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			windowListRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			// Execute the request
-			HttpResponse windowListResponse = httpClient3.execute(windowListRequest);
-			HttpEntity entity2 = windowListResponse.getEntity();
-			String windowListResponseBody = EntityUtils.toString(entity2);
-			logger.info("windowListfullURI Response:" + windowListResponseBody);
-
-			/*
-			 * restTemplate.exchange(
-			 * "http://my-rest-url.org/rest/account/{account}?name={name}", HttpMethod.GET,
-			 * httpEntity, Object.class, "my-account", "my-name" );
-			 */
-
-			// URI changeDataForAField = new URI("https://65.154.203.155:8443" +
-			// "/uiserver0/ui/full/v1/window/"+windowId+"/elements/changedata?datawindowName=order&fieldName=order_no");
-			// URI changeDataForAFieldFullURI =
-			// changeDataForAField.resolve(changeDataForAField.getRawPath());
-			logger.info("changeDataForAFieldFullURI:");
-
-			CloseableHttpClient httpClient4 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			String changeDataForAFieldUri = String.format(
-					"" + masterTenant.getSubdomain()
-							+ "/uiserver0/ui/full/v1/window/%s/elements/changedata?datawindowName=%s&fieldName=%s",
-					windowId, "order", "order_no");
-
-			URI changeDataForAFieldFullURI = new URIBuilder(changeDataForAFieldUri).build();
-
-			HttpPut changeDataForAFieldRequest = new HttpPut(changeDataForAFieldFullURI);
-			changeDataForAFieldRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			changeDataForAFieldRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			changeDataForAFieldRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-
-			// Use the correct request body
-			String requestBody = "\"" + rmaNo + "\"";
-			StringEntity entity3 = new StringEntity(requestBody, ContentType.APPLICATION_JSON);
-			changeDataForAFieldRequest.setEntity(entity3);
-
-			CloseableHttpResponse changeDataForAFieldResponse = httpClient4.execute(changeDataForAFieldRequest);
-			HttpEntity responseEntity = changeDataForAFieldResponse.getEntity();
-			String changeDataForAFieldResponseBody = EntityUtils.toString(responseEntity);
-			logger.info("changeDataForAFieldFullURI Response :" + changeDataForAFieldResponseBody);
-
-			logger.info("selectPagOfWindowFullURI:");
-
-			CloseableHttpClient httpClient5 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			String selectPagOfWindowURI = "" + masterTenant.getSubdomain()
-					+ "/uiserver0/ui/full/v1/window/%s/elements/select?pageName=%s";
-			URI selectPagOfWindowFullURI = new URIBuilder(String.format(selectPagOfWindowURI,
-					URLEncoder.encode(windowId, StandardCharsets.UTF_8.toString()), "tabpage_saleshistory")).build();
-
-			HttpPost selectPagOfWindowRequest = new HttpPost(selectPagOfWindowFullURI);
-			selectPagOfWindowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			selectPagOfWindowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			selectPagOfWindowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			String selectPagOfWindow = "\"" + 423651 + "\"";
-			StringEntity entity4 = new StringEntity(selectPagOfWindow, ContentType.APPLICATION_JSON);
-			selectPagOfWindowRequest.setEntity(entity4);
-
-			try (CloseableHttpResponse selectPagOfWindowResponse = httpClient5.execute(selectPagOfWindowRequest)) {
-				HttpEntity responseEntity1 = selectPagOfWindowResponse.getEntity();
-				String responseBody2 = EntityUtils.toString(responseEntity1);
-				logger.info("selectPagOfWindowFullURI Response :" + responseBody2);
-			} catch (IOException e) {
-				e.printStackTrace(); // Handle exception appropriately
-			}
-
-			URI activeWindowDefinition = new URI(
-					masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId + "/active");
-			URI activeWindowDefinitionfullURI = activeWindowDefinition.resolve(activeWindowDefinition.getRawPath());
-
-			URI getActiveWindows = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/window/all");
-			URI getActiveWindowsfullURI = getActiveWindows.resolve(getActiveWindows.getRawPath());
-
-			logger.info("getToolsOfWindowTab:");
-
-			CloseableHttpClient httpClient6 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			String getToolsOfWindowTabURI = "" + masterTenant.getSubdomain()
-					+ "/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s";
-			URI getToolsOfWindowTabFullURI = new URIBuilder(String.format(getToolsOfWindowTabURI,
-					URLEncoder.encode(windowId, StandardCharsets.UTF_8.toString()), "tabpage_saleshistory")).build();
-			HttpGet getToolsOfWindowTabRequest = new HttpGet(getToolsOfWindowTabFullURI);
-
-			// Set request headers
-			getToolsOfWindowTabRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			getToolsOfWindowTabRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			getToolsOfWindowTabRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			// Execute the request
-			HttpResponse getToolsOfWindowTabResponse = httpClient6.execute(getToolsOfWindowTabRequest);
-			HttpEntity entity5 = getToolsOfWindowTabResponse.getEntity();
-			String getToolsOfWindowTabResponseBody = EntityUtils.toString(entity5);
-
-			logger.info("getToolsOfWindowTab Response :" + getToolsOfWindowTabResponseBody);
-
-			CloseableHttpClient httpClient7 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			String toolsOfWindowFieldURI = String.format(
-					"" + masterTenant.getSubdomain()
-							+ "/uiserver0/ui/full/v1/window/%s/elements/tools?datawindowName=%s",
-					windowId, "tabpage_saleshistory");
-			URI toolsOfWindowFieldFullURI = new URIBuilder(toolsOfWindowFieldURI).build();
-
-			HttpGet toolsOfWindowFieldRequest = new HttpGet(toolsOfWindowFieldFullURI);
-
-			// Set request headers
-			toolsOfWindowFieldRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			toolsOfWindowFieldRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			toolsOfWindowFieldRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			// Execute the request
-			HttpResponse toolsOfWindowFieldResponse = httpClient7.execute(toolsOfWindowFieldRequest);
-			HttpEntity entity6 = toolsOfWindowFieldResponse.getEntity();
-			String toolsOfWindowFieldResponseBody = EntityUtils.toString(entity6);
-
-			logger.info("toolsOfWindowFieldResponseBody Response " + toolsOfWindowFieldResponseBody);
-
-			CloseableHttpClient httpClient8 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			String currentRowForDataWindowURI = String.format(
-					"" + masterTenant.getSubdomain()
-							+ "/uiserver0/ui/full/v1/window/%s/elements/activerow?datawindowName=%s",
-					windowId, "tabpage_saleshistory");
-			URI currentRowForDataWindowFullURI = new URIBuilder(currentRowForDataWindowURI).build();
-
-			HttpGet currentRowForDataWindowRequest = new HttpGet(currentRowForDataWindowFullURI);
-
-			// Set request headers
-			currentRowForDataWindowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			currentRowForDataWindowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			currentRowForDataWindowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			// Execute the request
-			HttpResponse currentRowForDataWindowResponse = httpClient8.execute(currentRowForDataWindowRequest);
-			HttpEntity entity7 = currentRowForDataWindowResponse.getEntity();
-			String currentRowForDataWindowResponseBody = EntityUtils.toString(entity7);
-
-			logger.info("currentRowForDataWindowResponseBody Response " + currentRowForDataWindowResponseBody);
-
-			CloseableHttpClient httpClient9 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			HttpGet activeWindowDefinitionRequest = new HttpGet(activeWindowDefinitionfullURI);
-
-			// Set request headers
-			activeWindowDefinitionRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			activeWindowDefinitionRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			activeWindowDefinitionRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			// Execute the request
-			HttpResponse activeWindowDefinitionResponse = httpClient9.execute(activeWindowDefinitionRequest);
-			HttpEntity entity8 = activeWindowDefinitionResponse.getEntity();
-			String activeWindowDefinitionResponseBody = EntityUtils.toString(entity8);
-
-			logger.info("activeWindowDefinitionResponseBody " + activeWindowDefinitionResponseBody);
-
-			CloseableHttpClient httpClient10 = HttpClients.custom()
-					.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-			HttpGet getActiveWindowsRequest = new HttpGet(getActiveWindowsfullURI);
-
-			// Set request headers
-			getActiveWindowsRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-			getActiveWindowsRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-			getActiveWindowsRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-			// Execute the request
-			HttpResponse getActiveWindowsResponse = httpClient10.execute(getActiveWindowsRequest);
-			HttpEntity entity9 = getActiveWindowsResponse.getEntity();
-			String getActiveWindowsResponseBody = EntityUtils.toString(entity9);
-			logger.info("getActiveWindowsResponseBody " + getActiveWindowsResponseBody);
-
 			try {
-				logger.info("Set Focus on specified Field:");
-
-				CloseableHttpClient httpClient11 = HttpClients.custom()
+				CloseableHttpClient httpClient = HttpClients.custom()
 						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpPost request1 = new HttpPost(sessionCreatefullURI);
 
-				String setFocusOnSpecifiedFieldURI = String.format("" + masterTenant.getSubdomain()
-						+ "/uiserver0/ui/full/v1/window/%s/elements/focus?datawindowName=%s&fieldName=%s&row=%s",
-						windowId, "tabpage_saleshistory", "invoice_no", indexOfInvNo);
-				logger.info("Set Focus on specified Field Request :" + setFocusOnSpecifiedFieldURI);
-				URI setFocusOnSpecifiedFieldFullURI = new URIBuilder(setFocusOnSpecifiedFieldURI).build();
-				HttpPost setFocusOnSpecifiedFieldRequest = new HttpPost(setFocusOnSpecifiedFieldFullURI);
-				setFocusOnSpecifiedFieldRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-				setFocusOnSpecifiedFieldRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-				setFocusOnSpecifiedFieldRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-				CloseableHttpResponse setFocusOnSpecifiedFieldResponse = httpClient11
-						.execute(setFocusOnSpecifiedFieldRequest);
-				HttpEntity entity10 = setFocusOnSpecifiedFieldResponse.getEntity();
-				String setFocusOnSpecifiedFieldResponseBody = EntityUtils.toString(entity10);
+				// Set request headers
+				request1.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				request1.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				request1.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				CloseableHttpResponse response = httpClient.execute(request1);
+				String responseBody = EntityUtils.toString(response.getEntity());
+				logger.info("Session Create Response:" + responseBody);
+			} catch (Exception e) {
+				logger.info("Error Creating session : " + e.getMessage());
+			}
 
-				logger.info("Set Focus on specified Field Response :" + setFocusOnSpecifiedFieldResponseBody);
+			// -------------Open RMA window ----------------------------
+			logger.info("Open Window URI:" + openWindowfullURI);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpPost openWindowRequest = new HttpPost(openWindowfullURI);
+
+				// Set request headers
+				openWindowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				openWindowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				openWindowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				StringEntity entity = new StringEntity("\"RMA\"", ContentType.APPLICATION_JSON);
+				openWindowRequest.setEntity(entity);
+				CloseableHttpResponse openWindowResponse = httpClient1.execute(openWindowRequest);
+				String openWindowResponseBody = EntityUtils.toString(openWindowResponse.getEntity());
+				logger.info("Open Window Response :" + openWindowResponseBody);
+
+				JSONObject jsonObject = new JSONObject(openWindowResponseBody);
+				windowId = jsonObject.getString("Result");
+				logger.info("Window id : " + windowId);
+			} catch (Exception e) {
+				logger.info("Error Opening RMA Window : " + e.getMessage());
+			}
+
+			// ------------------ Change data for a field ------------------------
+			// This will open the window for given RMA
+			String changeDataForAField = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId
+					+ "/elements/changedata?datawindowName=order&fieldName=order_no";
+			logger.info("Change data for field URI : " + changeDataForAField);
+
+			try {
+				CloseableHttpClient httpClient = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				URIBuilder uriBuilder = new URIBuilder(changeDataForAField);
+				HttpPut httpPut = new HttpPut(uriBuilder.build());
+				httpPut.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				httpPut.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				httpPut.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				logger.info("RMA No :" + rmaNo);
+				StringEntity entity4 = new StringEntity(rmaNo, ContentType.APPLICATION_JSON);
+				httpPut.setEntity(entity4);
+
+				CloseableHttpResponse response = httpClient.execute(httpPut);
+				HttpEntity entity = response.getEntity();
+				String jsonResponse = EntityUtils.toString(entity);
+				logger.info("Change data for field response :" + jsonResponse);
+				int statusCode = response.getStatusLine().getStatusCode();
+				if (statusCode == 200) {
+					logger.info("Third API ran successfully.");
+				} else {
+					logger.error("Error: Unexpected status code in third api - " + statusCode);
+				}
+			} catch (Exception e) {
+				logger.error("Error Changing data for a field :: " + e.getMessage());
+			}
+
+			// ---------------------- Set focus on specified item ---------------------
+			// This API will focus on the item in the item tab which we want to link
+			Integer itemIndex = i + 1;
+			String setFocusOnLineURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId
+					+ "/elements/focus?datawindowName=items&fieldName=oe_order_item_id&row=" + itemIndex;
+			logger.info("Set focus on specified line " + setFocusOnLineURI);
+			logger.info("Item index to be targeted : " + itemIndex);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpPost setFocusOnLineRequest = new HttpPost(setFocusOnLineURI);
+
+				// Set request headers
+				setFocusOnLineRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				setFocusOnLineRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				setFocusOnLineRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				CloseableHttpResponse setFocusOnLineResponse = httpClient1.execute(setFocusOnLineRequest);
+				String setFocusOnLineResponseBody = EntityUtils.toString(setFocusOnLineResponse.getEntity());
+				logger.info("Set focus on Window Response :" + setFocusOnLineResponseBody);
 
 			} catch (Exception e) {
-				logger.error("Error Set Focus on specified field:: " + e.getMessage());
+				logger.error("Error Setting focus on line :: " + e.getMessage());
 			}
 
+			// ---------------- Get Row number of specified line ---------------------------
+			// This API will give the active row number of the item we had set focus on
+			String getRowNumberOfLineURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId
+					+ "/elements/activerow?datawindowName=items";
+			logger.info("Get row number on specified line " + getRowNumberOfLineURI);
 			try {
-				logger.info("Run Tool on Window");
-
-				CloseableHttpClient httpClient12 = HttpClients.custom()
+				CloseableHttpClient httpClient1 = HttpClients.custom()
 						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpGet getRowNumberOfLineRequest = new HttpGet(getRowNumberOfLineURI);
 
-				String runToolOnWindowURI = String.format("" + masterTenant.getSubdomain()
-						+ "/uiserver0/ui/full/v1/window/%s/elements/tools/run?dwName=%s&toolName=%s&dwElementName=%s&row=%s",
-						windowId, "tabpage_saleshistory", "m_linktothisrmaline", "tabpage_saleshistory", indexOfInvNo);
-				URI runToolOnWindowFullURI = new URIBuilder(runToolOnWindowURI).build();
+				// Set request headers
+				getRowNumberOfLineRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				getRowNumberOfLineRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				getRowNumberOfLineRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				CloseableHttpResponse getRowNumberOfLineResponse = httpClient1.execute(getRowNumberOfLineRequest);
+				String getRowNumberOfLineResponseBody = EntityUtils.toString(getRowNumberOfLineResponse.getEntity());
+				logger.info("Get row number of line Response :" + getRowNumberOfLineResponseBody);
 
-				HttpPut runToolOnWindowRequest = new HttpPut(runToolOnWindowFullURI);
+			} catch (Exception e) {
+				logger.error("Error getting active row of  line :: " + e.getMessage());
+			}
+
+			// --------------- Select page of window ------------------------------------
+			// This API will select the sales history tab to find the row from which to link
+			String selectPageOfWindowURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId
+					+ "/elements/select?pageName=tabpage_saleshistory";
+			logger.info("Select page of window URI" + setFocusOnLineURI);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpPost selectPageOfWindowRequest = new HttpPost(selectPageOfWindowURI);
+
+				// Set request headers
+				selectPageOfWindowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				selectPageOfWindowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				selectPageOfWindowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				CloseableHttpResponse selectPageOfWindowResponse = httpClient1.execute(selectPageOfWindowRequest);
+				String selectPageOfWindowResponseBody = EntityUtils.toString(selectPageOfWindowResponse.getEntity());
+				logger.info("Select page of window Response :" + selectPageOfWindowResponseBody);
+
+			} catch (Exception e) {
+				logger.error("Error selecting page of saleshistory window :: " + e.getMessage());
+			}
+
+			// ----------------- Get elements state--------------
+			// This API will return the total no. rows of the saleshistory
+			String getElementsStateURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/grid/" + windowId
+					+ "/elements/state?dwName=tabpage_saleshistory";
+			logger.info("Get elements state URI" + getElementsStateURI);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpGet getElementsStateRequest = new HttpGet(getElementsStateURI);
+
+				// Set request headers
+				getElementsStateRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				getElementsStateRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				getElementsStateRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				CloseableHttpResponse getElementsStateResponse = httpClient1.execute(getElementsStateRequest);
+				String getElementsStateResponseBody = EntityUtils.toString(getElementsStateResponse.getEntity());
+				logger.info("Get elements of state Response :" + getElementsStateResponseBody);
+
+				ObjectMapper objectMapper = new ObjectMapper();
+				JsonNode jsonNode = objectMapper.readTree(getElementsStateResponseBody);
+
+				// Extract TotalRows value
+				totalRows = jsonNode.path("DataInformation").path("TABPAGE_SALESHISTORY.tabpage_saleshistory")
+						.path("TotalRows").asInt();
+
+				logger.info("Total rows : " + totalRows);
+			} catch (Exception e) {
+				logger.error("Error getting element state of saleshistory window :: " + e.getMessage());
+			}
+
+			// ---------- Get row to link from saleshistory -----------------
+			// This API will return the saleshistory details , from which we select the row
+			// number to link basend on invoice number
+			String getRowToLinkURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/grid/" + windowId
+					+ "/elements/state?dwName=tabpage_saleshistory&activeRows=1-" + totalRows;
+			logger.info("Get row to link URI" + getRowToLinkURI);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpGet getRowToLinkRequest = new HttpGet(getRowToLinkURI);
+
+				// Set request headers
+				getRowToLinkRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				getRowToLinkRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				getRowToLinkRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				CloseableHttpResponse getRowToLinkResponse = httpClient1.execute(getRowToLinkRequest);
+				String getRowToLinkResponseBody = EntityUtils.toString(getRowToLinkResponse.getEntity());
+				logger.info("Get row to linkResponse :" + getRowToLinkResponseBody);
+
+				ObjectMapper mapper = new ObjectMapper();
+				JsonNode rootNode = mapper.readTree(getRowToLinkResponseBody);
+
+				JsonNode dataNode = rootNode.path("Data").path("TABPAGE_SALESHISTORY.tabpage_saleshistory");
+
+				for (JsonNode objNode : dataNode) {
+					if (objNode.has("invoice_no")
+							&& objNode.get("invoice_no").asText().equals(invoiceToLink.toString())) {
+						indexOfInvNo = objNode.get("_internalrowindex").asInt();
+						logger.info("Index of Invoice no to link : " + indexOfInvNo);
+						break;
+					}
+				}
+
+			} catch (Exception e) {
+				logger.error("Error getting row of saleshistory window to link :: " + e.getMessage());
+			}
+
+			// --------------- Set focus on row to link ------------------------------------
+			// This will set focus on the index we got from previous API
+			String setFocusToLinkURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/" + windowId
+					+ "/elements/focus?datawindowName=tabpage_saleshistory&fieldName=invoice_no&row=" + indexOfInvNo;
+			logger.info("Set focus to link URI" + setFocusToLinkURI);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpPost setFocusToLinkRequest = new HttpPost(setFocusToLinkURI);
+
+				// Set request headers
+				setFocusToLinkRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				setFocusToLinkRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				setFocusToLinkRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				CloseableHttpResponse setFocusToLinkResponse = httpClient1.execute(setFocusToLinkRequest);
+				String setFocusToLinkResponseBody = EntityUtils.toString(setFocusToLinkResponse.getEntity());
+				logger.info("Set focus on row to link response :" + setFocusToLinkResponseBody);
+
+			} catch (Exception e) {
+				logger.error("Error setting focus on the row to link :: " + e.getMessage());
+			}
+
+			// --------- Run tool on sales history --------------------------------
+			// This will link the selected invoice with selected line
+			String runToolOnWindowURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v2/window/tools";
+			logger.info("Run tool window URI" + runToolOnWindowURI);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpPost runToolOnWindowRequest = new HttpPost(runToolOnWindowURI);
+				String jsonBody = "{" + "\"DatawindowName\": \"tabpage_saleshistory\","
+						+ "\"FieldName\": \"invoice_no\"," + "\"Row\": " + indexOfInvNo + "," + "\"Text\": null,"
+						+ "\"ToolName\": \"m_linktothisrmaline\"," + "\"WindowId\": \"" + windowId + "\"" + "}";
+				// Set request headers
 				runToolOnWindowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 				runToolOnWindowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 				runToolOnWindowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-
-				CloseableHttpResponse runToolOnWindowResponse = httpClient12.execute(runToolOnWindowRequest);
-				HttpEntity entity11 = runToolOnWindowResponse.getEntity();
-				String runToolOnWindowResponseBody = EntityUtils.toString(entity11);
-				logger.info("Run Tool on Window " + runToolOnWindowResponseBody);
+				StringEntity entity = new StringEntity(jsonBody);
+				runToolOnWindowRequest.setEntity(entity);
+				CloseableHttpResponse runToolOnWindowResponse = httpClient1.execute(runToolOnWindowRequest);
+				String runToolOnWindowResponseBody = EntityUtils.toString(runToolOnWindowResponse.getEntity());
+				logger.info("Run tool window response :" + runToolOnWindowResponseBody);
 
 			} catch (Exception e) {
-				logger.error("Error Run Tool on Window::" + e.getMessage());
+				e.printStackTrace();
 			}
-			
+
+			// --------- Update return quantity after linking ----------------------------
+			// This will update the return quantity in the ERP equals to the quantity we had
+			// return
 			try {
 				logger.info("Update line item in RMA");
- 
+
 				CloseableHttpClient httpClient12 = HttpClients.custom()
 						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
 						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
- 
-				String quantityUpdateURI = String.format(
-						"" + masterTenant.getSubdomain()
+
+				String quantityUpdateURI = String.format("" + masterTenant.getSubdomain()
 						+ "/uiserver0/ui/full/v2/data/data?dw=items&fn=unit_quantity&r=1&tn=TP_ITEMS&wn=w_rma_entry_sheet&wid=%s",
 						masterTenant.getSubdomain(), windowId);
-				
+
 				logger.info(quantityUpdateURI);
-				
- 
+
 				URI quantityUpdateURL = new URIBuilder(quantityUpdateURI).build();
- 
+
 				HttpPut runToolOnWindowRequest = new HttpPut(quantityUpdateURL);
 				runToolOnWindowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 				runToolOnWindowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 				runToolOnWindowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-				
-				
+
 				JSONObject requestBody1 = new JSONObject();
-			    requestBody1.put("DatawindowName", "items");
-			    requestBody1.put("FieldName", "unit_quantity");
-			    requestBody1.put("Value", quantity);
-			    requestBody1.put("WindowId", windowId);
-			    requestBody1.put("Row", 1);
- 
-			    // Set the request body
-			    StringEntity requestEntity = new StringEntity(requestBody1.toString());
-			    logger.info("This is request body for update item: "+requestEntity);
-			    runToolOnWindowRequest.setEntity(requestEntity);
- 
-				
-				
- 
+				requestBody1.put("DatawindowName", "items");
+				requestBody1.put("FieldName", "unit_quantity");
+				requestBody1.put("Value", quantity);
+				requestBody1.put("WindowId", windowId);
+				requestBody1.put("Row", itemIndex);
+
+				// Set the request body
+				StringEntity requestEntity = new StringEntity(requestBody1.toString());
+				logger.info("This is request body for update item: " + requestEntity);
+				runToolOnWindowRequest.setEntity(requestEntity);
+
 				CloseableHttpResponse runToolOnWindowResponse = httpClient12.execute(runToolOnWindowRequest);
 				HttpEntity entity11 = runToolOnWindowResponse.getEntity();
 				String runToolOnWindowResponseBody = EntityUtils.toString(entity11);
 				logger.info("Update line item in quantity : " + runToolOnWindowResponseBody);
- 
+
 			} catch (Exception e) {
 				logger.error("Error Run Tool on Window::" + e.getMessage());
 			}
-			
-			
-			
 
+			// ----------------Save Window ---------------------------------
 			try {
 				logger.info("saveWindow");
 				CloseableHttpClient httpClient13 = HttpClients.custom()
@@ -647,35 +596,10 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				logger.info("saveWindow " + responseBody6);
 
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				logger.error("Error saveWindow::" + e.getMessage());
 			}
 
-			try {
-				logger.info("selectPagOfWindowFullURI");
-
-				CloseableHttpClient httpClient13 = HttpClients.custom()
-						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
-						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-
-				String performWindowActionURI = String.format(
-						"" + masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/window/%s/tools/cb_1", windowId);
-				URI performWindowActionFullURI = new URIBuilder(performWindowActionURI).build();
-
-				HttpPost performWindowActionRequest = new HttpPost(performWindowActionFullURI);
-				performWindowActionRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-				performWindowActionRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-				performWindowActionRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-				CloseableHttpResponse performWindowActionResponse = httpClient13.execute(performWindowActionRequest);
-				HttpEntity responseEntity5 = performWindowActionResponse.getEntity();
-				String responseBody6 = EntityUtils.toString(responseEntity5);
-				logger.info("selectPagOfWindowFullURI " + responseBody6);
-
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				logger.error("Error performWindowAction::" + e.getMessage());
-
-			}
+			// ---------------- End Session ------------------------------------
 			try {
 				// Check and terminate if there is any session exists
 				logger.info("session end");
@@ -698,7 +622,6 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				logger.error("There is no session exists:" + e.getMessage());
 			}
 			b = true;
-			return b;
 		}
 		return b;
 
@@ -716,7 +639,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 		String itemId = item.getItemName();
 		Integer foundInvoiceNumber = item.getInvoiceNo();
-		if(foundInvoiceNumber==null) {
+		if (foundInvoiceNumber == null) {
 			return 0;
 		}
 		String foundInvoiceNumberString = foundInvoiceNumber.toString();
@@ -756,7 +679,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 							if (value.equals(foundInvoiceNumberString)) {
 								System.out.println("This is index for the item : " + i);
 								System.out.println("This is the item : " + itemId);
-								
+
 								indexForInvoice = i;
 								break;
 							}
