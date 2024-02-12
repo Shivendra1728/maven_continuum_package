@@ -106,5 +106,6 @@ public class ReturnOrderItem extends BaseEntity {
 	private Boolean isSerialized;
 	private String serialNo;
 	private Integer invoiceNo;
+	private String lineNo;
 
 }
