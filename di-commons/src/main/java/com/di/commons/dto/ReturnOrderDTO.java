@@ -58,4 +58,6 @@ public class ReturnOrderDTO {
 //	private Orders orders;
 	private String carrierName;
 	private Boolean isSalesRepLinked;
+	private String freight_cd;
+	private String freight_desc;
 }

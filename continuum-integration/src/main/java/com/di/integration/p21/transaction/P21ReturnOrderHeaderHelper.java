@@ -26,5 +26,7 @@ private String contact_id;
 private String po_no;
 private String taker;
 private String order_contact_first_name;
+private String freight_cd;
+private String freight_desc;
 
 }
