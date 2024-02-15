@@ -5,10 +5,12 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.http.HttpEntity;
@@ -26,15 +28,16 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.MediaType;
 
 import com.continuum.multitenant.mastertenant.entity.MasterTenant;
 import com.continuum.multitenant.mastertenant.repository.MasterTenantRepository;
@@ -100,6 +103,12 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 	@Autowired
 	HttpServletRequest httpServletRequest;
+
+	@Autowired
+	TemplateRenderrer templateRenderrer;
+
+	@Autowired
+	SendMail emailSender;
 
 	@Value(IntegrationConstants.ERP_RMA_UPDATE_RESTOCKING_API)
 	private String rmaGetEndPoint;
@@ -204,6 +213,9 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 		MasterTenant masterTenant;
 		String windowId = "";
+		String childWindowId = "";
+		int totalVerificationRows = 0;
+		boolean isEnabled = false;
 
 		if (masterTenantObject == null) {
 //			String tenantId = httpServletRequest.getHeader("host").split("\\.")[0];
@@ -232,6 +244,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 			Integer indexOfInvNo = 0;
 			Integer totalRows = 0;
 			Integer quantity = item.getQuanity();
+			String itemName = item.getItemName();
 
 			URI sessionEnd = new URI(masterTenant.getSubdomain() + "/uiserver0/ui/common/v1/sessions/");
 			URI sessionEndFullURI = sessionEnd.resolve(sessionEnd.getRawPath());
@@ -424,7 +437,6 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 				HttpGet getElementsStateRequest = new HttpGet(getElementsStateURI);
 
-				// Set request headers
 				getElementsStateRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 				getElementsStateRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 				getElementsStateRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
@@ -446,7 +458,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 
 			// ---------- Get row to link from saleshistory -----------------
 			// This API will return the saleshistory details , from which we select the row
-			// number to link basend on invoice number
+
 			String getRowToLinkURI = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/grid/" + windowId
 					+ "/elements/state?dwName=tabpage_saleshistory&activeRows=1-" + totalRows;
 			logger.info("Get row to link URI" + getRowToLinkURI);
@@ -456,7 +468,6 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 				HttpGet getRowToLinkRequest = new HttpGet(getRowToLinkURI);
 
-				// Set request headers
 				getRowToLinkRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 				getRowToLinkRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 				getRowToLinkRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
@@ -530,6 +541,347 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
+			// -----Verification of whether the invoice is linked or not
+
+			// Set focus on which row to check for linking
+
+			String setFocusForVerification = masterTenant.getSubdomain() + "/uiserver0/ui/full/v2/data/row";
+			logger.info("URI to check focus for verification of link invoice line : " + setFocusForVerification);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpPut setFocusRequest = new HttpPut(setFocusForVerification);
+
+				String pageName = "TP_ITEMS";
+				String datawindowName = "items";
+
+				String jsonRequestBody = "{" + "\"DatawindowName\": \"" + datawindowName + "\"," + "\"PageName\": \""
+						+ pageName + "\"," + "\"Row\": " + itemIndex + "," + "\"WindowId\": \"" + windowId + "\"" + "}";
+
+				setFocusRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				setFocusRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				setFocusRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+				StringEntity entity = new StringEntity(jsonRequestBody);
+				setFocusRequest.setEntity(entity);
+				CloseableHttpResponse setFocusResponse = httpClient1.execute(setFocusRequest);
+				String setFocusResponseBody = EntityUtils.toString(setFocusResponse.getEntity());
+				logger.info("Set Focus response :" + setFocusResponseBody);
+
+				ObjectMapper objectMapper = new ObjectMapper();
+				JsonNode rootNode = objectMapper.readTree(setFocusResponseBody);
+
+				boolean success = rootNode.get("Success").asBoolean();
+
+				if (success) {
+					logger.info("Set Focus was successful.");
+				} else {
+					logger.error("Set Focus for verification failed.");
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			
+			
+			
+			
+			// check whether button is enabled or not
+			String checkButtonEnabling = masterTenant.getSubdomain() + "/uiserver0/api/ui/emawindow/" + windowId
+					+ "/elements/tools?datawindowName=items&fieldName=item_desc";
+			logger.info("URI to check whether show invoice link button is enabled  : " + checkButtonEnabling);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpGet getButtonEnableRequest = new HttpGet(checkButtonEnabling);
+				
+				
+
+				getButtonEnableRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				getButtonEnableRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				getButtonEnableRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+				CloseableHttpResponse buttonResponse = httpClient1.execute(getButtonEnableRequest);
+				String buttonResponseBody = EntityUtils.toString(buttonResponse.getEntity());
+				logger.info("Grid response :" + buttonResponseBody);
+				
+				 JSONObject jsonResponse = new JSONObject(buttonResponseBody);
+			     JSONArray resultArray = jsonResponse.getJSONArray("Result");
+
+			       
+			        if (resultArray.length() >= 10) {
+			            JSONObject tenthObject = resultArray.getJSONObject(9);
+			            isEnabled = tenthObject.getBoolean("Enabled");
+			            logger.info("Is Show linked invoice line enabled: " + isEnabled);
+			        } else {
+			            logger.info("Object at 10th position not found in the response.");
+			        }
+				 logger.info("THIS IS ENABLED ? >> "+isEnabled);
+				 
+				 
+				
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			
+			
+			if (isEnabled) {
+			
+
+			// Run the tool to see linked invoice
+			// Line for
+			// Verification-------------------------------------------------------------
+
+			String runToolonItemWindow = masterTenant.getSubdomain() + "/uiserver0/ui/full/v2/window/tools";
+			logger.info(
+					"URI to run tool on item window for verification of link invoice line : " + runToolonItemWindow);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpPost runToolOnItemRequest = new HttpPost(runToolonItemWindow);
+
+				String datawindowName = "items";
+				String pageName = "m_showlinkedinvoiceline";
+
+				String jsonRequestBody = "{" + "\"DatawindowName\": \"" + datawindowName + "\","
+						+ "\"FieldName\": \"item_desc\"," + "\"Row\": " + itemIndex + "," + "\"Text\": null," +
+
+						"\"ToolName\": \"" + pageName + "\"," + "\"WindowId\": \"" + windowId + "\"" + "}";
+
+				runToolOnItemRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				runToolOnItemRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				runToolOnItemRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+				StringEntity entity = new StringEntity(jsonRequestBody);
+				runToolOnItemRequest.setEntity(entity);
+				CloseableHttpResponse runToolOnItemResponse = httpClient1.execute(runToolOnItemRequest);
+				String runToolResponseBody = EntityUtils.toString(runToolOnItemResponse.getEntity());
+				logger.info("Run tool on item response :" + runToolResponseBody);
+
+				JSONObject jsonResponse = new JSONObject(runToolResponseBody);
+
+				JSONArray eventsArray = jsonResponse.getJSONArray("Events");
+
+				if (eventsArray.length() > 0) {
+
+					JSONObject firstEvent = eventsArray.getJSONObject(0);
+					JSONObject eventData = firstEvent.getJSONObject("EventData");
+
+					if (eventData.has("windowid")) {
+						childWindowId = eventData.getString("windowid");
+						logger.info("This is childwindowId while running I-API for verification : " + childWindowId);
+					}
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			// Get the grid
+			// quickly----------------------------------------------------------------------------
+
+			String getGrid = masterTenant.getSubdomain() + "/uiserver0/api/ui/emawindow/" + childWindowId
+					+ "/preference/grid.columns.locked/object/_dw_1";
+			logger.info("URI to get grid data : " + getGrid);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpGet getGridRequest = new HttpGet(getGrid);
+
+				getGridRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				getGridRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				getGridRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+				CloseableHttpResponse gridResponse = httpClient1.execute(getGridRequest);
+				String gridResponseBody = EntityUtils.toString(gridResponse.getEntity());
+				logger.info("Grid response :" + gridResponseBody);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			// Get active rows in that data of
+			// invoice----------------------------------------------------------
+			String getActiveRows = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/grid/" + childWindowId
+					+ "/elements/state?dwName=_dw_1";
+
+			logger.info("URI to get active rows data : " + getActiveRows);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpGet getActiveRowRequest = new HttpGet(getActiveRows);
+
+				getActiveRowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				getActiveRowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				getActiveRowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+				CloseableHttpResponse getActiveRowResponse = httpClient1.execute(getActiveRowRequest);
+				String getActiveResponseBody = EntityUtils.toString(getActiveRowResponse.getEntity());
+				logger.info("Get active rows response body :" + getActiveResponseBody);
+
+				JSONObject jsonResponse = new JSONObject(getActiveResponseBody);
+
+				JSONObject dataInformation = jsonResponse.getJSONObject("DataInformation");
+
+				if (dataInformation.has("_dw_1")) {
+					JSONObject dw1Object = dataInformation.getJSONObject("_dw_1");
+					if (dw1Object.has("TotalRows")) {
+						totalVerificationRows = dw1Object.getInt("TotalRows");
+						logger.info("TotalRows in Invoice data view in sandbox is : " + totalVerificationRows);
+					}
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			// Get Invoice data and Cross Verify to check invoice is linked or
+			// not-------------------------------------
+
+			String getInvoicedRows = masterTenant.getSubdomain() + "/uiserver0/ui/full/v1/grid/" + childWindowId
+					+ "/elements/state?dwName=_dw_1&activeRows=1-" + totalVerificationRows;
+
+			logger.info("URI to get invoiced rows data : " + getInvoicedRows);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpGet getInvoiceRowRequest = new HttpGet(getInvoicedRows);
+
+				getInvoiceRowRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				getInvoiceRowRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				getInvoiceRowRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+				CloseableHttpResponse getInvoiceRowResponse = httpClient1.execute(getInvoiceRowRequest);
+				String getInvoiceResponseBody = EntityUtils.toString(getInvoiceRowResponse.getEntity());
+				logger.info("Get invoice rows response body :" + getInvoiceResponseBody);
+
+				JSONObject jsonResponse = new JSONObject(getInvoiceResponseBody);
+
+				JSONArray dw1Array = jsonResponse.getJSONObject("Data").getJSONArray("_dw_1");
+
+				if (dw1Array.length() > 0) {
+					JSONObject dw1Object = dw1Array.getJSONObject(0);
+					Integer invoiceNumber = dw1Object.optInt("invoice_no");
+
+					if (invoiceNumber.equals(invoiceToLink)) {
+						logger.info("------INVOICE LINKING WAS SUCCESSFUL FOR THE RMA NUMBER------- : : : " + rmaNo);
+					}
+
+					else {
+						String recipient = "shivendra.bais@bytesfarms.com";
+						String template = TemplateRenderrer.getInvoice_Link_Failed_Template();
+						String subject = "Invoice Linking Failed For RMA : " + rmaNo + " for the item : " + itemName;
+						HashMap<String, String> map = new HashMap<>();
+						map.put("rmaNumber", rmaNo);
+						map.put("lineItem", itemName);
+
+						try {
+							emailSender.sendEmail(recipient, template, subject, map);
+							logger.info("Email sent to " + recipient + " due to failed invoice linking.");
+						} catch (MessagingException e) {
+							logger.error("Failed to send email: " + e.getMessage(), e);
+						}
+
+					}
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			// Press Ok and come out of that Child
+			// Window-----------------------------------------------------
+
+			String pressOk = masterTenant.getSubdomain() + "/uiserver0/api/ui/emawindow/" + childWindowId
+					+ "/tools/cb_ok";
+			logger.info("URI to press OK on childWindow : " + pressOk);
+			try {
+				CloseableHttpClient httpClient1 = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+				HttpPut pressOKRequest = new HttpPut(pressOk);
+
+				pressOKRequest.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+				pressOKRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				pressOKRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+				CloseableHttpResponse pressOkResponse = httpClient1.execute(pressOKRequest);
+				String pressOKResponseBody = EntityUtils.toString(pressOkResponse.getEntity());
+				logger.info("Press OK response :" + pressOKResponseBody);
+
+				JSONObject jsonResponse = new JSONObject(pressOKResponseBody);
+
+				boolean isSuccess = jsonResponse.getBoolean("Success");
+
+				if (isSuccess) {
+					logger.info("We have Pressed OK Button now we can save window. ");
+				} else {
+					logger.info(
+							"Unsuccessfull OK Window Response, Inv Link Failure because we couldn't save window now! ");
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+			
+			else {
+				String recipient = "shivendra.bais@bytesfarms.com";
+				String template = TemplateRenderrer.getInvoice_Link_Failed_Template();
+				String subject = "Invoice Linking Failed For RMA : " + rmaNo + " for the item : " + itemName;
+				HashMap<String, String> map = new HashMap<>();
+				map.put("rmaNumber", rmaNo);
+				map.put("lineItem", itemName);
+				map.put("invoiceNumber", invoiceToLink.toString());
+				map.put("Tenant", masterTenant.getDbName());
+
+				try {
+					emailSender.sendEmail(recipient, template, subject, map);
+					logger.info("Email sent to " + recipient + " due to failed invoice linking.");
+				} catch (MessagingException e) {
+					logger.error("Failed to send email: " + e.getMessage(), e);
+				}
+			}
+
+			// Continuation to further process after checking its linked or not
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 
 			// --------- Update return quantity after linking ----------------------------
 			// This will update the return quantity in the ERP equals to the quantity we had
@@ -622,6 +974,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 				logger.error("There is no session exists:" + e.getMessage());
 			}
 			b = true;
+
 		}
 		return b;
 

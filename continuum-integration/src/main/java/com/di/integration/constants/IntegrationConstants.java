@@ -94,7 +94,7 @@ public final class IntegrationConstants {
     
     public static final String CONTINUUM = "Continuum";
 
-    // p21 Token service Impl
+    // P21 Token service Impl
     public static final String ERP_USERNAME = "${erp.username}";
     public static final String ERP_PASSWORD = "${erp.password}";
     public static final String ERP_TOKEN_ENDPOINT = "${erp.token_end_point}";
@@ -104,6 +104,18 @@ public final class IntegrationConstants {
 	public static final String APPROVED ="approved";
 	public static final String ERP_RMA_WINDOW_ENDPOINT ="${erp.window_end_point}";
 	
+	
+	
+	public static final String MAIL_HOST = "${spring.mail.host}";
+	public static final String MAIL_PORT = "${spring.mail.port}";
+	public static final String MAIL_USERNAME = "${spring.mail.username}";
+	public static final String MAIL_PASSWORD = "${spring.mail.password}";
+	public static final String SMTP_HOST = "mail.smtp.host";
+	public static final String SMTP_PORT = "mail.smtp.port";
+	public static final String SMTP_AUTH = "mail.smtp.auth";
+	public static final String TRUE = "true";
+	public static final String SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
+	public static final String EMAIL_FROM = "shivendra.bais@bytesfarms.com";	
 	
     
 
