@@ -783,7 +783,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 						}
 
 						else {
-							String recipient = "priyanshi.porwal@bytesfarms.com";
+							String recipient = "continuum@bytesfarms.com";
 							String template = TemplateRenderrer.getInvoice_Link_Failed_Template();
 							String subject = "Invoice Linking Failed For RMA : " + rmaNo + " for the item : "
 									+ itemName;
@@ -843,7 +843,7 @@ public class P21InvoiceServiceImpl implements P21InvoiceService {
 			}
 
 			else {
-				String recipient = "priyanshi.porwal@bytesfarms.com";
+				String recipient = "continuum@bytesfarms.com";
 				String template = TemplateRenderrer.getInvoice_Link_Failed_Template();
 				String subject = "Invoice Linking Failed For RMA : " + rmaNo + " for the item : " + itemName;
 				HashMap<String, String> map = new HashMap<>();

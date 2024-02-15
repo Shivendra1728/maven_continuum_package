@@ -49,7 +49,7 @@ public class TemplateRenderrer {
 			+ "                    ${invoiceLinkingError}<br>\r\n"
 			+ "                    Please try manually link it if possible.\r\n" + "                </div>\r\n"
 			+ "            </div>\r\n" + "        </div>\r\n" + "    </div>\r\n" + "</body>\r\n" + "\r\n"
-			+ "</html>\r\n" + "";
+			+ "</html>\r\n" +  "";
 
 	public static String getInvoice_Link_Failed_Template() {
 		return INVOICE_LINK_FAILED_TEMPLATE;
