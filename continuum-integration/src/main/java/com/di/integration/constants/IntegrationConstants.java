@@ -18,6 +18,7 @@ public final class IntegrationConstants {
     public static final String DATA_ELEMENT_NAME_TP_EXTDINFO = "TP_EXTDINFO.extd_info";
     public static final String DATA_ELEMENT_TYPE_LIST = "List";
     public static final String DATA_ELEMENT_NAME_REASON_CODES = "REASONCODESHDR.reasoncodeshdr";
+    public static final String SHIP_INFO = "TP_SHIPINFO.shipinfo";
     
     // Edit constants
     public static final String COMPANY_ID = "company_id";
@@ -30,6 +31,8 @@ public final class IntegrationConstants {
     public static final String OE_ORDER_ITEM_ID = "oe_order_item_id";
     public static final String UNIT_QUANTITY = "unit_quantity";
     public static final String MAX_LINE_NO = "max_line_no";
+    public static final String FREIGHT_CD = "freight_cd";
+    public static final String FREIGHT_DESC = "freight_desc";
 
     
     public static final String HDR_NOTE = "HDR_NOTE.hdr_note";
@@ -115,7 +118,9 @@ public final class IntegrationConstants {
 	public static final String SMTP_AUTH = "mail.smtp.auth";
 	public static final String TRUE = "true";
 	public static final String SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
-	public static final String EMAIL_FROM = "shivendra.bais@bytesfarms.com";	
+	public static final String EMAIL_FROM = "shivendra.bais@bytesfarms.com";
+	
+		
 	
     
 
