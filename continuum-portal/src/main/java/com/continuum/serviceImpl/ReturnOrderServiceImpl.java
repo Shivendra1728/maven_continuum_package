@@ -53,6 +53,8 @@ import com.di.commons.mapper.RmaInvoiceInfoMapper;
 import com.di.integration.p21.service.P21InvoiceService;
 import com.di.integration.p21.service.P21ReturnOrderService;
 import com.di.integration.p21.transaction.P21RMAResponse;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class ReturnOrderServiceImpl implements ReturnOrderService {
@@ -148,144 +150,174 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
 			returnOrderDTO.setStatus(returnOrderDTO.getStatus());
 			logger.info("Setting status to:: '{}'", returnOrderDTO.getStatus());
 
+			logger.info(returnOrderDTO.getCustomer().getCustomerId());
+			CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
+			if (customerDTO == null) {
+				customerDTO = new CustomerDTO();
+				customerDTO.setCustomerId(returnOrderDTO.getCustomer().getCustomerId());
+				try {
+					customerDTO = customerService.createCustomer(customerDTO);
+				} catch (Exception e) {
+					logger.error("Customer");
+				}
+			}
+			returnOrderDTO.setCustomer(customerDTO);
+			returnOrderDTO.setIsSalesRepLinked(false);
+			ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
+
+			for (ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {
+				returnOrderItem.setShipTo(null);
+				returnOrderItem.setIsActive(true);
+				returnOrderItem.setInvoiceNo(returnOrderItem.getInvoiceNo());
+				if (returnOrderItem.getReturnAmount() == null && returnOrderItem.getReStockingAmount() == null) {
+
+					returnOrderItem.setReStockingAmount(new BigDecimal(0));
+					returnOrderItem.setReturnAmount(
+							returnOrderItem.getAmount().subtract(returnOrderItem.getReStockingAmount()));
+				}
+			}
+			returnOrderRepository.save(returnOrder);
+			RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
+
+			rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
+			rmaInvoiceInfo.setInvoiceLinked(false);
+			rmaInvoiceInfo.setDescription("none");
+			rmaInvoiceInfo.setRetryCount(0);
+			rmaInvoiceInfo.setDocumentLinked(false);
+			rmaInvoiceInfo.setReturnOrder(returnOrder);
+			rmaInvoiceInfoRepository.save(rmaInvoiceInfo);
+
+			// audit log
+			AuditLog auditlog = new AuditLog();
+
+			auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
+			String described = getRmaaQualifier() + " " + returnOrder.getRmaOrderNo() + " has been created by "
+					+ user.getFirstName() + " " + user.getLastName() + ".;" + getRmaaQualifier() + " "
+					+ returnOrder.getRmaOrderNo() + " has been updated to 'Return Requested'." + ";"
+					+ "Email has been sent to " + returnOrderDTO.getContact().getContactEmailId();
+			auditlog.setDescription(described);
+			auditlog.setHighlight("Return Requested");
+			auditlog.setStatus("Inbox");
+			auditlog.setTitle("Return Order");
+			auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
+			auditlog.setUserName(customerDTO.getDisplayName());
+			auditLogRepository.save(auditlog);
+
+			// String recipient = returnOrder.getCustomer().getEmail();
+
+//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
+			String tenentId = httpServletRequest.getHeader("tenant");
+			MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
+			String recipient = "";
+
+			if (masterTenant.getIsProd()) {
+				recipient = returnOrderDTO.getContact().getContactEmailId();
+			} else {
+//			recipient = PortalConstants.EMAIL_RECIPIENT;
+				recipient = masterTenant.getDefaultEmail();
+
+			}
+//		String email = returnOrderDTO.getContact().getContactEmailId();
+//		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
+//			recipient="alex@gocontinuum.ai";
+//		}
+			String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + " " + getRmaaQualifier() + " "
+					+ returnOrderDTO.getRmaOrderNo() + " has been Requested";
+
+//		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
+			HashMap<String, String> map = new HashMap<>();
+			if (returnOrderDTO.getStatus().equalsIgnoreCase(returnOrderDTO.getStatus())) {
+				map.put("RMA_QUALIFIER", getRmaaQualifier());
+				map.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
+				map.put("CUST_NAME", returnOrderDTO.getContact().getContactName());
+				map.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
+				map.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
+			} else {
+				map.put("status", returnOrderDTO.getStatus());
+				map.put("rma_order_no", null);
+			}
+
+			map.put("order_contact_name", customerDTO.getDisplayName());
+			map.put("order_no", returnOrderDTO.getOrderNo());
+			String template = emailTemplateRenderer.getTemplateContent();
+			emailSender.sendEmail(recipient, template, subject, map);
+
+			String recipient1 = "";
+
+			if (masterTenant.getIsProd()) {
+				recipient1 = masterTenant.getDefaultEmail();
+			} else {
+				recipient1 = masterTenant.getDefaultEmail();
+
+			}
+
+//		String email = returnOrderDTO.getContact().getContactEmailId();
+//		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
+//			recipient="alex@gocontinuum.ai";
+//		}
+			String subject1 = "A Return has been requested by " + returnOrderDTO.getContact().getContactName() + " : "
+					+ getRmaaQualifier() + returnOrderDTO.getRmaOrderNo();
+
+//		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
+			HashMap<String, String> map1 = new HashMap<>();
+			if (returnOrderDTO.getStatus().equalsIgnoreCase(returnOrderDTO.getStatus())) {
+				map1.put("RMA_QUALIFIER", getRmaaQualifier());
+				map1.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
+				map1.put("USER_NAME", returnOrderDTO.getContact().getContactName());
+				map1.put("COMPANY_NAME", returnOrderDTO.getCustomer().getDisplayName());
+				map1.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
+				map1.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
+			} else {
+				map1.put("status", returnOrderDTO.getStatus());
+				map1.put("rma_order_no", null);
+			}
+
+			map.put("order_contact_name", customerDTO.getDisplayName());
+			map.put("order_no", returnOrderDTO.getOrderNo());
+			String template1 = emailTemplateRenderer.getRETURN_PROCESSOR_CREATE();
+			emailSender.sendEmail(recipient1, template1, subject1, map1);
+
 		} else {
-			returnOrderDTO.setRmaOrderNo(generateRmaNumber());
+			String errorMesage = p21RMARespo.getMessages().toString();
+			String rmaNo = generateRmaNumber();
+			returnOrderDTO.setRmaOrderNo(rmaNo);
 			returnOrderDTO.setStatus(PortalConstants.FAILED);
 			returnOrderDTO.setIsAuthorized(false);
 			returnOrderDTO.setIsEditable(false);
+			CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
+			if (customerDTO == null) {
+				customerDTO = new CustomerDTO();
+				customerDTO.setCustomerId(returnOrderDTO.getCustomer().getCustomerId());
+				try {
+					customerDTO = customerService.createCustomer(customerDTO);
+				} catch (Exception e) {
+					logger.error("Customer");
+				}
+			}
+			returnOrderDTO.setCustomer(customerDTO);
 			for (ReturnOrderItemDTO returnOrderItem : returnOrderDTO.getReturnOrderItem()) {
 				returnOrderItem.setIsAuthorized(false);
 				returnOrderItem.setIsEditable(false);
 				returnOrderItem.setStatus(PortalConstants.FAILED);
 			}
+			ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
+			returnOrderRepository.save(returnOrder);
 			logger.info("Setting status to:: '{}'", PortalConstants.FAILED);
-		}
-		logger.info(returnOrderDTO.getCustomer().getCustomerId());
-		CustomerDTO customerDTO = customerService.findbyCustomerId(returnOrderDTO.getCustomer().getCustomerId());
-		if (customerDTO == null) {
-			customerDTO = new CustomerDTO();
-			customerDTO.setCustomerId(returnOrderDTO.getCustomer().getCustomerId());
-			try {
-				customerDTO = customerService.createCustomer(customerDTO);
-			} catch (Exception e) {
-				logger.error("Customer");
-			}
-		}
-		returnOrderDTO.setCustomer(customerDTO);
-		returnOrderDTO.setIsSalesRepLinked(false);
-		ReturnOrder returnOrder = returnOrderMapper.returnOrderDTOToReturnOrder(returnOrderDTO);
 
-		for (ReturnOrderItem returnOrderItem : returnOrder.getReturnOrderItem()) {
-			returnOrderItem.setShipTo(null);
-			returnOrderItem.setIsActive(true);
-			returnOrderItem.setInvoiceNo(returnOrderItem.getInvoiceNo());
-			if (returnOrderItem.getReturnAmount() == null && returnOrderItem.getReStockingAmount() == null) {
+			// audit log
+			AuditLog auditlog = new AuditLog();
 
-				returnOrderItem.setReStockingAmount(new BigDecimal(0));
-				returnOrderItem
-						.setReturnAmount(returnOrderItem.getAmount().subtract(returnOrderItem.getReStockingAmount()));
-			}
-		}
-		returnOrderRepository.save(returnOrder);
-		RmaInvoiceInfo rmaInvoiceInfo = new RmaInvoiceInfo();
-
-		rmaInvoiceInfo.setRmaOrderNo(returnOrderDTO.getRmaOrderNo());
-		rmaInvoiceInfo.setInvoiceLinked(false);
-		rmaInvoiceInfo.setDescription("none");
-		rmaInvoiceInfo.setRetryCount(0);
-		rmaInvoiceInfo.setDocumentLinked(false);
-		rmaInvoiceInfo.setReturnOrder(returnOrder);
-		rmaInvoiceInfoRepository.save(rmaInvoiceInfo);
-
-		// audit log
-		AuditLog auditlog = new AuditLog();
-
-		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-		String described = getRmaaQualifier() + " " + returnOrder.getRmaOrderNo() + " has been created by "
-				+ user.getFirstName() + " " + user.getLastName() + ".;" + getRmaaQualifier() + " "
-				+ returnOrder.getRmaOrderNo() + " has been updated to 'Return Requested'." + ";"
-				+ "Email has been sent to " + returnOrderDTO.getContact().getContactEmailId();
-		auditlog.setDescription(described);
-		auditlog.setHighlight("Return Requested");
-		auditlog.setStatus("Inbox");
-		auditlog.setTitle("Return Order");
-		auditlog.setRmaNo(p21RMARespo.getRmaOrderNo());
-		auditlog.setUserName(customerDTO.getDisplayName());
-		auditLogRepository.save(auditlog);
-
-		// String recipient = returnOrder.getCustomer().getEmail();
-
-//		String tenentId = httpServletRequest.getHeader("host").split("\\.")[0];
-		String tenentId = httpServletRequest.getHeader("tenant");
-		MasterTenant masterTenant = masterTenantRepository.findByDbName(tenentId);
-		String recipient = "";
-
-		if (masterTenant.getIsProd()) {
-			recipient = returnOrderDTO.getContact().getContactEmailId();
-		} else {
-//			recipient = PortalConstants.EMAIL_RECIPIENT;
-			recipient = masterTenant.getDefaultEmail();
+			auditlog.setRmaNo(rmaNo);
+			String described = "RMA has been failed due to " + errorMesage;
+			auditlog.setDescription(described);
+			auditlog.setHighlight("Return Requested");
+			auditlog.setStatus("RMA Header");
+			auditlog.setTitle("Return Order");
+			auditlog.setRmaNo(rmaNo);
+			auditlog.setUserName("");
+			auditLogRepository.save(auditlog);
 
 		}
-//		String email = returnOrderDTO.getContact().getContactEmailId();
-//		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
-//			recipient="alex@gocontinuum.ai";
-//		}
-		String subject = PortalConstants.EMAIL_SUBJECT_PREFIX + " " + getRmaaQualifier() + " "
-				+ returnOrderDTO.getRmaOrderNo() + " has been Requested";
-
-//		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
-		HashMap<String, String> map = new HashMap<>();
-		if (returnOrderDTO.getStatus().equalsIgnoreCase(returnOrderDTO.getStatus())) {
-			map.put("RMA_QUALIFIER", getRmaaQualifier());
-			map.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
-			map.put("CUST_NAME", returnOrderDTO.getContact().getContactName());
-			map.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
-			map.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
-		} else {
-			map.put("status", returnOrderDTO.getStatus());
-			map.put("rma_order_no", null);
-		}
-
-		map.put("order_contact_name", customerDTO.getDisplayName());
-		map.put("order_no", returnOrderDTO.getOrderNo());
-		String template = emailTemplateRenderer.getTemplateContent();
-		emailSender.sendEmail(recipient, template, subject, map);
-
-		String recipient1 = "";
-
-		if (masterTenant.getIsProd()) {
-			recipient1 = masterTenant.getDefaultEmail();
-		} else {
-			recipient1 = masterTenant.getDefaultEmail();
-
-		}
-
-//		String email = returnOrderDTO.getContact().getContactEmailId();
-//		if(email.equalsIgnoreCase("alex@gocontinuum.ai")) {
-//			recipient="alex@gocontinuum.ai";
-//		}
-		String subject1 = "A Return has been requested by " + returnOrderDTO.getContact().getContactName() + " : "
-				+ getRmaaQualifier() + returnOrderDTO.getRmaOrderNo();
-
-//		emailSender.sendEmail(recipient, subject, body, returnOrderDTO, customerDTO);
-		HashMap<String, String> map1 = new HashMap<>();
-		if (returnOrderDTO.getStatus().equalsIgnoreCase(returnOrderDTO.getStatus())) {
-			map1.put("RMA_QUALIFIER", getRmaaQualifier());
-			map1.put("RMA_NO", returnOrderDTO.getRmaOrderNo());
-			map1.put("USER_NAME", returnOrderDTO.getContact().getContactName());
-			map1.put("COMPANY_NAME", returnOrderDTO.getCustomer().getDisplayName());
-			map1.put("CLIENT_MAIL", getClientConfig().getEmailFrom());
-			map1.put("CLIENT_PHONE", String.valueOf(getClientConfig().getClient().getContactNo()));
-		} else {
-			map1.put("status", returnOrderDTO.getStatus());
-			map1.put("rma_order_no", null);
-		}
-
-		map.put("order_contact_name", customerDTO.getDisplayName());
-		map.put("order_no", returnOrderDTO.getOrderNo());
-		String template1 = emailTemplateRenderer.getRETURN_PROCESSOR_CREATE();
-		emailSender.sendEmail(recipient1, template1, subject1, map1);
 
 	}
 
