@@ -216,15 +216,23 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 
 			// Update only the fields that are not null in updatedItem
 			if (updatedItem.getProblemDescNote() != null || updatedItem.getProblemDesc() != null) {
-				existingItem.setProblemDescNote(updatedItem.getProblemDescNote());
-				existingItem.setProblemDesc(updatedItem.getProblemDesc());
 				if (updatedItem.getProblemDescNote() != null && !updatedItem.getProblemDescNote().isEmpty()) {
+					existingItem.setProblemDescNote(updatedItem.getProblemDescNote());
+					existingItem.setProblemDesc(updatedItem.getProblemDesc());
 					ReturnRoom returnRoom = new ReturnRoom();
 					returnRoom.setName(updateBy);
 					returnRoom.setMessage(updatedItem.getProblemDescNote());
 					returnRoom.setReturnOrderItem(existingItem);
 					returnRoom.setAssignTo(null);
 					returnRoomRepository.save(returnRoom);
+					
+					String description = updateBy+ " has update the problem description note to "+"'"+updatedItem.getProblemDescNote()+"'.";
+					String highlight = "Problem description note";
+					String title = "Update Activity";
+					String status = "Line Items";
+					auditLogServiceImpl.setAuditLog(description, title, status, rmaNo, updateBy, highlight);
+
+					
 				}
 				returnOrderItemRepository.save(existingItem);
 
@@ -1126,7 +1134,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 
 			// Check if the notes have changed
-			if (notesChanged) {
+			if (notesChanged && returnOrderItem.getNotes()!="") {
 				auditLog.setTitle("Update Activity");
 				auditLog.setDescription(updateBy + " has updated the restocking notes of item - "
 						+ returnOrderItem.getItemName() + ".;" + "Note : " + returnOrderItem.getNotes() + ".");
@@ -1135,7 +1143,7 @@ public class ReturnOrderItemServiceImpl implements ReturnOrderItemService {
 			}
 
 			// If both restocking fee and notes are changed, save both messages
-			if (restockingFeeChanged && notesChanged) {
+			if (restockingFeeChanged && notesChanged && returnOrderItem.getNotes()!="") {
 				auditLog.setTitle("Update Activity");
 				auditLog.setDescription(updateBy + " has updated the restocking fee of item - "
 						+ returnOrderItem.getItemName() + " from $" + preRestocking + " to $"
