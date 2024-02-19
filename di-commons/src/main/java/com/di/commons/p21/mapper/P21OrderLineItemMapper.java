@@ -50,6 +50,7 @@ public class P21OrderLineItemMapper {
 			orderitemDTO.setQuantity(Math.abs((int) Double.parseDouble(p21OrderLineItem.getOrdered_qty())));
 			orderitemDTO.setOldQuantity(Math.abs((int) Double.parseDouble(p21OrderLineItem.getOrdered_qty())));
 			orderitemDTO.setInvoiceDate(p21OrderLineItem.getOriginal_invoice_date());
+			orderitemDTO.setOtherCharge(p21OrderLineItem.getOther_charge()); //Other charge
 
 			// this below code for shipTo and BillTo mapping for particular lineitem.
 
