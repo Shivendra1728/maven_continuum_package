@@ -31,5 +31,6 @@ public class EditableConfig extends BaseEntity {
 	private boolean isSellable;
 	private boolean addSku;
 	private boolean rpAddSku;
+	private boolean otherChargeAllowed;
 
 }
