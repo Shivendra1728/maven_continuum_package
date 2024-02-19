@@ -60,4 +60,7 @@ public class ReturnOrderDTO {
 	private Boolean isSalesRepLinked;
 	private String freight_cd;
 	private String freight_desc;
+	private String initialTotal;
+	private String tax;
+	private String finalTotal;
 }
