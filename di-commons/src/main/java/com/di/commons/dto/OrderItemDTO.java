@@ -40,6 +40,7 @@ public class OrderItemDTO {
 	private boolean isDropShip;
 	private List<OrderItemDTO> innerItems;
 	private int oldQuantity;
+	private String otherCharge;
 
 	// Copy constructor
 	public OrderItemDTO(OrderItemDTO orderItemDTO) {
@@ -64,8 +65,10 @@ public class OrderItemDTO {
 		this.parentLineId = orderItemDTO.getParentLineId();
 		this.orderLineId = orderItemDTO.getOrderLineId();
 		this.isDropShip = orderItemDTO.isDropShip();
+		this.otherCharge = orderItemDTO.getOtherCharge();
 	}
 
+	
 	
 	
 }

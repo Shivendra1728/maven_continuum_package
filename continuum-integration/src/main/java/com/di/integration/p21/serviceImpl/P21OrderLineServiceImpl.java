@@ -219,7 +219,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 			}
 
 		}
-		logger.info("Updated order item list : "+updatedOrderItemDTOList);
+		logger.info("Updated order item list : " + updatedOrderItemDTOList);
 		return updatedOrderItemDTOList;
 	}
 
@@ -340,7 +340,73 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 	public List<OrderItemDTO> getordersLineByInvoice(String invoiceNo, int totalItem) throws Exception {
 		List<OrderItemDTO> orderItemDTOList = p21orderLineItemMapper.convertP21OrderLineObjectToOrderLineDTOForInvoice(
 				getOrderLineDataFromInvoice(invoiceNo, totalItem), invoiceNo);
+
+		logger.info("This is OrderItem DTO List " + orderItemDTOList);
+		// For every item we check whether it is other charge or not
+
+		for (OrderItemDTO orderItemDTO : orderItemDTOList) {
+
+			MasterTenant masterTenant;
+			String tenantId = httpServletRequest.getHeader("tenant");
+			masterTenant = masterTenantRepository.findByDbName(tenantId);
+
+			String baseUrl = masterTenant.getSubdomain() + DATA_API_BASE_URL + DATA_API_ORDER_LINE;
+
+			String encodedFilter = URLEncoder.encode("item_id eq '" + orderItemDTO.getItemName() + "' " + "and "
+					+ "order_no eq '" + orderItemDTO.getOrderNo() + "' ", StandardCharsets.UTF_8.toString());
+
+			String apiUrl = baseUrl + "?$format=json&$filter=" + encodedFilter;
+
+			String token = p21TokenServiceImpl.findToken(masterTenant);
+			logger.info("THE TOKEN IS:" + token);
+
+			try {
+				logger.info("NOW Checking Other Charged Items---");
+				
+				CloseableHttpClient httpClient = HttpClients.custom()
+						.setSSLContext(SSLContextBuilder.create().loadTrustMaterial((chain, authType) -> true).build())
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+				URIBuilder uriBuilder = new URIBuilder(apiUrl);
+				HttpGet httpGet = new HttpGet(uriBuilder.build());
+
+				httpGet.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+				httpGet.setHeader("Accept", "application/json");
+				httpGet.setHeader("Content-Type", "application/json");
+
+				CloseableHttpResponse response = httpClient.execute(httpGet);
+				HttpEntity entity = response.getEntity();
+				int statusCode = response.getStatusLine().getStatusCode();
+				if (entity != null && statusCode == 200) {
+
+					String otherChargeValue = extractOtherChargeValue(entity);
+
+					orderItemDTO.setOtherCharge(otherChargeValue);
+				}
+
+			} catch (Exception e) {
+				logger.error("Error Couldn't extract other charge when searched from Invoice :: " + e.getMessage());
+			}
+
+		}
+
 		return orderItemDTOList;
+	}
+
+	private String extractOtherChargeValue(HttpEntity entity) {
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode rootNode = objectMapper.readTree(entity.getContent());
+
+			JsonNode valueNode = rootNode.get("value").get(0);
+
+			String otherChargeValue = valueNode.get("other_charge").asText();
+
+			return otherChargeValue;
+		} catch (Exception e) {
+			logger.error("Error while extracting Othercharge value: " + e.getMessage());
+			return null;
+		}
 	}
 
 	private String getOrderLineDataFromInvoice(String invoiceNo, int totalItem) throws Exception {

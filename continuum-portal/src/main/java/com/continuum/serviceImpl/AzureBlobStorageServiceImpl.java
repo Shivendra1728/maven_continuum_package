@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,10 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 	ReturnOrderItemRepository returnOrderItemRepository;
 
 	public List<Map<String, String>> uploadFiles(List<MultipartFile> data, String customerId) throws Exception {
+
+		if (data == null || data.isEmpty()) {
+			return Collections.emptyList();
+		}
 
 		BlobContainerClient containerClient = new BlobServiceClientBuilder().connectionString(connectionString)
 				.buildClient().getBlobContainerClient(containerName);
@@ -105,6 +110,11 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 	}
 
 	public List<Map<String, String>> uploadAttachment(List<MultipartFile> data, Long lineItemId) throws Exception {
+		
+		if (data == null || data.isEmpty()) {
+			return Collections.emptyList();
+		}
+
 
 		BlobContainerClient containerClient = new BlobServiceClientBuilder().connectionString(connectionString)
 				.buildClient().getBlobContainerClient(containerName);
@@ -181,8 +191,9 @@ public class AzureBlobStorageServiceImpl implements AzureBlobService {
 	}
 
 	private boolean isValidFileType(String fileExtension) {
-		return fileExtension.equals("pdf") || fileExtension.equals("doc") || fileExtension.equals("jpg") || fileExtension.equals("docx")
-				|| fileExtension.equals("jpeg") || fileExtension.equals("png") || fileExtension.equals("gif") || fileExtension.equals("svg");
+		return fileExtension.equals("pdf") || fileExtension.equals("doc") || fileExtension.equals("jpg")
+				|| fileExtension.equals("docx") || fileExtension.equals("jpeg") || fileExtension.equals("png")
+				|| fileExtension.equals("gif") || fileExtension.equals("svg");
 	}
 
 	private boolean isValidFileCSVType(String fileExtension) {

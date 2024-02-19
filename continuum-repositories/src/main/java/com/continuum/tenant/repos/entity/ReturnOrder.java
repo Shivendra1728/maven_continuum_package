@@ -84,4 +84,8 @@ public class ReturnOrder extends BaseEntity {
 	private Boolean isSalesRepLinked;
 
 	private Integer salesRepLinkAttempts;
+	
+	private String initialTotal;
+	private String tax;
+	private String finalTotal;
 }
