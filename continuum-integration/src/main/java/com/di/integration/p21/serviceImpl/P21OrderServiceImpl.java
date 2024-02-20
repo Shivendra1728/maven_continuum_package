@@ -139,60 +139,60 @@ public class P21OrderServiceImpl implements P21OrderService {
 			orderDTOList = getAllOrdersBySearch(orderSearchParameters, orderItemDTOList);
 		}
 
-		if (orderDTOList.get(0).getOrderItems().isEmpty()) {
+		if (orderDTOList.isEmpty() || orderDTOList.get(0).getOrderItems().isEmpty()) {
 			OrderDTO specialOrderDTO = new OrderDTO();
 			specialOrderDTO.setMessage("No items in this order are invoiced or drop shipped.");
 			return Collections.singletonList(specialOrderDTO);
-		} else {
-			if (!orderDTOList.isEmpty()) {
-				// First we parse carrier id
-				String orderNumber = orderDTOList.get(0).getOrderNo();
-				String CarrierIdData = getCarrierData(orderNumber);
-				String carrierId = parseCarrierId(CarrierIdData);
-
-				// Secondly we fetch name from carrier now
-				String CarrierNameData = getCarrierNameData(carrierId);
-				String CarrierName = parseCarrierName(CarrierNameData);
-				orderDTOList.get(0).setCarrierName(CarrierName);
-				// Add parent and child items to each OrderDTO
-				for (OrderDTO orderDTO : orderDTOList) {
-					List<OrderItemDTO> items = orderDTO.getOrderItems();
-					Map<Long, List<OrderItemDTO>> parentChildMap = new HashMap<>();
-
-					for (OrderItemDTO item : items) {
-						Long parentLineId = item.getParentLineId();
-						
-						if (parentLineId != 0) {
-							parentChildMap.computeIfAbsent(parentLineId, k -> new ArrayList<>()).add(item);
-						}
-					}
-
-					for (OrderItemDTO item : items) {
-					    Long orderId = item.getOrderLineId(); // Assuming getOrderLineId() returns Long or null
-
-					    // Check if orderId is not null before using it
-					    if (orderId != null) {
-					        long itemId = orderId.longValue();
-					        List<OrderItemDTO> childItems = parentChildMap.getOrDefault(itemId, Collections.emptyList());
-					        item.setInnerItems(childItems);
-					    } else {
-					        // Handle the case where orderId is null, for example, log a warning or handle it appropriately.
-					    }
-					}
-				}
-			}
-			if (!orderDTOList.isEmpty() && !orderDTOList.get(0).getOrderItems().isEmpty()) {
-				List<OrderItemDTO> orderItems = orderDTOList.get(0).getOrderItems();
-
-				for (int i = orderItems.size() - 1; i >= 0; i--) {
-					if (orderItems.get(i).getParentLineId() > 0) {
-						orderItems.remove(i);
-					}
-				}
-			}
-
-			return orderDTOList;
 		}
+
+		// First we parse carrier id
+		String orderNumber = orderDTOList.get(0).getOrderNo();
+		String CarrierIdData = getCarrierData(orderNumber);
+		String carrierId = parseCarrierId(CarrierIdData);
+
+		// Secondly we fetch name from carrier now
+		String CarrierNameData = getCarrierNameData(carrierId);
+		String CarrierName = parseCarrierName(CarrierNameData);
+		orderDTOList.get(0).setCarrierName(CarrierName);
+
+		// Map to store parent items and their corresponding child items
+		Map<Long, List<OrderItemDTO>> parentChildMap = new HashMap<>();
+
+		for (OrderDTO orderDTO : orderDTOList) {
+			List<OrderItemDTO> items = orderDTO.getOrderItems();
+			logger.info("Length of items list: " + items.size());
+
+			for (OrderItemDTO item : items) {
+				logger.info("This is item : " + item.getItemName());
+
+				Long parentOeLineUid = item.getParentLineId();
+				logger.info("This is parentOeLineUid : " + parentOeLineUid);
+				Long oeLineUid = item.getOrderLineId();
+				logger.info("This is oeLineUid : " + oeLineUid);
+
+				// Add the item to its parent's list of child items
+				if (parentOeLineUid != null && parentOeLineUid != 0) {
+					parentChildMap.computeIfAbsent(parentOeLineUid, k -> new ArrayList<>()).add(item);
+				}
+
+				// Set the innerItems of the item if it's a parent item
+				if (parentOeLineUid == null || parentOeLineUid == 0) {
+					List<OrderItemDTO> childItems = parentChildMap.getOrDefault(oeLineUid, Collections.emptyList());
+					item.setInnerItems(childItems);
+				}
+			}
+
+		}
+
+		// Remove child items from the orderItems list
+		List<OrderItemDTO> orderItems = orderDTOList.get(0).getOrderItems();
+		for (int i = orderItems.size() - 1; i >= 0; i--) {
+			if (orderItems.get(i).getParentLineId() != null && orderItems.get(i).getParentLineId() != 0) {
+				orderItems.remove(i);
+			}
+		}
+
+		return orderDTOList;
 	}
 
 	private List<OrderDTO> getAllOrdersBySearch(OrderSearchParameters orderSearchParameters,
