@@ -114,6 +114,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 		for (OrderItemDTO orderItemDTO : orderItemDTOList) {
 			String orderNo = orderItemDTO.getOrderNo();
 			String itemId = orderItemDTO.getPartNo();
+			String lineNo = orderItemDTO.getLineNo();
 
 			// let's hit the api
 			CloseableHttpClient httpClient = HttpClients.custom()
@@ -132,7 +133,7 @@ public class P21OrderLineServiceImpl implements P21OrderLineService {
 			try {
 				URIBuilder uriBuilder = new URIBuilder(
 						masterTenant.getSubdomain() + DATA_API_BASE_URL + INVOICE_LINE_VIEW);
-				uriBuilder.addParameter("$filter", "order_no eq '" + orderNo + "' and item_id eq '" + itemId + "'");
+				uriBuilder.addParameter("$filter", "order_no eq '" + orderNo + "' and item_id eq '" + itemId + "'" + "and oe_line_number eq "+ lineNo);
 				invoiceDetailsURL = uriBuilder.build().toString();
 			} catch (Exception e) {
 
