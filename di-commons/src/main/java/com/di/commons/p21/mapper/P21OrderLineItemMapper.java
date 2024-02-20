@@ -117,7 +117,10 @@ public class P21OrderLineItemMapper {
 			orderItemDTO.setInvoiceNo(invoiceNo);
 			orderItemDTO.setQuantity(Math.abs((int) Double.parseDouble(itemNode.get("qty_shipped").asText())));
 			orderItemDTO.setInvoiceDate(itemNode.get("date_created").asText());
-
+			orderItemDTO.setOtherCharge(itemNode.get("other_charge_item").asText());
+			
+			
+			
 			P21OrderData p21OrderData = new P21OrderData();
 			OrderAddressDTO orderAddressShipTODTO = new OrderAddressDTO();
 
